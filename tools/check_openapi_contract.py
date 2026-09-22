@@ -92,8 +92,48 @@ if "authorityScopeRef" not in create_resource.get("required",[]):
     fail("Resource authorityScopeRef missing")
 
 process=schemas.get("CreateProcessRequest",{}).get("properties",{})
-if "criticalityLabel" not in process:
-    fail("BusinessProcess criticalityLabel missing")
+for field in ("criticalityLabel","responsibleOrganizationRef"):
+    if field not in process:
+        fail(f"BusinessProcess {field} missing")
+
+minimal_reads={
+    "listResources": "ResourceCatalogueView",
+    "listApplications": "ApplicationCatalogueView",
+    "getApplication": "ApplicationView",
+    "listDeployments": "DeploymentCatalogueView",
+    "listBusinessProcesses": "BusinessConnectivityView",
+    "listAccessRequests": "AccessRequestCatalogueView",
+    "listPolicyRules": "PolicyRuleCatalogueView",
+    "getPolicyRule": "PolicyRuleView",
+}
+actual_operations={}
+for path,item in api.get("paths",{}).items():
+    for method in ("get","post","put","patch","delete"):
+        operation=item.get(method)
+        if isinstance(operation,dict) and operation.get("operationId"):
+            actual_operations[operation["operationId"]]=(path,method,operation)
+for operation_id,schema_name in minimal_reads.items():
+    if operation_id not in actual_operations:
+        fail(f"required frontend read operation missing: {operation_id}")
+    path,method,operation=actual_operations[operation_id]
+    response=operation.get("responses",{}).get("200",{})
+    schema=(response.get("content",{}).get("application/json",{}).get("schema",{}) if isinstance(response,dict) else {})
+    if schema.get("$ref")!=f"#/components/schemas/{schema_name}":
+        fail(f"{operation_id} must return {schema_name}")
+    if operation_id.startswith("list") and operation.get("parameters"):
+        fail(f"{operation_id} minimal read must not inherit search/filter/sort/pagination controls")
+
+for schema_name in (
+    "ApplicationCatalogueView","ApplicationView","DeploymentCatalogueView",
+    "BusinessConnectivityView","AccessRequestCatalogueView",
+    "PolicyRuleCatalogueView","PolicyRuleView","SetConnectivityNeedStatusRequest",
+):
+    if schema_name not in schemas:
+        fail(f"frontend closure schema missing: {schema_name}")
+
+need_status=schemas["SetConnectivityNeedStatusRequest"].get("properties",{}).get("status",{})
+if need_status.get("enum")!=["ACTIVE","RETIRED"]:
+    fail("ConnectivityNeed status contract differs")
 
 resource_view=schemas.get("ResourceView",{})
 resource_required=set(resource_view.get("required",[]))
