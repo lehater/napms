@@ -1,0 +1,89 @@
+version: 1
+kind: presentation-provider-experiment
+id: NAPMS-MUI-PROVIDER-EXPERIMENT
+status: RESEARCH-NON-CANONICAL
+
+purpose: >-
+  Test whether a version-pinned external presentation provider can realize
+  accepted NAPMS screen semantics without becoming product/interface authority.
+
+provider:
+  name: Material UI
+  repository: mui/material-ui
+  version: v9.4.0
+  source: https://mui.com/material-ui/getting-started/templates/
+  templates:
+    crud_dashboard: CRUD Dashboard
+    dashboard: Dashboard
+  authority: none
+  feature_policy:
+    default: deny
+
+inheritance_candidate:
+  inherit:
+    - shell/layout primitives
+    - responsive sidebar mechanics
+    - Material UI component styling
+    - light/dark theme mechanics
+    - reusable list/detail/dashboard composition primitives
+  keep_project_owned:
+    - product/domain terminology
+    - navigation workspace inventory
+    - query/command semantics
+    - screen/view models
+    - authorization meaning
+    - allowed actions
+    - error/state distinctions
+    - accessibility obligations beyond provider defaults
+    - NAPMS theme overrides and verification
+
+screen_bindings:
+  RESOURCE-CATALOGUE:
+    provider_template: crud_dashboard
+    presentation_pattern: CATALOGUE
+    activate:
+      open-item: open-resource
+      create-item: create-resource
+    exclude:
+      - demo routes
+      - demo entities
+      - search
+      - filter
+      - sort
+      - pagination
+      - bulk operations
+      - edit
+      - delete
+
+  RESOURCE-DETAIL:
+    provider_template: crud_dashboard
+    presentation_pattern: DETAIL
+    activate:
+      show-primary: inspect-current
+      show-secondary: inspect-history
+    exclude:
+      - generic CRUD delete
+      - generic edit fields not backed by NAPMS commands
+      - demo entity semantics
+
+  POLICY-EXPORT:
+    provider_template: dashboard
+    presentation_pattern: OUTCOME
+    activate:
+      summary: inspect-export-summary
+      details: inspect-export-details
+      provenance: inspect-export-provenance
+      diagnostics: inspect-export-diagnostics
+    exclude:
+      - charts without accepted metrics
+      - Data Grid search/filter/sort semantics
+      - demo KPIs
+      - demo navigation/routes
+
+decision:
+  result: FEASIBLE-WITH-SEMANTIC-GATE
+  rationale: >-
+    A template can supply reusable presentation realization only when Screen/View
+    semantics explicitly authorize every enabled provider feature. The experiment
+    does not select MUI for NAPMS implementation and does not change the current
+    Tailwind/shadcn frontend dependency baseline.
