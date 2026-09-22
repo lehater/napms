@@ -508,7 +508,11 @@ function BusinessProcessDetailMode({ processRef }: { processRef: string }) {
               label="Connectivity Needs"
               rows={model.needs}
               rowKey={(row) => row.needRef}
-              primary={(row) => row.businessBasis}
+              primary={(row) => (
+                <span data-connectivity-need-ref={row.needRef}>
+                  {row.businessBasis}
+                </span>
+              )}
               secondary={(row) =>
                 `${row.needRef} · ${row.status} · Interaction ${row.interactionRef} · Participant ${row.participantComponentRef}`
               }

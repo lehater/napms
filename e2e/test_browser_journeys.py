@@ -215,6 +215,13 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.get_by_text('"ipProtocol": 6').wait_for()
         revision_text = page.get_by_text("Revision 1").locator("..").text_content() or ""
         assert "443" in revision_text and "8000" in revision_text and "8080" in revision_text
+        revision_block = page.locator("[data-interaction-revision-ref]").filter(
+            has_text="Revision 1"
+        ).first
+        interaction_revision_ref = revision_block.get_attribute(
+            "data-interaction-revision-ref"
+        )
+        assert interaction_revision_ref
 
         goto(page, "/deployments/new", "Deployments")
         page.get_by_label("Component ID").fill(source_ref)
@@ -241,6 +248,16 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         deployment_row.click()
         page.wait_for_url(f"**/deployments/{deployment_ref}")
 
+        goto(page, "/deployments/new", "Deployments")
+        page.get_by_label("Component ID").fill(destination_ref)
+        page.get_by_label("Resource ID").fill(resource_ref)
+        page.get_by_role("button", name="Create Deployment", exact=True).click()
+        page.wait_for_url(
+            lambda url: "/deployments/" in url
+            and not url.endswith("/deployments/new")
+        )
+        destination_deployment_ref = page.url.rsplit("/", 1)[-1]
+
         process_name = f"E2E Process {suffix}"
         goto(page, "/business-processes/new", "Business Processes")
         page.get_by_label("Name").fill(process_name)
@@ -260,6 +277,11 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.locator("form").get_by_role("button", name="Declare Connectivity Need", exact=True).click()
         page.locator('[data-version="3"]').wait_for()
         page.get_by_text("Required for order processing").wait_for()
+        need_marker = page.locator("[data-connectivity-need-ref]").filter(
+            has_text="Required for order processing"
+        ).first
+        need_ref = need_marker.get_attribute("data-connectivity-need-ref")
+        assert need_ref
         page.get_by_role("button", name="Retire Connectivity Need", exact=True).wait_for()
 
         goto(page, "/business-processes", "Business Processes")
@@ -278,15 +300,73 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.wait_for_url(f"**/business-processes/{process_ref}")
         page.get_by_text("Required for order processing").wait_for()
 
-        for path, heading in [
-            ("/access-requests", "Access Requests"),
-            ("/policy-rules", "Policy Rules"),
-            ("/policy-materializations/new", "Policy Export"),
-        ]:
-            goto(page, path, heading)
-
         goto(page, "/access-requests/new", "Access Requests")
-        assert page.get_by_role("button", name="Submit Request").is_disabled()
+        page.get_by_label("Source Deployment ID").fill(deployment_ref)
+        page.get_by_label("Destination Deployment ID").fill(
+            destination_deployment_ref
+        )
+        page.get_by_label("Interaction Revision ID").fill(interaction_revision_ref)
+        page.get_by_label("Connectivity Need ID").fill(need_ref)
+        page.get_by_role("button", name="Submit Request", exact=True).click()
+        page.wait_for_url("**/access-requests/*/decision")
+        request_ref = page.url.split("/access-requests/", 1)[1].split("/", 1)[0]
+
+        goto(page, "/access-requests", "Access Requests")
+        page.get_by_label("Search Access Requests").fill(request_ref)
+        page.get_by_label("Source Deployment ID").fill(deployment_ref)
+        page.get_by_label("Destination Deployment ID").fill(
+            destination_deployment_ref
+        )
+        page.get_by_label("Sort by").click()
+        page.get_by_role("option", name="Request").click()
+        page.get_by_label("Sort direction").click()
+        page.get_by_role("option", name="Descending").click()
+        request_row = page.locator("tbody tr", has_text=request_ref)
+        request_row.wait_for()
+        assert "PENDING" in (request_row.text_content() or "")
+        request_row.click()
+        page.wait_for_url(f"**/access-requests/{request_ref}/decision")
+
+        page.get_by_label("External decision reference").fill(
+            f"E2E-decision-{suffix}"
+        )
+        page.get_by_role("button", name="Record Decision", exact=True).click()
+        page.wait_for_url("**/policy-rules/*")
+        policy_rule_ref = page.url.rsplit("/", 1)[-1]
+        page.get_by_role("heading", name="Policy Rules").wait_for()
+        page.get_by_text(deployment_ref, exact=False).wait_for()
+        page.get_by_text(destination_deployment_ref, exact=False).wait_for()
+
+        goto(page, "/access-requests", "Access Requests")
+        page.get_by_label("Search Access Requests").fill(request_ref)
+        page.get_by_label("Source Deployment ID").fill(deployment_ref)
+        page.get_by_label("Destination Deployment ID").fill(
+            destination_deployment_ref
+        )
+        page.get_by_label("Decision").click()
+        page.get_by_role("option", name="Allowed").click()
+        decided_row = page.locator("tbody tr", has_text=request_ref)
+        decided_row.wait_for()
+        assert "ALLOWED" in (decided_row.text_content() or "")
+
+        goto(page, "/policy-rules", "Policy Rules")
+        page.get_by_label("Search Policy Rules").fill(policy_rule_ref)
+        page.get_by_label("Source Deployment ID").fill(deployment_ref)
+        page.get_by_label("Destination Deployment ID").fill(
+            destination_deployment_ref
+        )
+        page.get_by_label("State").click()
+        page.get_by_role("option", name="Active").click()
+        page.get_by_label("Sort by").click()
+        page.get_by_role("option", name="State").click()
+        page.get_by_label("Sort direction").click()
+        page.get_by_role("option", name="Descending").click()
+        policy_row = page.locator("tbody tr", has_text=policy_rule_ref)
+        policy_row.wait_for()
+        assert deployment_ref in (policy_row.text_content() or "")
+        assert destination_deployment_ref in (policy_row.text_content() or "")
+        policy_row.click()
+        page.wait_for_url(f"**/policy-rules/{policy_rule_ref}")
 
         goto(page, "/policy-materializations/new", "Policy Export")
         page.get_by_role("button", name="Execute Export").click()

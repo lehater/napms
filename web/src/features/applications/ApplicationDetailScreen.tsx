@@ -87,8 +87,14 @@ const INTERACTION_COLUMNS: readonly DataTableColumn<
       ) : (
         <div>
           {row.revisions.map((revision) => (
-            <div key={revision.interactionRevisionRef}>
+            <div
+              key={revision.interactionRevisionRef}
+              data-interaction-revision-ref={revision.interactionRevisionRef}
+            >
               <strong>Revision {revision.revisionNo}</strong>
+              <p data-presentation-technical-context>
+                Revision ID: {revision.interactionRevisionRef}
+              </p>
               <pre>{JSON.stringify(revision.trafficClauses, null, 2)}</pre>
             </div>
           ))}
