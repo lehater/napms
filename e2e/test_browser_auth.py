@@ -81,6 +81,9 @@ def test_local_development_login_enters_authenticated_product() -> None:
         assert login_response.value.status == 200
         assert resource_response.value.status == 200
         page.get_by_role("heading", name="Resources").wait_for()
+
+        page.reload()
+        page.get_by_role("heading", name="Sign in").wait_for()
         browser.close()
 
 

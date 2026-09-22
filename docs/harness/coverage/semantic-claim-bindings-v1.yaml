@@ -69,6 +69,7 @@ bindings:
   - capability: engineering.architecture.security
     semantic_claims:
       - engineering.security.boundaries
+      - engineering.security.identity
       - engineering.security.confidentiality
       - engineering.security.integrity
   - capability: engineering.operability.observability
