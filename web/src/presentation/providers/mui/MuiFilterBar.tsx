@@ -68,7 +68,12 @@ export function MuiFilterBar({
         <MenuItem value="asc">Ascending</MenuItem>
         <MenuItem value="desc">Descending</MenuItem>
       </TextField>
-      <Button type="button" variant="outlined" disabled={!active} onClick={onClear}>
+      <Button
+        type="button"
+        variant="outlined"
+        disabled={!active}
+        onClick={onClear}
+      >
         Clear
       </Button>
     </Stack>

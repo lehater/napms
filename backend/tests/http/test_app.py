@@ -229,6 +229,7 @@ def test_resource_catalogue_query_maps_http_params_to_application_query() -> Non
         create_app(
             HttpDependencies(
                 identity=Identity(principal),
+                access_requests=Submitter(request()),
                 resource_catalogue=reader,
             )
         )

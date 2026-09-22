@@ -78,9 +78,7 @@ export type ResourceCatalogueQuery = {
   pageSize: number;
 };
 
-export function serializeCatalogueQuery(
-  query: ResourceCatalogueQuery,
-): string {
+export function serializeCatalogueQuery(query: ResourceCatalogueQuery): string {
   const params = new URLSearchParams();
   const search = query.search?.trim();
   const authorityScopeRef = query.authorityScopeRef?.trim();

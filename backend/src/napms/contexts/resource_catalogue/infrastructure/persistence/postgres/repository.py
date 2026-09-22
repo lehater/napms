@@ -102,9 +102,7 @@ class PostgresResourceCatalogueRepository:
                 (*parameters, query.page_size, offset),
             ).fetchall()
 
-        items = tuple(
-            resource for (ref,) in rows if (resource := self.get(ref)) is not None
-        )
+        items = tuple(resource for (ref,) in rows if (resource := self.get(ref)) is not None)
         return ResourceCataloguePage(
             items=items,
             total=total,

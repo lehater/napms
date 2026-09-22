@@ -38,9 +38,7 @@ export function MuiDataTablePattern<Row>({
                 return (
                   <TableCell
                     key={column.id}
-                    sortDirection={
-                      activeSort && sort ? sort.direction : false
-                    }
+                    sortDirection={activeSort && sort ? sort.direction : false}
                   >
                     {sort && sortKey ? (
                       <TableSortLabel
@@ -161,7 +159,9 @@ export function MuiDataTablePattern<Row>({
           count={paging.total}
           page={Math.max(0, paging.page - 1)}
           rowsPerPage={paging.pageSize}
-          rowsPerPageOptions={[...(paging.pageSizeOptions ?? [10, 25, 50, 100])]}
+          rowsPerPageOptions={[
+            ...(paging.pageSizeOptions ?? [10, 25, 50, 100]),
+          ]}
           onPageChange={(_event, page) => paging.onPageChange(page + 1)}
           onRowsPerPageChange={(event) =>
             paging.onPageSizeChange(Number(event.target.value))

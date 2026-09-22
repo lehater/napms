@@ -188,17 +188,78 @@ def evaluate_screens(
     catalogue_patterns = set(catalogue.get("patterns", []) or [])
     if "DATA-TABLE" not in catalogue_patterns:
         findings.append(finding("RESOURCE_CATALOGUE_REFERENCE_PATTERN", "Resource Catalogue reference slice must use the accepted DATA-TABLE visual pattern."))
-    if "FILTER-BAR" in catalogue_patterns:
-        findings.append(finding("UNSUPPORTED_RESOURCE_FILTER", "Resource Catalogue must not import legacy filtering without an accepted First-MVP contract."))
+    if "FILTER-BAR" not in catalogue_patterns:
+        findings.append(
+            finding(
+                "RESOURCE_CATALOGUE_QUERY_PATTERN",
+                "Resource Catalogue must expose the accepted FILTER-BAR query pattern.",
+            )
+        )
+
+    semantic_contract = catalogue.get("semantic_contract", {}) or {}
+    catalogue_read = next(
+        (
+            row
+            for row in semantic_contract.get("reads", []) or []
+            if isinstance(row, dict) and row.get("operation_id") == "listResources"
+        ),
+        {},
+    )
+    accepted_query = set((catalogue_read.get("query") or {}).keys())
+    required_query = {
+        "search",
+        "authorityScopeRef",
+        "siteRef",
+        "sortBy",
+        "sortDirection",
+        "page",
+        "pageSize",
+    }
+    if not required_query.issubset(accepted_query):
+        findings.append(
+            finding(
+                "RESOURCE_CATALOGUE_QUERY_CONTRACT",
+                "Resource Catalogue query semantics must be explicit in Screen/View design.",
+                missing=sorted(required_query - accepted_query),
+            )
+        )
+
+    resource_get = ((openapi.get("paths") or {}).get("/v1/resources") or {}).get("get", {})
+    openapi_parameters = set()
+    component_parameters = (openapi.get("components") or {}).get("parameters", {}) or {}
+    for parameter in resource_get.get("parameters", []) or []:
+        if not isinstance(parameter, dict):
+            continue
+        if "$ref" in parameter:
+            ref_name = str(parameter["$ref"]).rsplit("/", 1)[-1]
+            resolved = component_parameters.get(ref_name, {}) or {}
+            if resolved.get("in") == "query" and resolved.get("name"):
+                openapi_parameters.add(resolved["name"])
+        elif parameter.get("in") == "query" and parameter.get("name"):
+            openapi_parameters.add(parameter["name"])
+    if not required_query.issubset(openapi_parameters):
+        findings.append(
+            finding(
+                "RESOURCE_CATALOGUE_HTTP_QUERY_CONTRACT",
+                "listResources must realize every accepted catalogue query parameter in OpenAPI.",
+                missing=sorted(required_query - openapi_parameters),
+            )
+        )
+
     adaptation = catalogue.get("reference_adaptation", {})
     excluded = {
         item.get("reference_feature")
         for item in adaptation.get("not_adopted", []) or []
         if isinstance(item, dict)
     }
-    for feature in {"search", "filters-and-quick-filters", "sorting", "pagination-and-page-size", "Resource-type-filter"}:
-        if feature not in excluded:
-            findings.append(finding("REFERENCE_EXCLUSION_MISSING", f"Resource Catalogue must explicitly disposition legacy {feature}.", feature=feature))
+    if "Resource-type-filter" not in excluded:
+        findings.append(
+            finding(
+                "REFERENCE_EXCLUSION_MISSING",
+                "Resource Catalogue must explicitly reject the unsupported Resource-type filter.",
+                feature="Resource-type-filter",
+            )
+        )
 
     detail = by_id.get("RESOURCE-DETAIL", {})
     if not detail.get("reference_adaptation"):
