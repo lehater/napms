@@ -612,14 +612,22 @@ components:
       properties:
         items: {type: array, items: {$ref: '#/components/schemas/PolicyRuleCatalogueItem'}}
     PolicyRuleView:
-      allOf:
-        - {$ref: '#/components/schemas/PolicyRuleCatalogueItem'}
-        - type: object
-          required: [authorizationEvidence, justificationNeedRefs, operationalHistory]
-          properties:
-            authorizationEvidence: {type: array, items: {type: object}}
-            justificationNeedRefs: {type: array, items: {$ref: '#/components/schemas/StableId'}}
-            operationalHistory: {type: array, items: {type: object}}
+      type: object
+      additionalProperties: false
+      required: [policyRuleRef, sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, effectState, authorizationEvidence, justificationNeedRefs, operationalHistory]
+      properties:
+        policyRuleRef: {$ref: '#/components/schemas/StableId'}
+        sourceDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        destinationDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        effectState: {type: string, enum: [ACTIVE, INACTIVE]}
+        effectiveWindow:
+          oneOf:
+            - {$ref: '#/components/schemas/EffectiveWindow'}
+            - {type: 'null'}
+        authorizationEvidence: {type: array, items: {type: object}}
+        justificationNeedRefs: {type: array, items: {$ref: '#/components/schemas/StableId'}}
+        operationalHistory: {type: array, items: {type: object}}
 
     PolicyMaterializationRequest:
       type: object
