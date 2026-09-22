@@ -21,6 +21,22 @@ authentication:
     - cryptographically invalid token with usable validation material -> 401
     - inability to establish validity because required key material is unavailable or too stale -> 503
 
+development_authentication:
+  applicability: NAPMS_ENVIRONMENT=local-dev only
+  purpose: Bootstrap developer browser access without creating a second product authorization model.
+  fixed_credentials: {login: admin, password: admin}
+  endpoint:
+    method: POST
+    path: /dev-auth/login
+    canonical_product_openapi: false
+  token_source: full-profile short-lived JWT from the deterministic local OIDC issuer
+  rules:
+    - the endpoint is registered only by local-dev runtime composition and is absent otherwise
+    - successful bootstrap returns the same bearer-token shape consumed by the canonical API
+    - issued tokens pass through the normal OIDC validation, permission and AuthorityGrant admission path
+    - fixed development credentials are not an accepted non-local or production authentication mechanism
+    - returned bearer tokens remain runtime-only browser state and are never logged
+
 principal:
   subject: validated non-empty sub
   instance_permissions_claim: configured array of strings

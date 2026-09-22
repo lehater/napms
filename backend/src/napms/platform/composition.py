@@ -34,11 +34,13 @@ from napms.platform.database.policy_materialization import PostgresPolicyMateria
 from napms.platform.database.policy_rule_justification import PostgresPolicyRuleJustification
 from napms.platform.database.policy_rule_operation import PostgresPolicyRuleOperation
 from napms.platform.http.app import HttpDependencies, create_app
+from napms.platform.security.dev_auth import LocalDevelopmentTokenIssuer
 from napms.platform.security.oidc import OidcConfig, OidcIdentityValidator
 
 
 @dataclass(frozen=True)
 class RuntimeConfig:
+    environment: str
     database_dsn: str
     oidc_issuer: str
     oidc_audience: str
@@ -54,6 +56,8 @@ class RuntimeConfig:
             if item.strip()
         )
         return cls(
+            environment=os.environ.get("NAPMS_ENVIRONMENT", "production").strip()
+            or "production",
             database_dsn=_required("NAPMS_DATABASE_DSN"),
             oidc_issuer=_required("NAPMS_OIDC_ISSUER"),
             oidc_audience=_required("NAPMS_OIDC_AUDIENCE"),
@@ -74,6 +78,11 @@ def build_app(config: RuntimeConfig) -> FastAPI:
         )
     )
     authority = RequireScopedAuthority()
+    development_auth = (
+        LocalDevelopmentTokenIssuer(config.oidc_issuer)
+        if config.environment == "local-dev"
+        else None
+    )
     return create_app(
         HttpDependencies(
             identity=identity,
@@ -105,6 +114,7 @@ def build_app(config: RuntimeConfig) -> FastAPI:
             resource_catalogue=ResourceCatalogueApplication(
                 resources=PostgresResourceCatalogueRepository(config.database_dsn)
             ),
+            development_auth=development_auth,
         )
     )
 

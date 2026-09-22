@@ -41,6 +41,7 @@ from napms.contexts.resource_catalogue.application.queries import (
 )
 from napms.contexts.resource_catalogue.domain.model import Resource
 from napms.platform.http.app import HttpDependencies, create_app
+from napms.platform.security.dev_auth import DevelopmentAuthUnavailable
 from napms.platform.security.oidc import AuthenticationRejected, IdentityDependencyUnavailable
 
 
@@ -93,6 +94,85 @@ def body() -> dict[str, str]:
 
 def client(identity, submitter) -> TestClient:
     return TestClient(create_app(HttpDependencies(identity=identity, access_requests=submitter)))
+
+
+@dataclass
+class DevelopmentAuth:
+    result: str | None | Exception
+
+    def issue(self, *, login: str, password: str) -> str | None:
+        assert login
+        assert password
+        if isinstance(self.result, Exception):
+            raise self.result
+        return self.result
+
+
+def test_development_auth_route_is_explicit_and_fail_closed() -> None:
+    principal = Principal("subject:alice", frozenset(), ())
+    submitter = Submitter(request())
+
+    no_dev_auth = client(Identity(principal), submitter)
+    assert (
+        no_dev_auth.post(
+            "/dev-auth/login",
+            json={"login": "admin", "password": "admin"},
+        ).status_code
+        == 404
+    )
+
+    success = TestClient(
+        create_app(
+            HttpDependencies(
+                identity=Identity(principal),
+                access_requests=submitter,
+                development_auth=DevelopmentAuth("signed-token"),
+            )
+        )
+    )
+    response = success.post(
+        "/dev-auth/login",
+        json={"login": "admin", "password": "admin"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "accessToken": "signed-token",
+        "tokenType": "Bearer",
+    }
+
+    rejected = TestClient(
+        create_app(
+            HttpDependencies(
+                identity=Identity(principal),
+                access_requests=submitter,
+                development_auth=DevelopmentAuth(None),
+            )
+        )
+    )
+    assert (
+        rejected.post(
+            "/dev-auth/login",
+            json={"login": "admin", "password": "wrong"},
+        ).status_code
+        == 401
+    )
+
+    unavailable = TestClient(
+        create_app(
+            HttpDependencies(
+                identity=Identity(principal),
+                access_requests=submitter,
+                development_auth=DevelopmentAuth(DevelopmentAuthUnavailable()),
+            )
+        )
+    )
+    assert (
+        unavailable.post(
+            "/dev-auth/login",
+            json={"login": "admin", "password": "admin"},
+        ).status_code
+        == 503
+    )
 
 
 def test_submit_access_request_uses_authenticated_principal() -> None:

@@ -16,6 +16,7 @@ basis:
 
 implementation_boundary:
   includes:
+    - local-dev authentication bootstrap into the canonical bearer boundary
     - application shell/routing and canonical API boundary
     - Resource management
     - Application/Component/Interaction management
@@ -33,7 +34,8 @@ implementation_boundary:
 
 sequence:
   - realize shared Presentation System tokens/pattern primitives and application shell without changing canonical design semantics
-  - establish API boundary/error mapping and application shell composition
+  - establish local-dev sign-in bootstrap, runtime bearer state and API boundary/error mapping
+  - establish application shell composition behind the authenticated runtime gate
   - implement Resource and Application/Component/Interaction features
   - implement Deployment and Business Connectivity features
   - implement Access Request and Policy Rule features

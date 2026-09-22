@@ -47,6 +47,10 @@ from napms.contexts.resource_catalogue.application.commands import ResourceCatal
 from napms.platform.http.application_catalogue import router as application_catalogue_router
 from napms.platform.http.deployment_connectivity import router as deployment_connectivity_router
 from napms.platform.http.resource_catalogue import router as resource_catalogue_router
+from napms.platform.security.dev_auth import (
+    DevelopmentAuthUnavailable,
+    DevelopmentTokenIssuer,
+)
 from napms.platform.security.oidc import (
     AuthenticationRejected,
     IdentityDependencyUnavailable,
@@ -65,6 +69,11 @@ class _Body(BaseModel):
         populate_by_name=False,
         alias_generator=_camel,
     )
+
+
+class DevelopmentLoginBody(_Body):
+    login: str
+    password: str
 
 
 class AccessRequestSubmitter(Protocol):
@@ -186,6 +195,7 @@ class HttpDependencies:
     application_catalogue: ApplicationCommunicationCatalogue | None = None
     application_deployment: ApplicationDeploymentService | None = None
     business_connectivity: BusinessConnectivityService | None = None
+    development_auth: DevelopmentTokenIssuer | None = None
 
 
 def create_app(dependencies: HttpDependencies) -> FastAPI:
@@ -198,6 +208,23 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
     @app.get("/health/ready", include_in_schema=False)
     def health_ready() -> dict[str, str]:
         return {"status": "ready"}
+
+    if dependencies.development_auth is not None:
+
+        @app.post("/dev-auth/login", include_in_schema=False)
+        def development_login(body: DevelopmentLoginBody) -> dict[str, str]:
+            try:
+                token = dependencies.development_auth.issue(
+                    login=body.login,
+                    password=body.password,
+                )
+            except DevelopmentAuthUnavailable as exc:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE
+                ) from exc
+            if token is None:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+            return {"accessToken": token, "tokenType": "Bearer"}
 
     def principal(authorization: str | None = Header(default=None)) -> Principal:
         if authorization is None:

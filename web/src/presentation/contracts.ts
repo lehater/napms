@@ -126,6 +126,7 @@ export type EditorField = {
   value: string;
   required?: boolean;
   readOnly?: boolean;
+  inputType?: "text" | "password";
   options?: readonly EditorOption[];
   onChange?: (value: string) => void;
 };

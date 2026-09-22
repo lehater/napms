@@ -40,11 +40,19 @@ def wait_oidc(oidc_url: str) -> None:
     raise RuntimeError(f"NAPMS test OIDC issuer did not become healthy: {last_error}")
 
 
-def issue_local_token(oidc_url: str) -> str:
-    context = ssl._create_unverified_context()
-    with urllib.request.urlopen(f"{oidc_url}/token?profile=full", context=context, timeout=5) as response:
+def login_local_development(base_url: str) -> str:
+    request = urllib.request.Request(
+        f"{base_url}/dev-auth/login",
+        data=json.dumps({"login": "admin", "password": "admin"}).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=5) as response:
         payload = json.load(response)
-    return payload["access_token"]
+    token = payload.get("accessToken")
+    if not isinstance(token, str) or not token:
+        raise RuntimeError("development login response has no access token")
+    return token
 
 
 def read_only_smoke(*, base_url: str, token: str) -> None:
@@ -80,7 +88,7 @@ def up(*, print_credentials: bool = True) -> None:
         compose("up", "--build", "--detach", "--remove-orphans", env=env)
         wait_oidc(oidc_url)
         wait_ready(base_url)
-        token = issue_local_token(oidc_url)
+        token = login_local_development(base_url)
         read_only_smoke(base_url=base_url, token=token)
     except Exception:
         compose("ps", env=env, check=False)
@@ -88,7 +96,8 @@ def up(*, print_credentials: bool = True) -> None:
 
     print(f"NAPMS ready: {base_url}")
     if print_credentials:
-        print("Authentication: OIDC-backed; startup probe used an ephemeral signed bearer token.")
+        print("Development login: admin / admin")
+        print("Authentication remains OIDC-backed after local development bootstrap.")
 
 
 def main() -> None:
