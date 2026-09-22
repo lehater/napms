@@ -105,7 +105,9 @@ export function MuiAppShell({
               key={item.path}
               size="small"
               onClick={() => onNavigate(item.path)}
-              aria-current={currentPath.startsWith(item.path) ? "page" : undefined}
+              aria-current={
+                currentPath.startsWith(item.path) ? "page" : undefined
+              }
               sx={{
                 flex: "0 0 auto",
                 color: currentPath.startsWith(item.path)
