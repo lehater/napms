@@ -1,30 +1,53 @@
 import { createTheme } from "@mui/material/styles";
+import { muiThemeTokens as token } from "./theme-tokens.generated";
 
 export const napmsMuiTheme = createTheme({
   cssVariables: true,
   palette: {
     mode: "light",
     primary: {
-      main: "#2563eb",
+      main: token.color.primary,
+      dark: token.color.primaryActive,
     },
+    success: { main: token.color.success },
+    warning: { main: token.color.warning },
+    error: { main: token.color.danger },
+    info: { main: token.color.info },
     background: {
-      default: "#f6f7f9",
-      paper: "#ffffff",
+      default: token.color.pageBackground,
+      paper: token.color.surface,
     },
+    text: {
+      primary: token.color.textPrimary,
+      secondary: token.color.textSecondary,
+    },
+    divider: token.color.border,
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: token.radius.surface,
   },
   typography: {
-    fontFamily:
-      'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: token.typography.body.fontFamily,
+    fontSize: token.typography.body.fontSize,
     h4: {
-      fontSize: "1.75rem",
-      fontWeight: 650,
-      letterSpacing: "-0.02em",
+      fontSize: token.typography.pageTitle.fontSize,
+      fontWeight: token.typography.pageTitle.fontWeight,
+      lineHeight: token.typography.pageTitle.lineHeight,
+      letterSpacing: token.typography.pageTitle.letterSpacing,
     },
     h6: {
-      fontWeight: 650,
+      fontSize: token.typography.sectionTitle.fontSize,
+      fontWeight: token.typography.sectionTitle.fontWeight,
+      lineHeight: token.typography.sectionTitle.lineHeight,
+    },
+    body1: {
+      fontSize: token.typography.body.fontSize,
+      fontWeight: token.typography.body.fontWeight,
+      lineHeight: token.typography.body.lineHeight,
+    },
+    caption: {
+      fontSize: token.typography.metadata.fontSize,
+      lineHeight: token.typography.metadata.lineHeight,
     },
     button: {
       textTransform: "none",
@@ -36,19 +59,48 @@ export const napmsMuiTheme = createTheme({
       defaultProps: {
         disableElevation: true,
       },
+      styleOverrides: {
+        root: {
+          minHeight: token.component.controlHeight,
+          borderRadius: token.radius.control,
+          "&.Mui-focusVisible": {
+            outline: `2px solid ${token.color.focus}`,
+            outlineOffset: 2,
+          },
+        },
+        containedPrimary: {
+          "&:hover": { backgroundColor: token.color.primaryHover },
+          "&:active": { backgroundColor: token.color.primaryActive },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          minHeight: token.component.controlHeight,
+          borderRadius: token.radius.control,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        rounded: {
+          borderRadius: token.radius.surface,
+        },
+      },
     },
     MuiTableCell: {
       styleOverrides: {
         root: {
-          padding: "7px 12px",
+          padding: `${token.component.tableCellPaddingY}px ${token.component.tableCellPaddingX}px`,
         },
         head: {
-          height: 40,
-          fontWeight: 650,
+          height: token.component.tableHeaderHeight,
+          fontWeight: token.typography.sectionTitle.fontWeight,
           whiteSpace: "nowrap",
         },
         body: {
-          height: 40,
+          height: token.component.tableRowHeight,
         },
       },
     },

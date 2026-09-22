@@ -45,6 +45,11 @@ presentation_provider:
   feature_policy: {default: deny}
   coverage_screens: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, APPLICATION-DETAIL, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES, POLICY-EXPORT]
   required_patterns: [APP-SHELL]
+  theme_tokens:
+    canonical_source: docs/contracts/ui/mvp-design-tokens.json
+    generated_provider_artifact: web/src/presentation/providers/mui/theme-tokens.generated.ts
+    generator: web/scripts/generate-mui-theme-tokens.mjs
+    rule: Canonical token changes must regenerate the MUI provider artifact; feature code never consumes provider tokens directly.
   template_baseline:
     provider: mui-material
     artifact: official-crud-dashboard

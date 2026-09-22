@@ -17,8 +17,6 @@ import {
 import { AppShell, PresentationRoot } from "../presentation";
 import { primaryNavigation } from "./navigation";
 import { navigate, parseRoute, type Route } from "./router";
-import "../design-system/tokens.css";
-import "../design-system/base.css";
 
 function App() {
   const [route, setRoute] = useState<Route>(() =>
@@ -79,7 +77,7 @@ function App() {
     screen = <PolicyExportScreen />;
   } else {
     screen = (
-      <section className="panel">
+      <section>
         <h2>Not found</h2>
       </section>
     );

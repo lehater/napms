@@ -11,8 +11,9 @@ import {
   Typography,
 } from "@mui/material";
 import type { AppShellProps } from "../../contracts";
+import { muiThemeTokens as token } from "./theme-tokens.generated";
 
-const drawerWidth = 232;
+const drawerWidth = token.component.sidebarWidth;
 
 export function MuiAppShell({
   items,
@@ -28,15 +29,15 @@ export function MuiAppShell({
           selected={currentPath.startsWith(item.path)}
           onClick={() => onNavigate(item.path)}
           sx={{
-            borderRadius: 1,
+            borderRadius: `${token.radius.control}px`,
             mb: 0.5,
-            color: "inherit",
+            color: token.color.navigationText,
             "&.Mui-selected": {
-              bgcolor: "rgba(255,255,255,0.14)",
-              color: "common.white",
+              bgcolor: token.color.navigationSelected,
+              color: token.color.navigationText,
             },
             "&.Mui-selected:hover": {
-              bgcolor: "rgba(255,255,255,0.18)",
+              bgcolor: token.color.navigationSelected,
             },
           }}
         >
@@ -65,8 +66,8 @@ export function MuiAppShell({
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             boxSizing: "border-box",
-            bgcolor: "grey.900",
-            color: "grey.100",
+            bgcolor: token.color.navigationBackground,
+            color: token.color.navigationText,
             borderRight: 0,
             px: 1.5,
           },
@@ -74,18 +75,18 @@ export function MuiAppShell({
       >
         <Toolbar disableGutters sx={{ px: 1, minHeight: 72 }}>
           <Stack>
-            <Typography variant="h6" color="common.white">
+            <Typography variant="h6" color={token.color.navigationText}>
               NAPMS
             </Typography>
-            <Typography variant="caption" color="grey.400">
+            <Typography variant="caption" color={token.color.navigationMutedText}>
               Policy management
             </Typography>
           </Stack>
         </Toolbar>
-        <Divider sx={{ borderColor: "rgba(255,255,255,0.12)", mb: 2 }} />
+        <Divider sx={{ borderColor: token.color.navigationSelected, mb: 2 }} />
         <Typography
           variant="overline"
-          sx={{ px: 1, mb: 0.5, color: "grey.500", fontWeight: 700 }}
+          sx={{ px: 1, mb: 0.5, color: token.color.navigationMutedText, fontWeight: 700 }}
         >
           Workspaces
         </Typography>
@@ -102,7 +103,7 @@ export function MuiAppShell({
             overflowX: "auto",
             px: 2,
             py: 1,
-            bgcolor: "grey.900",
+            bgcolor: token.color.navigationBackground,
           }}
         >
           {items.map((item) => (
@@ -116,15 +117,24 @@ export function MuiAppShell({
               sx={{
                 flex: "0 0 auto",
                 color: currentPath.startsWith(item.path)
-                  ? "common.white"
-                  : "grey.400",
+                  ? token.color.navigationText
+                  : token.color.navigationMutedText,
               }}
             >
               {item.label}
             </Button>
           ))}
         </Box>
-        <Box component="main" sx={{ p: { xs: 2, sm: 3 }, minWidth: 0 }}>
+        <Box
+          component="main"
+          sx={{
+            p: {
+              xs: `${token.spacing.group}px`,
+              sm: `${token.component.workspacePadding}px`,
+            },
+            minWidth: 0,
+          }}
+        >
           {children}
         </Box>
       </Box>

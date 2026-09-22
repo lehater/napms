@@ -149,7 +149,7 @@ export function ApplicationDetailScreen({
   }
 
   const componentEditor: EditorPatternProps = {
-    title: "Components",
+    title: "Add Component",
     fields: [
       {
         id: "component-name",

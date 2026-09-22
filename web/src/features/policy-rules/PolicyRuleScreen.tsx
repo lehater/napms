@@ -195,9 +195,7 @@ function PolicyRuleDetailMode({ ruleRef }: { ruleRef: string }) {
     submitLabel: "Attach justification",
     submitDisabled: !needRef,
     onSubmit: () =>
-      void mutate((current) =>
-        attachPolicyRuleJustification(current, needRef),
-      ),
+      void mutate((current) => attachPolicyRuleJustification(current, needRef)),
     state: state === "submitting" ? "submitting" : "editing",
   };
 
@@ -214,7 +212,8 @@ function PolicyRuleDetailMode({ ruleRef }: { ruleRef: string }) {
               details={
                 <div>
                   <p>
-                    {model.sourceDeploymentRef} → {model.destinationDeploymentRef}
+                    {model.sourceDeploymentRef} →{" "}
+                    {model.destinationDeploymentRef}
                   </p>
                   <p>Interaction revision: {model.interactionRevisionRef}</p>
                 </div>

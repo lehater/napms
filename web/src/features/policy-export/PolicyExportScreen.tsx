@@ -94,7 +94,9 @@ export function PolicyExportScreen() {
               <h3>Rule provenance</h3>
               <pre>{JSON.stringify(result.ruleProvenance, null, 2)}</pre>
               <h3>Export authority evidence</h3>
-              <pre>{JSON.stringify(result.exportAuthorityEvidence, null, 2)}</pre>
+              <pre>
+                {JSON.stringify(result.exportAuthorityEvidence, null, 2)}
+              </pre>
               {result.nonEffective.length > 0 ? (
                 <>
                   <h3>Non-effective rules</h3>

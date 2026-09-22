@@ -136,7 +136,6 @@ export type DetailPatternProps = {
   onReturn?: () => void;
 };
 
-
 export type OutcomeTone = "success" | "warning" | "info" | "error";
 
 export type OutcomePatternProps = {

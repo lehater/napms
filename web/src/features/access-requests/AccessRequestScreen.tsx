@@ -6,8 +6,8 @@ import {
   type CatalogueState,
   DetailPattern,
   type DetailState,
-  type EditorPatternProps,
   EditorPattern,
+  type EditorPatternProps,
   type EditorState,
   OutcomePattern,
   StructuredListPattern,
@@ -290,8 +290,7 @@ function AccessRequestDetailMode({ requestRef }: { requestRef: string }) {
                 { value: "ALLOWED", label: "Allowed" },
                 { value: "DENIED", label: "Denied" },
               ],
-              onChange: (value) =>
-                setDecision(value as "ALLOWED" | "DENIED"),
+              onChange: (value) => setDecision(value as "ALLOWED" | "DENIED"),
             },
             {
               id: "external-decision-ref",

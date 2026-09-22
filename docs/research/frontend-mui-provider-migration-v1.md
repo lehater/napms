@@ -236,17 +236,11 @@ Do not call a Screen Model or frontend Presenter a BFF. A BFF is a server/networ
 - old feature-local presentation markup as each vertical slice migrates;
 - UI boundary checker so feature code depends on the provider-neutral presentation facade.
 
-### Delete after final screen migration
+### Legacy presentation removal
 
-- `web/src/design-system/base.css`;
-- `web/src/design-system/tokens.css`;
-- `web/src/design-system/components.tsx`;
-- `web/scripts/generate-design-tokens.mjs`;
-- obsolete portions of `web/scripts/check-ui-boundaries.mjs`;
-- `web/components.json` and shadcn/Tailwind-specific setup when no longer referenced;
-- Tailwind/shadcn/lucide dependencies that become unused.
+All required First-MVP workspaces now render through the provider-neutral presentation facade. The legacy CSS/component design-system, shadcn/Tailwind configuration and lucide/Tailwind/shadcn dependencies are removed.
 
-The pilot already removes the old AppShell and Resource Catalogue legacy presentation path. The remaining clearly identified legacy presentation/tooling files were about 27 KB at the migration baseline before counting presentation JSX embedded in feature screens. Therefore the final reduction should exceed that amount once screen-local legacy markup is also removed. This is an order-of-magnitude migration estimate, not a completion metric.
+The canonical design-token source remains `docs/contracts/ui/mvp-design-tokens.json`. Its implementation projection is now provider-specific: `generate-mui-theme-tokens.mjs` deterministically materializes `theme-tokens.generated.ts`, and the MUI theme/shell consume that artifact. This preserves token authority without retaining a parallel CSS design system.
 
 ## Target code structure
 
@@ -326,9 +320,9 @@ Visual baselines prove accepted presentation invariants only; they do not author
 4. DEPLOYMENTS and BUSINESS-CONNECTIVITY are migrated using the existing Catalogue/Detail/Editor/Structured-List provider vocabulary without adding a new pattern.
 5. ACCESS-REQUESTS, POLICY-RULES and POLICY-EXPORT are migrated; OUTCOME and SCOPE-SELECTOR adapters are introduced only for their accepted semantics.
 6. Verify build, semantic/provider checks, unit/E2E/rendered evidence at coherent checkpoints.
-7. Remove legacy presentation infrastructure only after repository search proves no feature still depends on it.
-8. Introduce MUI X DataGrid only on a screen whose accepted semantics require its capabilities.
-9. After every screen is off the legacy design-system, remove legacy CSS/components/token generator/Tailwind-shadcn setup and tighten the boundary checker.
+7. Legacy presentation infrastructure is removed after all required workspaces migrate; the boundary checker now forbids provider imports outside the MUI adapter root and forbids legacy presentation imports.
+8. Canonical design tokens are projected into a generated MUI theme-token artifact and checked for staleness in the Web build.
+9. Introduce MUI X DataGrid only on a future screen whose accepted semantics require its capabilities.
 10. Refresh rendered baselines only through explicit reference-conformance review.
 
 ## Priority findings

@@ -22,7 +22,8 @@ For one Web task:
 - feature-local application modules own query/command orchestration and transport-to-Screen-Model mapping;
 - feature rendering imports only the provider-neutral `src/presentation/` facade for accepted presentation patterns;
 - `src/presentation/providers/mui/` owns MUI-specific theme, shell and pattern realization; only this provider implementation imports MUI;
-- `src/design-system/` is legacy presentation infrastructure retained only for non-migrated screens during vertical-slice migration; do not extend it for new work;
+- the legacy `src/design-system/` presentation layer has been removed; feature rendering must stay behind the provider-neutral facade;
+- canonical visual tokens remain in `docs/contracts/ui/mvp-design-tokens.json` and are generated into the selected provider's theme-token artifact; generated provider tokens are implementation artifacts, not a second authority;
 - extend provider-neutral presentation patterns only after demonstrated reusable need; do not mirror the MUI component API behind wrappers;
 - keep transport DTO/request mapping at the frontend API boundary;
 - backend Authority Management remains authoritative for visibility/action admission;
