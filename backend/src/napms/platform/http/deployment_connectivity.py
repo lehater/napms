@@ -137,7 +137,7 @@ def router(
     def get_deployment(
         deployment_ref: UUID,
         caller: Principal = Depends(identity),
-    ) -> dict[str, str]:
+    ) -> dict[str, object]:
         permission(caller, "deployment.read")
         try:
             value = deployments.resolve_component_deployment(deployment_ref)
