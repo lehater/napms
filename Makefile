@@ -77,6 +77,7 @@ design-check: harness-pin-check
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
 	python tools/check_knowledge_completeness.py
 	python tools/check_frontend_design_closure.py
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_frontend_screen_contracts.py
 	python tools/check_openapi_contract.py
 	python tools/check_persistence_model.py
 	python tools/check_design_control.py
