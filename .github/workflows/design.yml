@@ -2,6 +2,7 @@ name: design
 
 on:
   push:
+    branches: [main]
     paths:
       - "AGENTS.md"
       - ".agents/**"
@@ -39,6 +40,8 @@ on:
       - "tools/generate_persistence_erd.py"
       - "tools/generate_human_context_package.py"
       - "Makefile"
+      - ".github/ci-impact.json"
+      - "tools/ci_impact.py"
       - ".github/workflows/design.yml"
   pull_request:
     paths:
@@ -77,6 +80,8 @@ on:
       - "tools/generate_persistence_erd.py"
       - "tools/generate_human_context_package.py"
       - "Makefile"
+      - ".github/ci-impact.json"
+      - "tools/ci_impact.py"
       - ".github/workflows/design.yml"
 
 concurrency:
@@ -88,25 +93,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Select incremental design checks
+        id: impact
+        run: >-
+          python tools/ci_impact.py
+          --group design
+          --github-output "$GITHUB_OUTPUT"
       - name: Read pinned Harness version
+        if: steps.impact.outputs.design == 'true'
         id: harness-version
         run: echo "sha=$(cat .harness-version)" >> "$GITHUB_OUTPUT"
       - name: Checkout pinned Harness
+        if: steps.impact.outputs.design == 'true'
         uses: actions/checkout@v5
         with:
           repository: lehater/harness
           ref: ${{ steps.harness-version.outputs.sha }}
           path: .harness-tool
       - uses: actions/setup-python@v6
+        if: steps.impact.outputs.design == 'true'
         with:
           python-version: "3.14.7"
       - name: Install Harness runtime dependency
+        if: steps.impact.outputs.design == 'true'
         run: python -m pip install PyYAML
       - name: Validate canonical design graph, responsibility contracts and projections
+        if: steps.impact.outputs.design == 'true'
         run: make design-check
       - name: Materialize human implementation package
+        if: steps.impact.outputs.design == 'true'
         run: make human-implementation-package
       - name: Upload human implementation package
+        if: steps.impact.outputs.design == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: implementation-documentation-package

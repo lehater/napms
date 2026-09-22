@@ -8,6 +8,8 @@ on:
       - "backend/**"
       - "web/**"
       - "Makefile"
+      - ".github/ci-impact.json"
+      - "tools/ci_impact.py"
       - ".github/workflows/implementation-quality.yml"
   pull_request:
     branches:
@@ -21,22 +23,19 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.impact.outputs.backend_quality }}
+      frontend: ${{ steps.impact.outputs.frontend_quality }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
         with:
-          filters: |
-            backend:
-              - 'backend/**'
-              - 'Makefile'
-              - '.github/workflows/implementation-quality.yml'
-            frontend:
-              - 'web/**'
-              - 'Makefile'
-              - '.github/workflows/implementation-quality.yml'
+          fetch-depth: 0
+      - name: Select incremental implementation checks
+        id: impact
+        run: >-
+          python tools/ci_impact.py
+          --group backend_quality
+          --group frontend_quality
+          --github-output "$GITHUB_OUTPUT"
 
   backend:
     needs: changes
@@ -61,8 +60,7 @@ jobs:
         run: make backend-type
       - name: Backend architecture
         run: make backend-architecture
-      - name: Backend tests
-        run: make test
+      # Unit tests are owned by core gate; do not execute the same suite twice.
       - name: Backend dependency audit
         run: make backend-security
 

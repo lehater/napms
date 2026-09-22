@@ -1,17 +1,18 @@
 version: 1
-revision: 2
+revision: 3
 kind: repository-ci-enforcement-design
 id: DOCS-V2-REPOSITORY-CI-ENFORCEMENT
 status: active
 owner_phase: H11
-last_updated: 2026-09-17
+last_updated: 2026-09-22
 purpose: >-
   Define a thin future repository enforcement boundary for deterministic integrity checks.
   Repository/CI enforcement must reuse the same checks as local validation and must not turn
   semantic design judgment or Harness bookkeeping into a second workflow.
 authority:
-  design_only: true
-  no_workflow_or_ci_change_authorized: true
+  design_only: false
+  workflow_or_ci_change_authorized: true
+  basis: explicit stakeholder authorization on 2026-09-22 to enforce change-scoped CI and stop repeated heavy gates on unrelated PR synchronizations
 principles:
   - one implementation per deterministic rule, reused locally and in hosted CI
   - select checks from changed/affected artifact classes rather than running the entire Harness
@@ -25,6 +26,11 @@ future_check_classes:
   not_hosted-ci-responsibility: [semantic-design-sufficiency, stakeholder-question-quality, natural-language-judge-replay]
 change_selection:
   rule: Map changed paths/artifact types to the smallest deterministic check set that can detect an invalid repository state caused by that change.
+  source: .github/ci-impact.json
+  selector: tools/ci_impact.py
+  pull_request_synchronize_range: previous-head -> new-head
+  cumulative_pr_paths_role: coarse workflow eligibility only; never sufficient for iterative execution selection
+  heavy_final_gates: [browser-journey, docker-local-runtime, web-ready-build]
   unknown_changed_design_type: fail-with-actionable-diagnostic
   unrelated_historical_material: no-check-unless-referenced-by-current-design
 binding:

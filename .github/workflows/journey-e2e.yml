@@ -15,7 +15,8 @@ on:
       - "Makefile"
       - ".github/workflows/journey-e2e.yml"
   pull_request:
-    types: [ready_for_review, synchronize, reopened]
+    # Full Docker + Playwright journey is a final-checkpoint gate, not iterative feedback.
+    types: [ready_for_review, reopened]
     branches: [main]
     paths:
       - "e2e/**"
