@@ -18,9 +18,49 @@ basis:
 levels:
   contract: API mapping and accepted HTTP/error semantics
   feature: deterministic subject-specific controller/view-state behavior
+  presentation: structural/geometry/visual conformance to accepted Presentation System and Screen/View contracts
   accessibility: keyboard and semantic status/error structure
   integration: browser frontend against canonical API boundary
   end_to_end: accepted first-MVP cross-subject journey
+
+presentation_evidence:
+  design_time:
+    - DTCG token document parses with supported token types and resolvable aliases.
+    - every material presentation invariant references a canonical token or structural rule.
+    - every canonical workspace has explicit ordered Screen/View composition.
+    - reference-backed decisions declare evidence role, constrained properties and semantic exclusions.
+  implementation_time:
+    environment:
+      rule: Screenshot and geometry baselines run in a pinned browser/runtime/font environment with deterministic data.
+    geometry:
+      required:
+        - shell/sidebar and workspace geometry for desktop reference viewport
+        - material control/table dimensions declared by the Presentation System
+        - full-width Resource detail workspace
+    visual_regression:
+      required:
+        - Resource Catalogue accepted presentation state
+        - Resource Detail accepted presentation state
+        - AppShell shared presentation
+      baseline_governance: >-
+        A baseline is derived from accepted reference intent or explicitly reviewed output.
+        Updating a baseline alone cannot redefine canonical presentation knowledge.
+    responsive_matrix:
+      viewports:
+        - {id: desktop-reference, width: 1440, height: 1000}
+        - {id: desktop-compact, width: 1280, height: 900}
+        - {id: narrow, width: 390, height: 900}
+      oracle: required information/actions and semantic reading/focus order remain available after reflow.
+    interaction:
+      required:
+        - hover/focus/disabled/selection states where the accepted pattern exposes them
+        - keyboard reachability and focus visibility
+        - disclosure focus/state behavior
+    reference_conformance:
+      rule: >-
+        Visual comparison proves adopted presentation properties only. Differences caused
+        by deliberately excluded legacy semantics are accepted when traceable to the
+        Screen/View reference_adaptation contract.
 
 required_subject_evidence:
   - Resource management can locate/inspect/author current facts and inspect history.
