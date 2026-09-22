@@ -18,10 +18,12 @@ For one Web task:
 
 ## Structure and ownership
 
-- group code by feature/use case;
-- `src/design-system/` owns generic visual primitives, reusable controls, layout patterns and visual tokens;
-- feature code composes those primitives and owns domain-to-visual mapping for its use case;
-- extend shared patterns only after demonstrated reusable need; avoid giant universal page components and speculative shared hooks;
+- group product/application code by feature/use case;
+- feature-local application modules own query/command orchestration and transport-to-Screen-Model mapping;
+- feature rendering imports only the provider-neutral `src/presentation/` facade for accepted presentation patterns;
+- `src/presentation/providers/mui/` owns MUI-specific theme, shell and pattern realization; only this provider implementation imports MUI;
+- `src/design-system/` is legacy presentation infrastructure retained only for non-migrated screens during vertical-slice migration; do not extend it for new work;
+- extend provider-neutral presentation patterns only after demonstrated reusable need; do not mirror the MUI component API behind wrappers;
 - keep transport DTO/request mapping at the frontend API boundary;
 - backend Authority Management remains authoritative for visibility/action admission;
 - never invent placeholder business state to complete a screen.
