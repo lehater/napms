@@ -146,19 +146,55 @@ screens:
 
   - id: APPLICATION-CATALOGUE
     purpose: Locate/select reusable Applications and start supported Application creation.
-    patterns: [CATALOGUE, FILTER-BAR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: catalogue-controls, role: search-filter, priority: primary}
       - {id: applications, role: collection, priority: primary}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     primary_action_role: create-application
     exits:
       - select Application -> APPLICATION-DETAIL
-    states: [loading, loaded, empty, validation-rejected, authorization-rejected, conflict, technical-error]
+    states: [loading, loaded, empty, authorization-rejected, conflict, technical-error]
+    semantic_contract:
+      reads:
+        - {id: applications, operation_id: listApplications, projection: ApplicationCatalogueView}
+      commands:
+        - {id: create-application, operation_id: createApplication}
+      view_model:
+        id: ApplicationCatalogueScreenModel
+        fields:
+          - {id: items, source: read:applications.items}
+          - {id: application_ref, source: read:applications.items.applicationRef}
+          - {id: name, source: read:applications.items.name}
+      capabilities:
+        allowed:
+          - {id: inspect-applications, backed_by: read:applications}
+          - {id: open-application, backed_by: navigation:application-detail}
+          - {id: create-application, backed_by: command:create-application}
+        excluded: [search, filter, sort, paginate, bulk-operation, edit-item, delete-item]
+      pattern_mapping:
+        - pattern: CATALOGUE
+          feature_bindings: {open-item: open-application, create-item: create-application}
+        - pattern: STRUCTURED-LIST
+          feature_bindings: {open-item: open-application}
+        - pattern: TASK-ACTIONS
+          feature_bindings: {primary: create-application}
+        - pattern: STATUS
+          feature_bindings: {}
+      state_mapping:
+        loading: read:applications.pending
+        loaded: read:applications.200-items
+        empty: read:applications.200-empty
+        authorization-rejected: [read:applications.403, command:create-application.403]
+        conflict: command:create-application.409
+        technical-error: [read:applications.failure, command:create-application.failure]
+      verification:
+        contract: [operation:listApplications, operation:createApplication]
+        semantic: [application-catalogue-minimal-read-create-state-matrix]
+        rendered: [application-catalogue-pattern-conformance]
     responsive:
-      - application records preserve stable identity and open action
+      - application records preserve stable identity, name and open action
       - collection may transform to labeled records
     overrides: []
 
@@ -173,10 +209,62 @@ screens:
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     action_hierarchy:
-      application: edit-application
-      components: add-or-edit-component
-      interactions: add-or-edit-interaction
+      components: add-component
+      component_edit: update-component
+      interactions: create-interaction
+      interaction_traffic: publish-interaction-revision
     states: [loading, loaded, empty-components, empty-interactions, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    semantic_contract:
+      reads:
+        - {id: application, operation_id: getApplication, projection: ApplicationView}
+      commands:
+        - {id: add-component, operation_id: addComponent}
+        - {id: update-component, operation_id: updateComponent}
+        - {id: create-interaction, operation_id: createInteraction}
+        - {id: publish-interaction-revision, operation_id: publishInteractionRevision}
+      view_model:
+        id: ApplicationDetailScreenModel
+        fields:
+          - {id: application_ref, source: read:application.applicationRef}
+          - {id: name, source: read:application.name}
+          - {id: components, source: read:application.components}
+          - {id: interactions, source: read:application.interactions}
+      capabilities:
+        allowed:
+          - {id: inspect-application, backed_by: read:application}
+          - {id: add-component, backed_by: command:add-component}
+          - {id: update-component, backed_by: command:update-component}
+          - {id: create-interaction, backed_by: command:create-interaction}
+          - {id: publish-interaction-revision, backed_by: command:publish-interaction-revision}
+        excluded: [delete-application, delete-component, edit-interaction-identity, search, filter, bulk-operation]
+      pattern_mapping:
+        - pattern: DETAIL
+          feature_bindings: {show-primary: inspect-application, show-secondary: inspect-application}
+        - pattern: EDITOR
+          feature_bindings: {}
+        - pattern: STRUCTURED-LIST
+          feature_bindings: {row-actions: update-component}
+        - pattern: DATA-TABLE
+          feature_bindings: {}
+        - pattern: TASK-ACTIONS
+          feature_bindings: {}
+        - pattern: STATUS
+          feature_bindings: {}
+      state_mapping:
+        loading: read:application.pending
+        loaded: read:application.200
+        empty-components: read:application.200-empty-components
+        empty-interactions: read:application.200-empty-interactions
+        submitting: [command:add-component.pending, command:update-component.pending, command:create-interaction.pending, command:publish-interaction-revision.pending]
+        validation-rejected: [command:update-component.422, command:create-interaction.422, command:publish-interaction-revision.422]
+        authorization-rejected: [read:application.403, command:add-component.403, command:update-component.403, command:create-interaction.403, command:publish-interaction-revision.403]
+        conflict: [command:add-component.409, command:update-component.409, command:create-interaction.409, command:publish-interaction-revision.409]
+        not-found: read:application.404
+        technical-error: [read:application.failure, command:add-component.failure, command:update-component.failure, command:create-interaction.failure, command:publish-interaction-revision.failure]
+      verification:
+        contract: [operation:getApplication, operation:addComponent, operation:updateComponent, operation:createInteraction, operation:publishInteractionRevision]
+        semantic: [application-component-interaction-authoring-state-matrix]
+        rendered: [application-detail-composition-conformance]
     responsive:
       - application context remains first
       - components precede interactions in reading order
@@ -185,16 +273,56 @@ screens:
 
   - id: DEPLOYMENTS
     purpose: Locate/create Component deployments and inspect their Resource realization.
-    patterns: [CATALOGUE, FILTER-BAR, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: controls, role: search-filter, priority: primary}
       - {id: deployments, role: collection, priority: primary}
       - {id: selected-deployment, role: detail-editor, priority: primary}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     primary_action_role: create-deployment
-    states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, technical-error]
+    semantic_contract:
+      reads:
+        - {id: deployments, operation_id: listDeployments, projection: DeploymentCatalogueView}
+      commands:
+        - {id: create-deployment, operation_id: createDeployment}
+      view_model:
+        id: DeploymentScreenModel
+        fields:
+          - {id: items, source: read:deployments.items}
+          - {id: deployment_ref, source: read:deployments.items.deploymentRef}
+          - {id: component_ref, source: read:deployments.items.componentRef}
+          - {id: resource_ref, source: read:deployments.items.resourceRef}
+      capabilities:
+        allowed:
+          - {id: inspect-deployments, backed_by: read:deployments}
+          - {id: select-deployment, backed_by: local:selected-deployment}
+          - {id: create-deployment, backed_by: command:create-deployment}
+        excluded: [search, filter, sort, paginate, bulk-operation, edit-deployment, delete-deployment]
+      pattern_mapping:
+        - pattern: CATALOGUE
+          feature_bindings: {open-item: select-deployment, create-item: create-deployment}
+        - pattern: EDITOR
+          feature_bindings: {}
+        - pattern: STRUCTURED-LIST
+          feature_bindings: {open-item: select-deployment}
+        - pattern: TASK-ACTIONS
+          feature_bindings: {primary: create-deployment}
+        - pattern: STATUS
+          feature_bindings: {}
+      state_mapping:
+        loading: read:deployments.pending
+        loaded: read:deployments.200-items
+        empty: read:deployments.200-empty
+        submitting: command:create-deployment.pending
+        validation-rejected: command:create-deployment.422
+        authorization-rejected: [read:deployments.403, command:create-deployment.403]
+        technical-error: [read:deployments.failure, command:create-deployment.failure]
+      verification:
+        contract: [operation:listDeployments, operation:createDeployment]
+        semantic: [deployment-component-resource-identity-state-matrix]
+        rendered: [deployment-catalogue-pattern-conformance]
     responsive:
       - collection and selected detail stack with collection first
       - Component and Resource identities remain explicit and distinct
@@ -202,7 +330,7 @@ screens:
 
   - id: BUSINESS-CONNECTIVITY
     purpose: Manage Business Processes and Connectivity Needs while preserving business justification independently from permission.
-    patterns: [CATALOGUE, FILTER-BAR, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
       - {id: business-processes, role: collection-detail, priority: primary}
@@ -210,9 +338,63 @@ screens:
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     action_hierarchy:
-      business_process: create-or-edit-business-process
-      connectivity_need: create-or-retire-connectivity-need
-    states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
+      business_process: create-business-process
+      process_criticality: set-process-criticality
+      connectivity_need: declare-connectivity-need
+      connectivity_need_status: retire-connectivity-need
+    states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    semantic_contract:
+      reads:
+        - {id: business-connectivity, operation_id: listBusinessProcesses, projection: BusinessConnectivityView}
+      commands:
+        - {id: create-business-process, operation_id: createBusinessProcess}
+        - {id: set-process-criticality, operation_id: setProcessCriticality}
+        - {id: declare-connectivity-need, operation_id: declareConnectivityNeed}
+        - {id: set-connectivity-need-status, operation_id: setConnectivityNeedStatus}
+      view_model:
+        id: BusinessConnectivityScreenModel
+        fields:
+          - {id: processes, source: read:business-connectivity.processes}
+          - {id: process_ref, source: read:business-connectivity.processes.processRef}
+          - {id: responsible_organization_ref, source: read:business-connectivity.processes.responsibleOrganizationRef}
+          - {id: criticality_label, source: read:business-connectivity.processes.criticalityLabel}
+          - {id: needs, source: read:business-connectivity.processes.needs}
+      capabilities:
+        allowed:
+          - {id: inspect-business-connectivity, backed_by: read:business-connectivity}
+          - {id: select-process, backed_by: local:selected-process}
+          - {id: create-business-process, backed_by: command:create-business-process}
+          - {id: set-process-criticality, backed_by: command:set-process-criticality}
+          - {id: declare-connectivity-need, backed_by: command:declare-connectivity-need}
+          - {id: retire-connectivity-need, backed_by: command:set-connectivity-need-status}
+        excluded: [search, filter, sort, paginate, bulk-operation, permission-from-need, automatic-revoke]
+      pattern_mapping:
+        - pattern: CATALOGUE
+          feature_bindings: {open-item: select-process, create-item: create-business-process}
+        - pattern: DETAIL
+          feature_bindings: {show-primary: inspect-business-connectivity}
+        - pattern: EDITOR
+          feature_bindings: {}
+        - pattern: STRUCTURED-LIST
+          feature_bindings: {row-actions: retire-connectivity-need}
+        - pattern: TASK-ACTIONS
+          feature_bindings: {}
+        - pattern: STATUS
+          feature_bindings: {}
+      state_mapping:
+        loading: read:business-connectivity.pending
+        loaded: read:business-connectivity.200
+        empty: read:business-connectivity.200-empty
+        submitting: [command:create-business-process.pending, command:set-process-criticality.pending, command:declare-connectivity-need.pending, command:set-connectivity-need-status.pending]
+        validation-rejected: [command:declare-connectivity-need.422, command:set-connectivity-need-status.422]
+        authorization-rejected: [read:business-connectivity.403, command:create-business-process.403, command:set-process-criticality.403, command:declare-connectivity-need.403, command:set-connectivity-need-status.403]
+        conflict: [command:set-process-criticality.409, command:declare-connectivity-need.409, command:set-connectivity-need-status.409]
+        not-found: command:set-connectivity-need-status.404
+        technical-error: [read:business-connectivity.failure, command:create-business-process.failure, command:set-process-criticality.failure, command:declare-connectivity-need.failure, command:set-connectivity-need-status.failure]
+      verification:
+        contract: [operation:listBusinessProcesses, operation:createBusinessProcess, operation:setProcessCriticality, operation:declareConnectivityNeed, operation:setConnectivityNeedStatus]
+        semantic: [business-process-need-status-and-non-permission-state-matrix]
+        rendered: [business-connectivity-composition-conformance]
     responsive:
       - Business Process context precedes related Connectivity Need composition
       - relationship labels remain visible when collections stack
@@ -231,6 +413,58 @@ screens:
     primary_action_role: submit-request
     authority_rule: Visible/enabled controls never establish request authority; backend admission is authoritative.
     states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, outcome-allowed, outcome-not-allowed, technical-error]
+    semantic_contract:
+      reads:
+        - {id: requests, operation_id: listAccessRequests, projection: AccessRequestCatalogueView}
+      commands:
+        - {id: submit-request, operation_id: submitAccessRequest}
+        - {id: decide-request, operation_id: decideAccessRequest}
+      view_model:
+        id: AccessRequestsScreenModel
+        fields:
+          - {id: items, source: read:requests.items}
+          - {id: request_ref, source: read:requests.items.requestRef}
+          - {id: access_subject, source: [read:requests.items.sourceDeploymentRef, read:requests.items.destinationDeploymentRef, read:requests.items.interactionRevisionRef]}
+          - {id: initial_need_ref, source: read:requests.items.initialNeedRef}
+          - {id: decision, source: read:requests.items.decision}
+          - {id: policy_rule_ref, source: read:requests.items.policyRuleRef}
+      capabilities:
+        allowed:
+          - {id: inspect-requests, backed_by: read:requests}
+          - {id: select-request, backed_by: local:selected-request}
+          - {id: submit-request, backed_by: command:submit-request}
+          - {id: decide-request, backed_by: command:decide-request}
+          - {id: inspect-permission-outcome, backed_by: read:requests}
+          - {id: open-resulting-rule, backed_by: navigation:policy-rules}
+        excluded: [search, filter, sort, paginate, bulk-operation, ui-authority, mutable-request-subject]
+      pattern_mapping:
+        - pattern: CATALOGUE
+          feature_bindings: {open-item: select-request, create-item: submit-request}
+        - pattern: DETAIL
+          feature_bindings: {show-primary: inspect-requests}
+        - pattern: EDITOR
+          feature_bindings: {}
+        - pattern: OUTCOME
+          feature_bindings: {summary: inspect-permission-outcome, details: inspect-permission-outcome}
+        - pattern: TASK-ACTIONS
+          feature_bindings: {primary: submit-request}
+        - pattern: STATUS
+          feature_bindings: {}
+      state_mapping:
+        loading: read:requests.pending
+        loaded: read:requests.200-items
+        empty: read:requests.200-empty
+        submitting: [command:submit-request.pending, command:decide-request.pending]
+        validation-rejected: command:submit-request.422
+        authorization-rejected: [read:requests.403, command:submit-request.403, command:decide-request.403]
+        conflict: [command:submit-request.409, command:decide-request.409]
+        outcome-allowed: read:requests.items.decision-ALLOWED
+        outcome-not-allowed: read:requests.items.decision-DENIED
+        technical-error: [read:requests.failure, command:submit-request.failure, command:decide-request.failure]
+      verification:
+        contract: [operation:listAccessRequests, operation:submitAccessRequest, operation:decideAccessRequest]
+        semantic: [access-request-immutable-subject-and-decision-state-matrix]
+        rendered: [access-request-outcome-conformance]
     responsive:
       - request composer and outcome become sequential regions
       - immutable request subject and permission outcome remain jointly inspectable
@@ -238,17 +472,63 @@ screens:
 
   - id: POLICY-RULES
     purpose: Inspect authoritative desired-access rules and change supported Active/Inactive operational state.
-    patterns: [CATALOGUE, FILTER-BAR, DETAIL, OUTCOME, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, DETAIL, OUTCOME, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: controls, role: search-filter, priority: primary}
       - {id: rules, role: collection, priority: primary}
       - {id: selected-rule, role: authoritative-detail, priority: primary}
       - {id: provenance-history, role: secondary-content, priority: secondary}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     primary_action_role: change-supported-operational-state
-    states: [loading, loaded, empty, submitting, authorization-rejected, conflict, not-found, technical-error]
+    states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    semantic_contract:
+      reads:
+        - {id: rules, operation_id: listPolicyRules, projection: PolicyRuleCatalogueView}
+        - {id: rule-detail, operation_id: getPolicyRule, projection: PolicyRuleView}
+      commands:
+        - {id: set-operational-state, operation_id: setPolicyRuleOperationalState}
+      view_model:
+        id: PolicyRulesScreenModel
+        fields:
+          - {id: items, source: read:rules.items}
+          - {id: selected_rule, source: read:rule-detail}
+          - {id: authorization_evidence, source: read:rule-detail.authorizationEvidence}
+          - {id: justification_need_refs, source: read:rule-detail.justificationNeedRefs}
+          - {id: operational_history, source: read:rule-detail.operationalHistory}
+      capabilities:
+        allowed:
+          - {id: inspect-rules, backed_by: read:rules}
+          - {id: select-rule, backed_by: local:selected-rule}
+          - {id: inspect-selected-rule, backed_by: read:rule-detail}
+          - {id: change-supported-operational-state, backed_by: command:set-operational-state}
+          - {id: export-effective-policy, backed_by: navigation:policy-export}
+        excluded: [search, filter, sort, paginate, bulk-operation, delete-rule, permission-redecision]
+      pattern_mapping:
+        - pattern: CATALOGUE
+          feature_bindings: {open-item: select-rule}
+        - pattern: DETAIL
+          feature_bindings: {show-primary: inspect-selected-rule, show-secondary: inspect-selected-rule}
+        - pattern: OUTCOME
+          feature_bindings: {provenance: inspect-selected-rule}
+        - pattern: TASK-ACTIONS
+          feature_bindings: {primary: change-supported-operational-state}
+        - pattern: STATUS
+          feature_bindings: {}
+      state_mapping:
+        loading: [read:rules.pending, read:rule-detail.pending]
+        loaded: read:rules.200-items
+        empty: read:rules.200-empty
+        submitting: command:set-operational-state.pending
+        validation-rejected: command:set-operational-state.422
+        authorization-rejected: [read:rules.403, read:rule-detail.403, command:set-operational-state.403]
+        conflict: command:set-operational-state.409
+        not-found: read:rule-detail.404
+        technical-error: [read:rules.failure, read:rule-detail.failure, command:set-operational-state.failure]
+      verification:
+        contract: [operation:listPolicyRules, operation:getPolicyRule, operation:setPolicyRuleOperationalState]
+        semantic: [policy-rule-identity-state-provenance-history-state-matrix]
+        rendered: [policy-rule-detail-outcome-conformance]
     responsive:
       - selected rule identity/state stays before provenance/history
       - rule list may become labeled records
@@ -340,6 +620,6 @@ coverage:
     - POLICY-RULES
     - POLICY-EXPORT
   semantic_contract_pilot:
-    proven: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, POLICY-EXPORT]
-    remaining: [APPLICATION-CATALOGUE, APPLICATION-DETAIL, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
+    proven: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, APPLICATION-DETAIL, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES, POLICY-EXPORT]
+    remaining: []
   rule: Workspace inventory/presentation inheritance alone is insufficient for frontend semantic completion; each required screen must eventually satisfy the semantic screen-contract proof obligations.
