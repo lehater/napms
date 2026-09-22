@@ -466,6 +466,34 @@ components:
         componentRef: {$ref: '#/components/schemas/StableId'}
         resourceRef: {$ref: '#/components/schemas/StableId'}
 
+    ConnectivityNeedView:
+      type: object
+      additionalProperties: false
+      required: [needRef, interactionRef, participantComponentRef, businessBasis, status]
+      properties:
+        needRef: {$ref: '#/components/schemas/StableId'}
+        interactionRef: {$ref: '#/components/schemas/StableId'}
+        participantComponentRef: {$ref: '#/components/schemas/StableId'}
+        businessBasis: {type: string, minLength: 1}
+        status: {type: string, enum: [ACTIVE, RETIRED]}
+    BusinessProcessView:
+      type: object
+      additionalProperties: false
+      required: [processRef, name, needs]
+      properties:
+        processRef: {$ref: '#/components/schemas/StableId'}
+        name: {type: string, minLength: 1}
+        description: {type: string}
+        responsibleOrganizationRef: {type: string, minLength: 1}
+        criticalityLabel: {type: string, minLength: 1}
+        needs: {type: array, items: {$ref: '#/components/schemas/ConnectivityNeedView'}}
+    BusinessConnectivityView:
+      type: object
+      additionalProperties: false
+      required: [processes]
+      properties:
+        processes: {type: array, items: {$ref: '#/components/schemas/BusinessProcessView'}}
+
     CreateProcessRequest:
       type: object
       additionalProperties: false
@@ -473,6 +501,7 @@ components:
       properties:
         name: {type: string, minLength: 1}
         description: {type: string}
+        responsibleOrganizationRef: {type: string, minLength: 1}
         criticalityLabel: {type: string, minLength: 1}
     SetCriticalityRequest:
       type: object
