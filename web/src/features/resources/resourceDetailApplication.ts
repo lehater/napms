@@ -1,7 +1,7 @@
 import { api } from "../../app/api";
 import {
-  toResourceDetailScreenModel,
   type ResourceDetailScreenModel,
+  toResourceDetailScreenModel,
 } from "./resourceDetailModel";
 
 export async function queryResourceDetail(

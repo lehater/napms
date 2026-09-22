@@ -193,11 +193,7 @@ export const api = {
         body: JSON.stringify(address),
       },
     ),
-  clearResourceAddress: (
-    ref: string,
-    endpointRef: string,
-    version: number,
-  ) =>
+  clearResourceAddress: (ref: string, endpointRef: string, version: number) =>
     request<void>(
       `/v1/resources/${ref}/endpoints/${endpointRef}/address`,
       {

@@ -98,9 +98,7 @@ export function MuiEditorPattern({
             </TextField>
           ))}
 
-          {failure ? (
-            <MuiStatus message={statusMessage ?? failure} />
-          ) : null}
+          {failure ? <MuiStatus message={statusMessage ?? failure} /> : null}
 
           <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
             <Button
@@ -109,7 +107,7 @@ export function MuiEditorPattern({
               disabled={submitDisabled || state === "submitting"}
             >
               {state === "submitting"
-                ? submittingLabel ?? `${submitLabel}…`
+                ? (submittingLabel ?? `${submitLabel}…`)
                 : submitLabel}
             </Button>
             {secondaryAction ? (

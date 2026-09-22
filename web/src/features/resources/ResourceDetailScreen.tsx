@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ApiError } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
-  type DetailState,
   DetailPattern,
+  type DetailState,
   type EditorPatternProps,
 } from "../../presentation";
 import {
@@ -62,11 +62,7 @@ function failureState(
   };
 }
 
-export function ResourceDetailScreen({
-  resourceRef,
-}: {
-  resourceRef: string;
-}) {
+export function ResourceDetailScreen({ resourceRef }: { resourceRef: string }) {
   const [model, setModel] = useState<ResourceDetailScreenModel | null>(null);
   const [state, setState] = useState<DetailState>("loading");
   const [statusMessage, setStatusMessage] = useState<string>();
@@ -140,108 +136,98 @@ export function ResourceDetailScreen({
   const editorState: EditorPatternProps["state"] =
     state === "submitting" ? "submitting" : "editing";
 
-  const siteEditor = useMemo<EditorPatternProps>(
-    () => ({
-      title: "Edit site",
-      description: "Leave Site ID blank to clear the current assignment.",
-      fields: [
-        {
-          id: "site-ref",
-          label: "Site ID",
-          value: siteRef,
-          onChange: setSiteRef,
-        },
-      ],
-      submitLabel: "Save site",
-      onSubmit: () =>
-        void mutate((current) => setResourceSite(current, siteRef || null)),
-      state: editorState,
-    }),
-    [editorState, model, siteRef],
-  );
-
-  const addressEditor = useMemo<EditorPatternProps>(
-    () => ({
-      title: "Endpoint address",
-      fields: [
-        {
-          id: "endpoint-ref",
-          label: "Endpoint ID",
-          value: endpointRef,
-          required: true,
-          onChange: setEndpointRef,
-        },
-        {
-          id: "address-kind",
-          label: "Address kind",
-          value: addressKind,
-          options: [
-            { value: "HOST", label: "HOST" },
-            { value: "PREFIX", label: "PREFIX" },
-          ],
-          onChange: setAddressKind,
-        },
-        {
-          id: "address-value",
-          label: "Address value",
-          value: addressValue,
-          required: true,
-          onChange: setAddressValue,
-        },
-      ],
-      submitLabel: "Set endpoint address",
-      submitDisabled: !endpointRef || !addressValue,
-      secondaryAction: {
-        label: "Clear endpoint address",
-        disabled: !endpointRef,
-        onInvoke: () =>
-          void mutate((current) => clearResourceAddress(current, endpointRef)),
+  const siteEditor: EditorPatternProps = {
+    title: "Edit site",
+    description: "Leave Site ID blank to clear the current assignment.",
+    fields: [
+      {
+        id: "site-ref",
+        label: "Site ID",
+        value: siteRef,
+        onChange: setSiteRef,
       },
-      onSubmit: () =>
-        void mutate((current) =>
-          setResourceAddress(current, endpointRef, {
-            kind: addressKind,
-            value: addressValue,
-          }),
-        ),
-      state: editorState,
-    }),
-    [addressKind, addressValue, editorState, endpointRef, model],
-  );
+    ],
+    submitLabel: "Save site",
+    onSubmit: () =>
+      void mutate((current) => setResourceSite(current, siteRef || null)),
+    state: editorState,
+  };
 
-  const responsibilityEditor = useMemo<EditorPatternProps>(
-    () => ({
-      title: "Responsibility",
-      description:
-        "Leave Organization ID blank to clear the selected responsibility.",
-      fields: [
-        {
-          id: "responsibility-role",
-          label: "Responsibility role",
-          value: role,
-          options: [
-            { value: "OWNER", label: "OWNER" },
-            { value: "ADMINISTRATOR", label: "ADMINISTRATOR" },
-          ],
-          onChange: (value) =>
-            setRole(value as "OWNER" | "ADMINISTRATOR"),
-        },
-        {
-          id: "organization-ref",
-          label: "Organization ID",
-          value: organizationRef,
-          onChange: setOrganizationRef,
-        },
-      ],
-      submitLabel: "Save responsibility",
-      onSubmit: () =>
-        void mutate((current) =>
-          setResourceResponsibility(current, role, organizationRef || null),
-        ),
-      state: editorState,
-    }),
-    [editorState, model, organizationRef, role],
-  );
+  const addressEditor: EditorPatternProps = {
+    title: "Endpoint address",
+    fields: [
+      {
+        id: "endpoint-ref",
+        label: "Endpoint ID",
+        value: endpointRef,
+        required: true,
+        onChange: setEndpointRef,
+      },
+      {
+        id: "address-kind",
+        label: "Address kind",
+        value: addressKind,
+        options: [
+          { value: "HOST", label: "HOST" },
+          { value: "PREFIX", label: "PREFIX" },
+        ],
+        onChange: setAddressKind,
+      },
+      {
+        id: "address-value",
+        label: "Address value",
+        value: addressValue,
+        required: true,
+        onChange: setAddressValue,
+      },
+    ],
+    submitLabel: "Set endpoint address",
+    submitDisabled: !endpointRef || !addressValue,
+    secondaryAction: {
+      label: "Clear endpoint address",
+      disabled: !endpointRef,
+      onInvoke: () =>
+        void mutate((current) => clearResourceAddress(current, endpointRef)),
+    },
+    onSubmit: () =>
+      void mutate((current) =>
+        setResourceAddress(current, endpointRef, {
+          kind: addressKind,
+          value: addressValue,
+        }),
+      ),
+    state: editorState,
+  };
+
+  const responsibilityEditor: EditorPatternProps = {
+    title: "Responsibility",
+    description:
+      "Leave Organization ID blank to clear the selected responsibility.",
+    fields: [
+      {
+        id: "responsibility-role",
+        label: "Responsibility role",
+        value: role,
+        options: [
+          { value: "OWNER", label: "OWNER" },
+          { value: "ADMINISTRATOR", label: "ADMINISTRATOR" },
+        ],
+        onChange: (value) => setRole(value as "OWNER" | "ADMINISTRATOR"),
+      },
+      {
+        id: "organization-ref",
+        label: "Organization ID",
+        value: organizationRef,
+        onChange: setOrganizationRef,
+      },
+    ],
+    submitLabel: "Save responsibility",
+    onSubmit: () =>
+      void mutate((current) =>
+        setResourceResponsibility(current, role, organizationRef || null),
+      ),
+    state: editorState,
+  };
 
   const sections = model
     ? [
@@ -258,15 +244,13 @@ export function ResourceDetailScreen({
             model.endpoints.length === 0 ? (
               <p>No endpoints.</p>
             ) : (
-              <>
-                {model.endpoints.map((endpoint) => (
-                  <p key={endpoint.endpointRef}>
-                    <code>{endpoint.endpointRef}</code>
-                    {" · "}
-                    {endpoint.addressSummary}
-                  </p>
-                ))}
-              </>
+              model.endpoints.map((endpoint) => (
+                <p key={endpoint.endpointRef}>
+                  <code>{endpoint.endpointRef}</code>
+                  {" · "}
+                  {endpoint.addressSummary}
+                </p>
+              ))
             ),
           actions: [
             {
@@ -284,13 +268,11 @@ export function ResourceDetailScreen({
             model.responsibilities.length === 0 ? (
               <p>No responsibilities.</p>
             ) : (
-              <>
-                {model.responsibilities.map((item) => (
-                  <p key={item.role}>
-                    {item.role}: {item.organizationRef}
-                  </p>
-                ))}
-              </>
+              model.responsibilities.map((item) => (
+                <p key={item.role}>
+                  {item.role}: {item.organizationRef}
+                </p>
+              ))
             ),
           editors: [responsibilityEditor],
         },

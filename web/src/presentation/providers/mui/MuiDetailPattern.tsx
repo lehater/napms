@@ -96,7 +96,13 @@ export function MuiDetailPattern({
         <MuiTaskActions
           actions={[
             ...(onRetry
-              ? [{ label: "Retry", onInvoke: onRetry, tone: "primary" as const }]
+              ? [
+                  {
+                    label: "Retry",
+                    onInvoke: onRetry,
+                    tone: "primary" as const,
+                  },
+                ]
               : []),
             ...(onReturn
               ? [{ label: "Back to Resources", onInvoke: onReturn }]
