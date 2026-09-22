@@ -1,6 +1,6 @@
 # Research — NAPMS frontend provider architecture and MUI migration v1
 
-Status: research branch candidate with Resource, Application, Deployment and Business Connectivity provider slices.
+Status: research branch candidate with every required First-MVP workspace migrated to the MUI provider boundary.
 
 ## Decision
 
@@ -324,11 +324,12 @@ Visual baselines prove accepted presentation invariants only; they do not author
 2. RESOURCE-DETAIL is migrated through the same provider boundary with Detail/Editor/Disclosure/Task-Actions/Status realization and full accepted Resource mutation closure.
 3. APPLICATION-CATALOGUE and APPLICATION-DETAIL are migrated, including component creation and interaction/revision authoring; STRUCTURED-LIST and reusable DATA-TABLE realization are introduced only because this slice demonstrates reuse.
 4. DEPLOYMENTS and BUSINESS-CONNECTIVITY are migrated using the existing Catalogue/Detail/Editor/Structured-List provider vocabulary without adding a new pattern.
-5. Verify build, semantic/provider checks, unit/E2E/rendered evidence at coherent checkpoints.
-6. Migrate remaining workspaces by vertical slice, adding an adapter only when a new accepted pattern is first needed.
-5. Introduce MUI X DataGrid only on a screen whose accepted semantics require its capabilities.
-6. After every screen is off the legacy design-system, remove legacy CSS/components/token generator/Tailwind-shadcn setup and tighten the boundary checker.
-7. Refresh rendered baselines only through explicit reference-conformance review.
+5. ACCESS-REQUESTS, POLICY-RULES and POLICY-EXPORT are migrated; OUTCOME and SCOPE-SELECTOR adapters are introduced only for their accepted semantics.
+6. Verify build, semantic/provider checks, unit/E2E/rendered evidence at coherent checkpoints.
+7. Remove legacy presentation infrastructure only after repository search proves no feature still depends on it.
+8. Introduce MUI X DataGrid only on a screen whose accepted semantics require its capabilities.
+9. After every screen is off the legacy design-system, remove legacy CSS/components/token generator/Tailwind-shadcn setup and tighten the boundary checker.
+10. Refresh rendered baselines only through explicit reference-conformance review.
 
 ## Priority findings
 

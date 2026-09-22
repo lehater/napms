@@ -294,7 +294,7 @@ screens:
 
   - id: ACCESS-REQUESTS
     purpose: Submit connectivity requests and inspect immutable permission outcomes under backend-confirmed authority.
-    patterns: [CATALOGUE, DETAIL, EDITOR, OUTCOME, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, DETAIL, EDITOR, STRUCTURED-LIST, OUTCOME, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
       - {id: requests, role: collection, priority: primary}
@@ -316,7 +316,7 @@ screens:
 
   - id: POLICY-RULES
     purpose: Inspect authoritative desired-access rules and change supported Active/Inactive operational state.
-    patterns: [CATALOGUE, DETAIL, OUTCOME, TASK-ACTIONS, STATUS]
+    patterns: [CATALOGUE, DETAIL, STRUCTURED-LIST, OUTCOME, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
       - {id: rules, role: collection, priority: primary}
@@ -380,7 +380,7 @@ screens:
         complete-success: command:materialize-policy.200-COMPLETE
         unresolved-or-degraded: command:materialize-policy.200-UNRESOLVED
         validation-rejected: command:materialize-policy.422
-        authorization-rejected: command:materialize-policy.403
+        authorization-rejected: [command:materialize-policy.401, command:materialize-policy.403]
         technical-error: command:materialize-policy.failure
       verification:
         contract: [operation:materializeCurrentPolicy]

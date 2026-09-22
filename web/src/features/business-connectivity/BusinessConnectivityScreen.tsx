@@ -6,8 +6,8 @@ import {
   type CatalogueState,
   DetailPattern,
   type DetailState,
-  type EditorPatternProps,
   EditorPattern,
+  type EditorPatternProps,
   type EditorState,
   StructuredListPattern,
 } from "../../presentation";
@@ -80,7 +80,8 @@ function detailFailure(error: unknown): {
   }
   return {
     state: "technical-error",
-    message: "The Business Connectivity workspace could not complete the operation.",
+    message:
+      "The Business Connectivity workspace could not complete the operation.",
   };
 }
 
@@ -154,9 +155,7 @@ function BusinessProcessListMode() {
         secondary={(row) =>
           `${row.processRef} · criticality ${row.criticalityLabel ?? "unset"}`
         }
-        onOpen={(row) =>
-          navigate(`/business-processes/${row.processRef}`)
-        }
+        onOpen={(row) => navigate(`/business-processes/${row.processRef}`)}
         emptyMessage="No Business Processes."
       />
     </CataloguePattern>
@@ -222,8 +221,9 @@ function BusinessProcessCreateMode() {
 }
 
 function BusinessProcessDetailMode({ processRef }: { processRef: string }) {
-  const [model, setModel] =
-    useState<BusinessProcessDetailScreenModel | null>(null);
+  const [model, setModel] = useState<BusinessProcessDetailScreenModel | null>(
+    null,
+  );
   const [state, setState] = useState<DetailState>("loading");
   const [statusMessage, setStatusMessage] = useState<string>();
   const [criticality, setCriticality] = useState("");

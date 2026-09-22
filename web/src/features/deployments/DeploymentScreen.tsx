@@ -8,10 +8,7 @@ import {
   type EditorState,
   StructuredListPattern,
 } from "../../presentation";
-import {
-  createDeployment,
-  queryDeployments,
-} from "./deploymentApplication";
+import { createDeployment, queryDeployments } from "./deploymentApplication";
 import type { DeploymentScreenModel } from "./deploymentModels";
 
 type LoadState =
@@ -83,8 +80,7 @@ function DeploymentListMode() {
     };
   }, []);
 
-  const rows =
-    loadState.kind === "loaded" ? loadState.model.deployments : [];
+  const rows = loadState.kind === "loaded" ? loadState.model.deployments : [];
   const state: CatalogueState =
     loadState.kind === "loaded"
       ? rows.length === 0
@@ -175,10 +171,6 @@ function DeploymentCreateMode() {
   );
 }
 
-export function DeploymentScreen({
-  create = false,
-}: {
-  create?: boolean;
-}) {
+export function DeploymentScreen({ create = false }: { create?: boolean }) {
   return create ? <DeploymentCreateMode /> : <DeploymentListMode />;
 }

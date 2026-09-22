@@ -7,7 +7,5 @@ export function BusinessConnectivity({
   create?: boolean;
   processRef?: string;
 }) {
-  return (
-    <BusinessConnectivityScreen create={create} processRef={processRef} />
-  );
+  return <BusinessConnectivityScreen create={create} processRef={processRef} />;
 }

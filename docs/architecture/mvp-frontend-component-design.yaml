@@ -43,7 +43,7 @@ presentation_provider:
   provider: mui-material
   version: 9.4.0
   feature_policy: {default: deny}
-  coverage_screens: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, APPLICATION-DETAIL, DEPLOYMENTS, BUSINESS-CONNECTIVITY]
+  coverage_screens: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, APPLICATION-DETAIL, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES, POLICY-EXPORT]
   required_patterns: [APP-SHELL]
   template_baseline:
     provider: mui-material
@@ -79,6 +79,12 @@ presentation_provider:
     STATUS:
       adapter: presentation/providers/mui/MuiStatus
       provider_primitives: [Alert, CircularProgress, Stack, Typography]
+    OUTCOME:
+      adapter: presentation/providers/mui/MuiOutcomePattern
+      provider_primitives: [Accordion, Alert, Box, Paper, Stack, Typography]
+    SCOPE-SELECTOR:
+      adapter: presentation/providers/mui/MuiScopeSelectorPattern
+      provider_primitives: [Button, Paper, Stack, TextField, Typography]
   resource_catalogue_grid_decision:
     selected: mui-material-Table
     rejected_for_pilot: mui-x-DataGrid

@@ -1,96 +1,110 @@
 import { useState } from "react";
-import { ApiError, api, type PolicyMaterializationResult } from "../../app/api";
+import { ApiError, type PolicyMaterializationResult } from "../../app/api";
 import {
-  EmptyState,
-  FormSection,
-  PageHeader,
-  ProvenancePanel,
-  ReferenceField,
-  StatusBanner,
-} from "../../design-system/components";
+  OutcomePattern,
+  ScopeSelectorPattern,
+  type ScopeSelectorState,
+} from "../../presentation";
+import { materializePolicy } from "./policyExportApplication";
 
-const errorKind = (error: unknown) =>
-  error instanceof ApiError ? error.kind : "technical";
+function failureState(error: unknown): {
+  state: ScopeSelectorState;
+  message: string;
+} {
+  if (error instanceof ApiError) {
+    if (error.kind === "unauthenticated" || error.kind === "forbidden") {
+      return {
+        state: "authorization-rejected",
+        message: "Policy export was rejected by the backend.",
+      };
+    }
+    if (error.kind === "rejected") {
+      return {
+        state: "validation-rejected",
+        message: "The selected Policy Rule scope was rejected.",
+      };
+    }
+  }
+  return {
+    state: "technical-error",
+    message: "Policy export failed.",
+  };
+}
 
 export function PolicyExportScreen() {
   const [refs, setRefs] = useState("");
-  const [state, setState] = useState("editing");
+  const [state, setState] = useState<ScopeSelectorState>("editing");
+  const [statusMessage, setStatusMessage] = useState<string>();
   const [result, setResult] = useState<PolicyMaterializationResult | null>(
     null,
   );
 
-  async function submit(event: React.FormEvent) {
-    event.preventDefault();
+  async function submit() {
     setState("submitting");
+    setStatusMessage(undefined);
     try {
-      const selected = refs
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean);
-      const value = await api.materialize(
-        selected.length ? selected : undefined,
-      );
-      setResult(value);
-      setState("complete");
+      setResult(await materializePolicy(refs));
+      setState("editing");
     } catch (error) {
-      setState(errorKind(error));
+      const failure = failureState(error);
+      setState(failure.state);
+      setStatusMessage(failure.message);
     }
   }
 
   return (
     <>
-      <PageHeader eyebrow="Policy materialization" title="Policy Export" />
-      <FormSection onSubmit={submit}>
-        <ReferenceField
-          label="Policy Rule IDs (comma separated; empty means current effective policy)"
-          value={refs}
-          onChange={setRefs}
+      <ScopeSelectorPattern
+        eyebrow="Policy materialization"
+        title="Policy Export"
+        description="Select an explicit Policy Rule scope or leave it empty for the current effective policy."
+        label="Policy Rule IDs (comma separated; empty means current effective policy)"
+        value={refs}
+        onChange={setRefs}
+        executeLabel="Execute Export"
+        onExecute={() => void submit()}
+        state={state}
+        statusMessage={statusMessage}
+      />
+
+      {result ? (
+        <OutcomePattern
+          title="Policy materialization outcome"
+          summary={<>Export result: {result.status}</>}
+          tone={result.status === "COMPLETE" ? "success" : "warning"}
+          details={
+            <div>
+              <p>Evaluated at {result.evaluationAt}</p>
+              {result.status === "UNRESOLVED" && result.issues.length > 0 ? (
+                <>
+                  <h3>Blocking issues</h3>
+                  <pre>{JSON.stringify(result.issues, null, 2)}</pre>
+                </>
+              ) : null}
+              <h3>Effective policy rows</h3>
+              {result.rows.length === 0 ? (
+                <p>No effective rows.</p>
+              ) : (
+                <pre>{JSON.stringify(result.rows, null, 2)}</pre>
+              )}
+            </div>
+          }
+          provenance={
+            <div>
+              <h3>Rule provenance</h3>
+              <pre>{JSON.stringify(result.ruleProvenance, null, 2)}</pre>
+              <h3>Export authority evidence</h3>
+              <pre>{JSON.stringify(result.exportAuthorityEvidence, null, 2)}</pre>
+              {result.nonEffective.length > 0 ? (
+                <>
+                  <h3>Non-effective rules</h3>
+                  <pre>{JSON.stringify(result.nonEffective, null, 2)}</pre>
+                </>
+              ) : null}
+            </div>
+          }
         />
-        <button type="submit" disabled={state === "submitting"}>
-          Execute Export
-        </button>
-      </FormSection>
-      {result && (
-        <>
-          <StatusBanner
-            kind={result.status === "UNRESOLVED" ? "blocked" : "success"}
-          >
-            Export result: {result.status}
-          </StatusBanner>
-          <p>Evaluated at {result.evaluationAt}</p>
-          {result.status === "UNRESOLVED" && result.issues.length > 0 && (
-            <section className="panel">
-              <h3>Blocking issues</h3>
-              <pre>{JSON.stringify(result.issues, null, 2)}</pre>
-            </section>
-          )}
-          <section className="panel">
-            <h3>Effective policy rows</h3>
-            {result.rows.length === 0 ? (
-              <EmptyState>No effective rows.</EmptyState>
-            ) : (
-              <pre>{JSON.stringify(result.rows, null, 2)}</pre>
-            )}
-          </section>
-          <ProvenancePanel>
-            <h3>Rule provenance</h3>
-            <pre>{JSON.stringify(result.ruleProvenance, null, 2)}</pre>
-            <h3>Export authority evidence</h3>
-            <pre>{JSON.stringify(result.exportAuthorityEvidence, null, 2)}</pre>
-            {result.nonEffective.length > 0 && (
-              <>
-                <h3>Non-effective rules</h3>
-                <pre>{JSON.stringify(result.nonEffective, null, 2)}</pre>
-              </>
-            )}
-          </ProvenancePanel>
-        </>
-      )}
-      {!["editing", "submitting", "complete"].includes(state) && (
-        <StatusBanner kind={state === "conflict" ? "warning" : "failed"}>
-          Policy export operation: {state}.
-        </StatusBanner>
-      )}
+      ) : null}
     </>
   );
 }

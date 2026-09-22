@@ -135,3 +135,34 @@ export type DetailPatternProps = {
   onRetry?: () => void;
   onReturn?: () => void;
 };
+
+
+export type OutcomeTone = "success" | "warning" | "info" | "error";
+
+export type OutcomePatternProps = {
+  title: string;
+  summary: ReactNode;
+  tone?: OutcomeTone;
+  details?: ReactNode;
+  provenance?: ReactNode;
+};
+
+export type ScopeSelectorState =
+  | "editing"
+  | "submitting"
+  | "validation-rejected"
+  | "authorization-rejected"
+  | "technical-error";
+
+export type ScopeSelectorPatternProps = {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  executeLabel: string;
+  onExecute: () => void;
+  state: ScopeSelectorState;
+  statusMessage?: string;
+};
