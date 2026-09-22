@@ -61,6 +61,9 @@ presentation_provider:
     DATA-TABLE:
       adapter: presentation/providers/mui/MuiCataloguePattern
       provider_primitives: [Table, TableBody, TableCell, TableContainer, TableHead, TableRow]
+    EDITOR:
+      adapter: presentation/providers/mui/MuiEditorPattern
+      provider_primitives: [Alert, Button, Stack, TextField]
     TASK-ACTIONS:
       adapter: presentation/providers/mui/MuiCataloguePattern
       provider_primitives: [Button, Stack]
