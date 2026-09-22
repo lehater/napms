@@ -107,7 +107,7 @@ screens:
         editing: local:create-resource-form
         submitting: command:create-resource.pending
         validation-rejected: command:create-resource.422
-        authorization-rejected: [read:catalogue.403, command:create-resource.403]
+        authorization-rejected: [read:catalogue.401, read:catalogue.403, command:create-resource.401, command:create-resource.403]
         conflict: command:create-resource.409
         technical-error: [read:catalogue.failure, command:create-resource.failure]
       verification:
