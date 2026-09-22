@@ -75,9 +75,7 @@ def test_deployment_catalogue_query_applies_search_filters_sort_and_paging() -> 
     )
     assert [item.deployment_ref for item in second.items] == [UUID(int=101)]
 
-    filtered = repository.query_deployments(
-        DeploymentCatalogueQuery(resource_ref=UUID(int=302))
-    )
+    filtered = repository.query_deployments(DeploymentCatalogueQuery(resource_ref=UUID(int=302)))
     assert filtered.total == 1
     assert [item.deployment_ref for item in filtered.items] == [UUID(int=102)]
 
