@@ -3,17 +3,22 @@ import { type FormEvent, type ReactNode, useId } from "react";
 export function PageHeader({
   eyebrow,
   title,
+  actions,
   children,
 }: {
   eyebrow: string;
   title: string;
+  actions?: ReactNode;
   children?: ReactNode;
 }) {
   return (
-    <header>
-      <p className="eyebrow">{eyebrow}</p>
-      <h2>{title}</h2>
-      {children}
+    <header className="page-header">
+      <div className="page-header-copy">
+        <p className="eyebrow">{eyebrow}</p>
+        <h2>{title}</h2>
+        {children}
+      </div>
+      {actions && <div className="page-header-actions">{actions}</div>}
     </header>
   );
 }
@@ -82,7 +87,7 @@ export function VersionedEditor({
   children: ReactNode;
 }) {
   return (
-    <section className="panel" data-version={version}>
+    <section className="panel versioned-editor" data-version={version}>
       <p className="muted">Version {version}</p>
       {children}
     </section>
@@ -149,5 +154,48 @@ export function ConfirmationDialog({
         Cancel
       </button>
     </div>
+  );
+}
+
+
+export function DataTable({ children }: { children: ReactNode }) {
+  return (
+    <div className="data-table-wrap">
+      <table className="data-table">{children}</table>
+    </div>
+  );
+}
+
+export function DataTableHeadCell({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return <th className={className}>{children}</th>;
+}
+
+export function DataTableCell({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return <td className={className}>{children}</td>;
+}
+
+export function PrimaryTableAction({
+  children,
+  onClick,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" className="table-primary-action" onClick={onClick}>
+      {children}
+    </button>
   );
 }
