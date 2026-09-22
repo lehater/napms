@@ -127,6 +127,7 @@ authorities:
           - engineering.frontend.screen-view-design
           - engineering.interface.http-contract
           - engineering.architecture.security
+          - engineering.security.browser-identity
           - engineering.quality.constraints
           - engineering.security.threat-analysis
           - engineering.operability.observability
@@ -139,6 +140,12 @@ authorities:
       public_contract: Provides security architecture constraints to downstream design.
     produces:
       - capability: engineering.architecture.security
+        knowledge_kind: security-architecture
+        requires:
+          - engineering.requirements.product-intent
+          - engineering.domain.tactical-model
+          - engineering.architecture.rules
+      - capability: engineering.security.browser-identity
         knowledge_kind: security-architecture
         requires:
           - engineering.requirements.product-intent
@@ -195,6 +202,7 @@ authorities:
           - engineering.domain.tactical-model
           - engineering.application.journey
           - engineering.architecture.security
+          - engineering.security.browser-identity
           - engineering.interface.http-contract
       - capability: engineering.frontend.presentation-system
         knowledge_kind: presentation-system-design

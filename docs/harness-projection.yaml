@@ -50,7 +50,7 @@ bindings:
   - {artifact: SYSTEM-RULES, authority: SYSTEM-ARCHITECTURE, provides: [engineering.architecture.rules, engineering.architecture.async-messaging-not-applicable]}
   - {artifact: MODULE-CONTRACTS, authority: SYSTEM-ARCHITECTURE, provides: [engineering.architecture.module-contracts]}
 
-  - {artifact: SECURITY-ARCHITECTURE, authority: SECURITY-ARCHITECTURE-DESIGN, provides: [engineering.architecture.security]}
+  - {artifact: SECURITY-ARCHITECTURE, authority: SECURITY-ARCHITECTURE-DESIGN, provides: [engineering.architecture.security, engineering.security.browser-identity]}
 
   - {artifact: TECH-REPRESENTATION, authority: INTERFACE-DESIGN, provides: [engineering.interface.shared-representations]}
   - {artifact: HTTP-REQUIREMENTS, authority: INTERFACE-DESIGN, provides: []}
