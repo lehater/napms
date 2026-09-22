@@ -198,8 +198,8 @@ function ResourceCatalogueCreateMode() {
 
   return (
     <EditorPattern
-      eyebrow="Resource catalogue"
-      title="Create Resource"
+      eyebrow="Create Resource"
+      title="Resources"
       description="Create a Resource using the accepted catalogue contract."
       fields={fields}
       submitLabel="Create Resource"
