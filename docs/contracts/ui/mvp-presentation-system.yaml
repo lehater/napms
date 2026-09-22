@@ -93,6 +93,19 @@ layout:
     pattern: APP-SHELL
     regions: [primary-navigation, workspace-context, workspace-content, global-feedback]
   content_width: use available workspace width while keeping forms and prose readable
+  material_invariants:
+    - {id: shell-sidebar-width, token: component.app-shell.sidebar-width, applies_when: desktop-shell}
+    - {id: workspace-padding, token: component.app-shell.workspace-padding, applies_when: desktop-shell}
+    - {id: control-height, token: component.control.height, applies_when: standard-control}
+    - {id: dense-table-header, token: component.table.header-height, applies_when: DATA-TABLE}
+    - {id: dense-table-row, token: component.table.row-height, applies_when: DATA-TABLE}
+    - {id: table-selection-column, token: component.table.selection-column-width, applies_when: selectable-DATA-TABLE}
+    - {id: table-cell-horizontal-padding, token: component.table.cell-padding-x, applies_when: DATA-TABLE}
+  controlled_freedom:
+    - exact responsive breakpoint values
+    - CSS Grid/Flexbox or equivalent mechanics
+    - non-material internal gaps not represented by a semantic spacing token
+    - private DOM/component decomposition
   density:
     default: compact-readable
     rationale: First-MVP workspaces are structured operational interfaces with lists, facts and relationships; density must not remove labels, status meaning or action discoverability.
