@@ -53,11 +53,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker compose version
-      - name: Prove fresh password-authenticated product journey
+      - name: Prove fresh OIDC-authenticated product startup
         run: |
           export NAPMS_POSTGRES_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(24))')"
           python tools/prepare_local_postgres.py
-          python tools/dev_compose.py up --no-print-credentials
+          python tools/local_start.py up --no-print-credentials
           python tools/verify_local_postgres_auth.py
       - name: Prove restart on preserved volume with rotated database credential
         run: |
