@@ -1,26 +1,41 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { toPolicyRuleCatalogue } from "../src/features/policy-rules/policyRuleModels.ts";
+import { toPolicyRuleCatalogueScreenModel } from "../src/features/policy-rules/policyRuleModels.ts";
 
-test("Policy Rule catalogue mapping preserves authoritative operational state", () => {
+test("Policy Rule catalogue mapping preserves page, subject and state", () => {
   assert.deepEqual(
-    toPolicyRuleCatalogue([
-      {
-        policyRuleRef: "rule-1",
-        version: 3,
-        effectState: "ACTIVE",
-        effectiveWindow: {
-          effectiveFrom: null,
-          effectiveUntil: null,
+    toPolicyRuleCatalogueScreenModel({
+      items: [
+        {
+          policyRuleRef: "rule-1",
+          version: 2,
+          effectState: "ACTIVE",
+          effectiveWindow: { effectiveFrom: null, effectiveUntil: null },
+          sourceDeploymentRef: "source-1",
+          destinationDeploymentRef: "destination-1",
+          interactionRevisionRef: "revision-1",
+          authorizationEvidence: [],
+          justifications: [],
+          operationalHistory: [],
         },
-        sourceDeploymentRef: "deployment-1",
-        destinationDeploymentRef: "deployment-2",
-        interactionRevisionRef: "revision-1",
-        authorizationEvidence: [],
-        justifications: [],
-        operationalHistory: [],
-      },
-    ]),
-    [{ policyRuleRef: "rule-1", effectState: "ACTIVE" }],
+      ],
+      total: 3,
+      page: 2,
+      pageSize: 1,
+    }),
+    {
+      rules: [
+        {
+          policyRuleRef: "rule-1",
+          effectState: "ACTIVE",
+          sourceDeploymentRef: "source-1",
+          destinationDeploymentRef: "destination-1",
+          interactionRevisionRef: "revision-1",
+        },
+      ],
+      total: 3,
+      page: 2,
+      pageSize: 1,
+    },
   );
 });

@@ -26,17 +26,7 @@ composition_contract:
     Unsupported controls or fields are recorded as not-adopted rather than
     recreated as client-only product behavior.
   inherited_entity_collection_default: NAPMS-MVP-PRESENTATION-SYSTEM.entity_collection_default
-  migration_gaps:
-    - id: entity-catalogue-query-contracts
-      applies_to: [POLICY-RULES]
-      gap: >-
-        Search/filter/sort and scalable paging semantics are not yet closed end-to-end
-        through accepted query contracts for every primary entity collection.
-    - id: primary-catalogue-table-adoption
-      applies_to: [POLICY-RULES]
-      gap: >-
-        Current realization still uses STRUCTURED-LIST for some primary entity
-        collections; migrate them to DATA-TABLE unless an explicit override is accepted.
+  migration_gaps: []
 
 screens:
   - id: RESOURCE-CATALOGUE
@@ -769,23 +759,129 @@ screens:
     overrides: []
 
   - id: POLICY-RULES
-    purpose: Inspect authoritative desired-access rules and change supported Active/Inactive operational state.
-    patterns: [CATALOGUE, DETAIL, STRUCTURED-LIST, OUTCOME, TASK-ACTIONS, STATUS]
+    purpose: Locate authoritative desired-access rules, inspect one Rule and change supported operational state.
+    patterns: [CATALOGUE, FILTER-BAR, DATA-TABLE, DETAIL, EDITOR, OUTCOME, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: rules, role: collection, priority: primary}
-      - {id: selected-rule, role: authoritative-detail, priority: primary}
-      - {id: provenance-history, role: secondary-content, priority: secondary}
+      - {id: query-controls, role: collection-query, pattern: FILTER-BAR, priority: primary, applies_when: list-mode}
+      - {id: rules, role: collection, pattern: DATA-TABLE, priority: primary, applies_when: list-mode}
+      - {id: selected-rule, role: authoritative-detail, pattern: DETAIL, priority: primary, applies_when: detail-mode}
+      - {id: provenance-history, role: secondary-content, priority: secondary, applies_when: detail-mode}
+      - {id: rule-editor, role: task-editor, pattern: EDITOR, priority: primary, applies_when: detail-mode}
+      - {id: outcome, role: authoritative-outcome, pattern: OUTCOME, priority: primary, applies_when: detail-mode}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     composition:
-      root: rule-workspace
-      ordered_regions: [context, actions, rules, selected-rule, provenance-history, feedback]
-    primary_action_role: change-supported-operational-state
-    states: [loading, loaded, empty, submitting, authorization-rejected, conflict, not-found, technical-error]
+      root: policy-rule-workspace
+      ordered_regions: [context, actions, query-controls, rules, selected-rule, outcome, rule-editor, provenance-history, feedback]
+      modes:
+        list: [context, actions, query-controls, rules, feedback]
+        detail: [context, selected-rule, outcome, rule-editor, provenance-history, feedback]
+      query-controls:
+        pattern: FILTER-BAR
+        search: {source: query:listPolicyRules.search, matches: [policyRuleRef]}
+        filters:
+          - {id: source-deployment-ref, source: query:listPolicyRules.sourceDeploymentRef}
+          - {id: destination-deployment-ref, source: query:listPolicyRules.destinationDeploymentRef}
+          - {id: effect-state, source: query:listPolicyRules.effectState}
+        sort:
+          fields: [policyRuleRef, effectState]
+          default: {field: policyRuleRef, direction: asc}
+        paging: {page: query:listPolicyRules.page, page_size: query:listPolicyRules.pageSize}
+      rules:
+        pattern: DATA-TABLE
+        columns:
+          - {id: policy-rule-reference, role: primary-identity, sort: policyRuleRef}
+          - {id: effect-state, role: authoritative-state, sort: effectState}
+          - {id: source-deployment, role: distinguishing-attribute}
+          - {id: destination-deployment, role: distinguishing-attribute}
+          - {id: interaction-revision, role: distinguishing-attribute}
+        row_action: open-policy-rule
+    primary_action_role: export-effective-policy
+    action_hierarchy:
+      rule: change-supported-operational-state
+      justification: attach-business-justification
+    exits:
+      - select Policy Rule -> POLICY-RULES detail route
+      - export effective policy -> POLICY-EXPORT
+    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    semantic_contract:
+      reads:
+        - id: catalogue
+          operation_id: listPolicyRules
+          projection: PolicyRuleCataloguePage
+          query:
+            search: {source: local:query.search, semantics: accepted-text-search}
+            sourceDeploymentRef: {source: local:query.filters.source-deployment-ref, semantics: exact-attribute-filter}
+            destinationDeploymentRef: {source: local:query.filters.destination-deployment-ref, semantics: exact-attribute-filter}
+            effectState: {source: local:query.filters.effect-state, accepted: [ACTIVE, INACTIVE]}
+            sortBy: {source: local:query.sort.field, accepted: [policyRuleRef, effectState]}
+            sortDirection: {source: local:query.sort.direction, accepted: [asc, desc]}
+            page: {source: local:query.page, minimum: 1}
+            pageSize: {source: local:query.page-size, default: 25, maximum: 100}
+        - {id: detail, operation_id: getPolicyRule, projection: PolicyRuleView}
+      commands:
+        - {id: change-supported-operational-state, operation_id: setPolicyRuleOperationalState}
+        - {id: attach-business-justification, operation_id: attachPolicyRuleJustification}
+      view_model:
+        id: PolicyRuleScreenModel
+        fields:
+          - {id: rules, source: read:catalogue.items}
+          - {id: total, source: read:catalogue.total}
+          - {id: page, source: read:catalogue.page}
+          - {id: page_size, source: read:catalogue.pageSize}
+          - {id: policy_rule_ref, source: read:detail.policyRuleRef}
+          - {id: effect_state, source: read:detail.effectState}
+          - {id: effective_window, source: read:detail.effectiveWindow}
+          - {id: source_deployment_ref, source: read:detail.sourceDeploymentRef}
+          - {id: destination_deployment_ref, source: read:detail.destinationDeploymentRef}
+          - {id: interaction_revision_ref, source: read:detail.interactionRevisionRef}
+          - {id: authorization_evidence, source: read:detail.authorizationEvidence}
+          - {id: justifications, source: read:detail.justifications}
+          - {id: operational_history, source: read:detail.operationalHistory}
+          - {id: version, source: read:detail.version}
+      capabilities:
+        allowed:
+          - {id: inspect-catalogue, backed_by: read:catalogue}
+          - {id: search, backed_by: read:catalogue}
+          - {id: filter, backed_by: read:catalogue}
+          - {id: sort, backed_by: read:catalogue}
+          - {id: pagination, backed_by: read:catalogue}
+          - {id: open-policy-rule, backed_by: navigation:policy-rule-detail}
+          - {id: inspect-policy-rule, backed_by: read:detail}
+          - {id: inspect-outcome, backed_by: read:detail}
+          - {id: change-supported-operational-state, backed_by: command:change-supported-operational-state}
+          - {id: attach-business-justification, backed_by: command:attach-business-justification}
+          - {id: export-effective-policy, backed_by: navigation:policy-export}
+        excluded: [bulk-operation, inline-edit-rule-subject, rewrite-authorization-evidence]
+      pattern_mapping:
+        - {pattern: CATALOGUE, feature_bindings: {open-item: open-policy-rule}}
+        - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
+        - {pattern: DATA-TABLE, feature_bindings: {open-row: open-policy-rule, sort: sort, paging: pagination}}
+        - {pattern: DETAIL, feature_bindings: {show-primary: inspect-policy-rule}}
+        - {pattern: EDITOR, feature_bindings: {}}
+        - {pattern: OUTCOME, feature_bindings: {}}
+        - {pattern: TASK-ACTIONS, feature_bindings: {primary: export-effective-policy}}
+        - {pattern: STATUS, feature_bindings: {}}
+      state_mapping:
+        loading: [read:catalogue.pending, read:detail.pending]
+        loaded: [read:catalogue.200, read:detail.200]
+        empty: read:catalogue.200
+        editing: local:policy-rule-editor
+        submitting: [command:change-supported-operational-state.pending, command:attach-business-justification.pending]
+        validation-rejected: [command:change-supported-operational-state.422, command:attach-business-justification.422]
+        authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, command:change-supported-operational-state.401, command:change-supported-operational-state.403, command:attach-business-justification.401, command:attach-business-justification.403]
+        conflict: [command:change-supported-operational-state.409, command:attach-business-justification.409]
+        not-found: read:detail.404
+        technical-error: [read:catalogue.failure, read:detail.failure, command:change-supported-operational-state.failure, command:attach-business-justification.failure]
+      verification:
+        contract: [operation:listPolicyRules-query-parameters, operation:getPolicyRule, operation:setPolicyRuleOperationalState, operation:attachPolicyRuleJustification]
+        semantic: [policy-rule-catalogue-query-capability-and-state-closure, materialization-selection-remains-independent-from-ui-paging]
+        rendered: [policy-rule-filter-table-detail-outcome-conformance]
     responsive:
+      - Policy Rule identity, effect state and subject remain available when the catalogue reflows
+      - query controls reflow without losing active state or clear action
       - selected rule identity/state stays before provenance/history
-      - rule list may become labeled records
     overrides: []
 
   - id: POLICY-EXPORT
@@ -866,5 +962,5 @@ coverage:
     - ACCESS-REQUESTS
     - POLICY-RULES
     - POLICY-EXPORT
-  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, DEPLOYMENTS, DEPLOYMENT-DETAIL, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-EXPORT]
+  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, DEPLOYMENTS, DEPLOYMENT-DETAIL, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES, POLICY-EXPORT]
   rule: FRONTEND-IMPLEMENTATION is not presentation-complete unless every required workspace has explicit composition and inherits the shared Presentation System; pilot screens additionally require machine-checked semantic closure.

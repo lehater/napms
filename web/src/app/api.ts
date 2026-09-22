@@ -17,6 +17,10 @@ import {
 } from "./deployment-catalogue-query";
 import { type ApiErrorKind, statusToErrorKind } from "./http-semantics";
 import {
+  type PolicyRuleCatalogueQuery,
+  serializePolicyRuleCatalogueQuery,
+} from "./policy-rule-catalogue-query";
+import {
   type ResourceCatalogueQuery,
   serializeResourceCatalogueQuery,
 } from "./resource-catalogue-query";
@@ -383,7 +387,10 @@ export const api = {
         headers: { "If-Match": String(version) },
       },
     ),
-  listPolicyRules: () => request<PolicyRuleView[]>("/v1/policy-rules"),
+  listPolicyRules: (query: PolicyRuleCatalogueQuery) =>
+    request<CataloguePage<PolicyRuleView>>(
+      `/v1/policy-rules?${serializePolicyRuleCatalogueQuery(query)}`,
+    ),
   getPolicyRule: (ref: string) =>
     request<PolicyRuleView>(`/v1/policy-rules/${ref}`),
   setPolicyRuleState: (

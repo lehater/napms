@@ -223,7 +223,20 @@ paths:
   /v1/policy-rules:
     get:
       operationId: listPolicyRules
-      responses: {'200': {description: Policy Rule catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      parameters:
+        - {$ref: '#/components/parameters/CatalogueSearch'}
+        - {$ref: '#/components/parameters/PolicyRuleSourceDeploymentFilter'}
+        - {$ref: '#/components/parameters/PolicyRuleDestinationDeploymentFilter'}
+        - {$ref: '#/components/parameters/PolicyRuleEffectStateFilter'}
+        - {$ref: '#/components/parameters/PolicyRuleSortBy'}
+        - {$ref: '#/components/parameters/CatalogueSortDirection'}
+        - {$ref: '#/components/parameters/CataloguePage'}
+        - {$ref: '#/components/parameters/CataloguePageSize'}
+      responses:
+        '200': {description: Policy Rule catalogue, content: {application/json: {schema: {$ref: '#/components/schemas/PolicyRuleCataloguePage'}}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
   /v1/policy-rules/{policyRuleRef}/operational-state:
     put:
       operationId: setPolicyRuleOperationalState
@@ -282,6 +295,10 @@ components:
     AccessRequestDestinationDeploymentFilter: {name: destinationDeploymentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
     AccessRequestDecisionFilter: {name: decisionResult, in: query, required: false, schema: {type: string, enum: [ALLOWED, DENIED]}}
     AccessRequestSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [submittedAt, requestRef, decisionResult], default: submittedAt}}
+    PolicyRuleSourceDeploymentFilter: {name: sourceDeploymentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
+    PolicyRuleDestinationDeploymentFilter: {name: destinationDeploymentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
+    PolicyRuleEffectStateFilter: {name: effectState, in: query, required: false, schema: {type: string, enum: [ACTIVE, INACTIVE]}}
+    PolicyRuleSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [policyRuleRef, effectState], default: policyRuleRef}}
     ResourceRef: {name: resourceRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     EndpointRef: {name: endpointRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     ResponsibilityRole: {name: role, in: path, required: true, schema: {type: string, enum: [OWNER, ADMINISTRATOR]}}
@@ -672,6 +689,16 @@ components:
       additionalProperties: false
       required: [needRef]
       properties: {needRef: {$ref: '#/components/schemas/StableId'}}
+
+    PolicyRuleCataloguePage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/PolicyRuleView'}}
+        total: {type: integer, minimum: 0}
+        page: {type: integer, minimum: 1}
+        pageSize: {type: integer, minimum: 1, maximum: 100}
 
     PolicyRuleView:
       type: object

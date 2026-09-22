@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
   CataloguePattern,
   type CatalogueState,
+  type DataTableColumn,
+  DataTablePattern,
   DetailPattern,
   type DetailState,
   type EditorPatternProps,
+  FilterBarPattern,
   OutcomePattern,
-  StructuredListPattern,
 } from "../../presentation";
 import {
   attachPolicyRuleJustification,
@@ -16,14 +18,19 @@ import {
   queryPolicyRules,
   setPolicyRuleEffectState,
 } from "./policyRuleApplication";
+import {
+  type PolicyRuleCatalogueQueryState,
+  defaultPolicyRuleCatalogueQuery,
+} from "./policyRuleCatalogueQuery";
 import type {
   PolicyRuleCatalogueItem,
+  PolicyRuleCatalogueScreenModel,
   PolicyRuleDetailScreenModel,
 } from "./policyRuleModels";
 
 type CatalogueLoadState =
   | { kind: "loading" }
-  | { kind: "loaded"; items: PolicyRuleCatalogueItem[] }
+  | { kind: "loaded"; model: PolicyRuleCatalogueScreenModel }
   | { kind: "authorization-rejected"; message: string }
   | { kind: "technical-error"; message: string };
 
@@ -80,15 +87,19 @@ function detailFailure(error: unknown): {
 }
 
 function PolicyRuleListMode() {
+  const [query, setQuery] = useState<PolicyRuleCatalogueQueryState>(
+    defaultPolicyRuleCatalogueQuery,
+  );
   const [loadState, setLoadState] = useState<CatalogueLoadState>({
     kind: "loading",
   });
 
   useEffect(() => {
     let active = true;
-    void queryPolicyRules()
-      .then((items) => {
-        if (active) setLoadState({ kind: "loaded", items });
+    setLoadState({ kind: "loading" });
+    void queryPolicyRules(query)
+      .then((model) => {
+        if (active) setLoadState({ kind: "loaded", model });
       })
       .catch((error) => {
         if (active) setLoadState(catalogueFailure(error));
@@ -96,9 +107,58 @@ function PolicyRuleListMode() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [query]);
 
-  const rows = loadState.kind === "loaded" ? loadState.items : [];
+  function updateQuery(
+    patch: Partial<PolicyRuleCatalogueQueryState>,
+    resetPage = true,
+  ) {
+    setQuery((current) => ({
+      ...current,
+      ...patch,
+      page: resetPage ? 1 : (patch.page ?? current.page),
+    }));
+  }
+
+  const columns = useMemo<readonly DataTableColumn<PolicyRuleCatalogueItem>[]>(
+    () => [
+      {
+        id: "policy-rule-reference",
+        label: "Policy Rule",
+        emphasis: "primary",
+        sortKey: "policyRuleRef",
+        render: (row) => row.policyRuleRef,
+      },
+      {
+        id: "effect-state",
+        label: "State",
+        sortKey: "effectState",
+        render: (row) => row.effectState,
+      },
+      {
+        id: "source-deployment",
+        label: "Source Deployment",
+        emphasis: "technical",
+        render: (row) => row.sourceDeploymentRef,
+      },
+      {
+        id: "destination-deployment",
+        label: "Destination Deployment",
+        emphasis: "technical",
+        render: (row) => row.destinationDeploymentRef,
+      },
+      {
+        id: "interaction-revision",
+        label: "Interaction Revision",
+        emphasis: "technical",
+        render: (row) => row.interactionRevisionRef,
+      },
+    ],
+    [],
+  );
+
+  const model = loadState.kind === "loaded" ? loadState.model : undefined;
+  const rows = model?.rules ?? [];
   const state: CatalogueState =
     loadState.kind === "loaded"
       ? rows.length === 0
@@ -110,6 +170,14 @@ function PolicyRuleListMode() {
     loadState.kind === "technical-error"
       ? loadState.message
       : undefined;
+  const queryActive =
+    query.search !== "" ||
+    query.sourceDeploymentRef !== "" ||
+    query.destinationDeploymentRef !== "" ||
+    query.effectState !== "" ||
+    query.sortBy !== defaultPolicyRuleCatalogueQuery.sortBy ||
+    query.sortDirection !== defaultPolicyRuleCatalogueQuery.sortDirection ||
+    query.pageSize !== defaultPolicyRuleCatalogueQuery.pageSize;
 
   return (
     <CataloguePattern
@@ -122,16 +190,87 @@ function PolicyRuleListMode() {
       }}
       state={state}
       statusMessage={statusMessage}
-      emptyMessage="No Policy Rules."
+      emptyMessage="No Policy Rules match the current query."
+      queryControls={
+        <FilterBarPattern
+          search={{
+            label: "Search Policy Rules",
+            value: query.search,
+            placeholder: "Policy Rule ID",
+            onChange: (value) => updateQuery({ search: value }),
+          }}
+          filters={[
+            {
+              id: "source-deployment-ref",
+              label: "Source Deployment ID",
+              value: query.sourceDeploymentRef,
+              onChange: (value) => updateQuery({ sourceDeploymentRef: value }),
+            },
+            {
+              id: "destination-deployment-ref",
+              label: "Destination Deployment ID",
+              value: query.destinationDeploymentRef,
+              onChange: (value) =>
+                updateQuery({ destinationDeploymentRef: value }),
+            },
+            {
+              id: "effect-state",
+              label: "State",
+              value: query.effectState,
+              options: [
+                { value: "", label: "Any state" },
+                { value: "ACTIVE", label: "Active" },
+                { value: "INACTIVE", label: "Inactive" },
+              ],
+              onChange: (value) =>
+                updateQuery({
+                  effectState:
+                    value as PolicyRuleCatalogueQueryState["effectState"],
+                }),
+            },
+          ]}
+          sort={{
+            field: query.sortBy,
+            fields: [
+              { value: "policyRuleRef", label: "Policy Rule" },
+              { value: "effectState", label: "State" },
+            ],
+            direction: query.sortDirection,
+            onFieldChange: (field) =>
+              updateQuery({
+                sortBy: field as PolicyRuleCatalogueQueryState["sortBy"],
+              }),
+            onDirectionChange: (sortDirection) =>
+              updateQuery({ sortDirection }),
+          }}
+          active={queryActive}
+          onClear={() => setQuery(defaultPolicyRuleCatalogueQuery)}
+        />
+      }
     >
-      <StructuredListPattern
+      <DataTablePattern
         label="Policy Rules"
         rows={rows}
+        columns={columns}
         rowKey={(row) => row.policyRuleRef}
-        primary={(row) => row.policyRuleRef}
-        secondary={(row) => row.effectState}
         onOpen={(row) => navigate(`/policy-rules/${row.policyRuleRef}`)}
-        emptyMessage="No Policy Rules."
+        sort={{
+          field: query.sortBy,
+          direction: query.sortDirection,
+          onChange: (field, sortDirection) =>
+            updateQuery({
+              sortBy: field as PolicyRuleCatalogueQueryState["sortBy"],
+              sortDirection,
+            }),
+        }}
+        paging={{
+          page: model?.page ?? query.page,
+          pageSize: model?.pageSize ?? query.pageSize,
+          total: model?.total ?? 0,
+          onPageChange: (page) => updateQuery({ page }, false),
+          onPageSizeChange: (pageSize) => updateQuery({ pageSize }),
+        }}
+        emptyMessage="No Policy Rules match the current query."
       />
     </CataloguePattern>
   );

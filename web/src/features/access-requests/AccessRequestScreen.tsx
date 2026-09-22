@@ -195,8 +195,7 @@ function AccessRequestListMode() {
     query.destinationDeploymentRef !== "" ||
     query.decisionResult !== "" ||
     query.sortBy !== defaultAccessRequestCatalogueQuery.sortBy ||
-    query.sortDirection !==
-      defaultAccessRequestCatalogueQuery.sortDirection ||
+    query.sortDirection !== defaultAccessRequestCatalogueQuery.sortDirection ||
     query.pageSize !== defaultAccessRequestCatalogueQuery.pageSize;
 
   return (

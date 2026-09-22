@@ -10,6 +10,9 @@ from napms.contexts.access_policy.application.queries import (
     AccessRequestCataloguePage,
     AccessRequestCatalogueQuery,
     AccessRequestSortField,
+    PolicyRuleCataloguePage,
+    PolicyRuleCatalogueQuery,
+    PolicyRuleSortField,
     SortDirection,
 )
 from napms.contexts.access_policy.domain.model import (
@@ -117,9 +120,71 @@ class PostgresAccessPolicyRepository:
         with psycopg.connect(self._dsn) as connection:
             return self.get_rule_in(connection, rule_ref)
 
-    def list_rules(self) -> tuple[PolicyRule, ...]:
+    def query_rules(
+        self,
+        query: PolicyRuleCatalogueQuery,
+    ) -> PolicyRuleCataloguePage:
+        conditions: list[str] = []
+        parameters: list[object] = []
+
+        if query.search:
+            search = query.search.strip()
+            if search:
+                conditions.append("CAST(rule_ref AS text) ILIKE %s")
+                parameters.append(f"%{search}%")
+
+        if query.source_deployment_ref is not None:
+            conditions.append("source_deployment_ref = %s")
+            parameters.append(query.source_deployment_ref)
+
+        if query.destination_deployment_ref is not None:
+            conditions.append("destination_deployment_ref = %s")
+            parameters.append(query.destination_deployment_ref)
+
+        if query.effect_state is not None:
+            conditions.append("effect_state = %s")
+            parameters.append(query.effect_state.value)
+
+        where = "" if not conditions else " WHERE " + " AND ".join(conditions)
+        order_by = {
+            PolicyRuleSortField.POLICY_RULE_REF: "rule_ref",
+            PolicyRuleSortField.EFFECT_STATE: "effect_state",
+        }[query.sort_by]
+        direction = "ASC" if query.sort_direction is SortDirection.ASC else "DESC"
+        offset = (query.page - 1) * query.page_size
+
         with psycopg.connect(self._dsn) as connection:
-            return self.list_rules_in(connection)
+            total_row = connection.execute(
+                f"""
+                SELECT COUNT(*)
+                FROM access_policy.policy_rule
+                {where}
+                """,
+                parameters,
+            ).fetchone()
+            total = 0 if total_row is None else total_row[0]
+            rows = connection.execute(
+                f"""
+                SELECT rule_ref
+                FROM access_policy.policy_rule
+                {where}
+                ORDER BY {order_by} {direction}, rule_ref ASC
+                LIMIT %s OFFSET %s
+                """,
+                (*parameters, query.page_size, offset),
+            ).fetchall()
+            items = tuple(
+                rule
+                for (rule_ref,) in rows
+                if (rule := self.get_rule_in(connection, rule_ref)) is not None
+            )
+
+        return PolicyRuleCataloguePage(
+            items=items,
+            total=total,
+            page=query.page,
+            page_size=query.page_size,
+        )
 
     @classmethod
     def list_rules_in(

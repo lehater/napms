@@ -1,12 +1,20 @@
 import { api } from "../../app/api";
 import {
-  type PolicyRuleCatalogueItem,
+  type PolicyRuleCatalogueQueryState,
+  toPolicyRuleCatalogueQuery,
+} from "./policyRuleCatalogueQuery";
+import {
+  type PolicyRuleCatalogueScreenModel,
   type PolicyRuleDetailScreenModel,
-  toPolicyRuleCatalogue,
+  toPolicyRuleCatalogueScreenModel,
 } from "./policyRuleModels";
 
-export async function queryPolicyRules(): Promise<PolicyRuleCatalogueItem[]> {
-  return toPolicyRuleCatalogue(await api.listPolicyRules());
+export async function queryPolicyRules(
+  query: PolicyRuleCatalogueQueryState,
+): Promise<PolicyRuleCatalogueScreenModel> {
+  return toPolicyRuleCatalogueScreenModel(
+    await api.listPolicyRules(toPolicyRuleCatalogueQuery(query)),
+  );
 }
 
 export async function queryPolicyRule(
