@@ -77,8 +77,8 @@ services:
   web:
     image: napms-web:local
     build:
-      context: web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: web/Dockerfile
     init: true
     security_opt:
       - no-new-privileges:true
