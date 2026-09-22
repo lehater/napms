@@ -72,7 +72,7 @@ bindings:
   - {artifact: FRONTEND-SCREEN-VIEW-DESIGN, authority: INTERFACE-DESIGN, provides: [engineering.frontend.screen-view-design]}
   - {artifact: FRONTEND-ARCHITECTURE, authority: SYSTEM-ARCHITECTURE, provides: [engineering.frontend.architecture]}
   - {artifact: FRONTEND-COMPONENT-DESIGN, authority: COMPONENT-DESIGN, provides: [engineering.frontend.component-design]}
-  - {artifact: FRONTEND-VERIFICATION, authority: VERIFICATION-DESIGN, provides: [engineering.frontend.verification]}
+  - {artifact: FRONTEND-VERIFICATION, authority: VERIFICATION-DESIGN, provides: [engineering.frontend.verification, engineering.frontend.presentation-verification]}
   - {artifact: FRONTEND-TEST-DESIGN, authority: TEST-DESIGN, provides: [engineering.frontend.test-design]}
   - {artifact: FRONTEND-IMPLEMENTATION-DESIGN, authority: IMPLEMENTATION-DESIGN, provides: [engineering.frontend.implementation-design]}
 
