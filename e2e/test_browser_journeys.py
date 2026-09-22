@@ -159,6 +159,7 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         assert resource_ref in (resource_row.text_content() or "")
         resource_row.click()
         page.wait_for_url(f"**/resources/{resource_ref}")
+        page.get_by_role("button", name="Back", exact=True).wait_for()
 
         page.get_by_role("heading", name="Current facts").wait_for()
         page.locator("[data-version]").wait_for()

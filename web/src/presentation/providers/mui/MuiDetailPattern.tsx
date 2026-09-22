@@ -49,6 +49,10 @@ export function MuiDetailPattern({
 
   return (
     <Stack spacing={3}>
+      {onReturn ? (
+        <MuiTaskActions actions={[{ label: "Back", onInvoke: onReturn }]} />
+      ) : null}
+
       <Box>
         <Typography
           variant="overline"
@@ -93,21 +97,14 @@ export function MuiDetailPattern({
 
       {failure ? <MuiStatus message={statusMessage ?? failure} /> : null}
 
-      {!loaded && state !== "loading" ? (
+      {!loaded && state !== "loading" && onRetry ? (
         <MuiTaskActions
           actions={[
-            ...(onRetry
-              ? [
-                  {
-                    label: "Retry",
-                    onInvoke: onRetry,
-                    tone: "primary" as const,
-                  },
-                ]
-              : []),
-            ...(onReturn
-              ? [{ label: "Back to Resources", onInvoke: onReturn }]
-              : []),
+            {
+              label: "Retry",
+              onInvoke: onRetry,
+              tone: "primary",
+            },
           ]}
         />
       ) : null}
