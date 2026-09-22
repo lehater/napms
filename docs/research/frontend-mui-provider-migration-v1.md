@@ -241,13 +241,12 @@ Do not call a Screen Model or frontend Presenter a BFF. A BFF is a server/networ
 - `web/src/design-system/base.css`;
 - `web/src/design-system/tokens.css`;
 - `web/src/design-system/components.tsx`;
-- old `web/src/components/AppShell.tsx`;
 - `web/scripts/generate-design-tokens.mjs`;
 - obsolete portions of `web/scripts/check-ui-boundaries.mjs`;
 - `web/components.json` and shadcn/Tailwind-specific setup when no longer referenced;
 - Tailwind/shadcn/lucide dependencies that become unused.
 
-The clearly identified legacy presentation/tooling files are about 27 KB before counting presentation JSX embedded in feature screens. Therefore the final reduction should exceed that amount once screen-local legacy markup is also removed. This is an order-of-magnitude migration estimate, not a completion metric.
+The pilot already removes the old AppShell and Resource Catalogue legacy presentation path. The remaining clearly identified legacy presentation/tooling files were about 27 KB at the migration baseline before counting presentation JSX embedded in feature screens. Therefore the final reduction should exceed that amount once screen-local legacy markup is also removed. This is an order-of-magnitude migration estimate, not a completion metric.
 
 ## Target code structure
 
