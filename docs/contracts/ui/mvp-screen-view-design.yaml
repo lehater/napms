@@ -28,12 +28,12 @@ composition_contract:
   inherited_entity_collection_default: NAPMS-MVP-PRESENTATION-SYSTEM.entity_collection_default
   migration_gaps:
     - id: entity-catalogue-query-contracts
-      applies_to: [BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
+      applies_to: [ACCESS-REQUESTS, POLICY-RULES]
       gap: >-
         Search/filter/sort and scalable paging semantics are not yet closed end-to-end
         through accepted query contracts for every primary entity collection.
     - id: primary-catalogue-table-adoption
-      applies_to: [BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES]
+      applies_to: [ACCESS-REQUESTS, POLICY-RULES]
       gap: >-
         Current realization still uses STRUCTURED-LIST for some primary entity
         collections; migrate them to DATA-TABLE unless an explicit override is accepted.
@@ -514,24 +514,132 @@ screens:
     overrides: []
 
   - id: BUSINESS-CONNECTIVITY
-    purpose: Manage Business Processes and Connectivity Needs while preserving business justification independently from permission.
-    patterns: [CATALOGUE, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
+    purpose: Locate/create Business Processes, inspect one Process, and manage its Connectivity Needs without conflating justification with permission.
+    patterns: [CATALOGUE, FILTER-BAR, DATA-TABLE, DETAIL, EDITOR, STRUCTURED-LIST, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
-      - {id: business-processes, role: collection-detail, priority: primary}
-      - {id: connectivity-needs, role: collection-detail, priority: primary}
+      - {id: query-controls, role: collection-query, pattern: FILTER-BAR, priority: primary, applies_when: list-mode}
+      - {id: business-processes, role: collection, pattern: DATA-TABLE, priority: primary, applies_when: list-mode}
+      - {id: process-detail, role: primary-content, pattern: DETAIL, priority: primary, applies_when: detail-mode}
+      - {id: connectivity-needs, role: nested-relationship-collection, pattern: STRUCTURED-LIST, priority: primary, applies_when: detail-mode}
+      - {id: editors, role: task-editor, pattern: EDITOR, priority: primary, applies_when: [create-mode, detail-mode]}
       - {id: actions, role: task-actions, priority: primary}
       - {id: feedback, role: operation-status, priority: supporting}
     composition:
-      root: relationship-workspace
-      ordered_regions: [context, actions, business-processes, connectivity-needs, feedback]
+      root: business-connectivity-workspace
+      ordered_regions: [context, actions, query-controls, business-processes, process-detail, connectivity-needs, editors, feedback]
+      modes:
+        list: [context, actions, query-controls, business-processes, feedback]
+        create: [context, editors, feedback]
+        detail: [context, process-detail, connectivity-needs, editors, feedback]
+      query-controls:
+        pattern: FILTER-BAR
+        search: {source: query:listBusinessProcesses.search, matches: [name, processRef]}
+        filters:
+          - {id: criticality-label, source: query:listBusinessProcesses.criticalityLabel}
+          - {id: organization-reference, source: query:listBusinessProcesses.organizationExternalReference}
+        sort:
+          fields: [name, processRef, criticalityLabel]
+          default: {field: name, direction: asc}
+        paging: {page: query:listBusinessProcesses.page, page_size: query:listBusinessProcesses.pageSize}
+      business-processes:
+        pattern: DATA-TABLE
+        columns:
+          - {id: name, role: primary-identity, sort: name}
+          - {id: criticality, role: distinguishing-attribute, sort: criticalityLabel}
+          - {id: responsible-organization, role: distinguishing-attribute}
+          - {id: process-reference, role: technical-identity, sort: processRef}
+        row_action: open-business-process
+      connectivity-needs:
+        pattern: STRUCTURED-LIST
+        role: nested-process-relationships
+        row_action: retire-connectivity-need
+    primary_action_role: create-business-process
     action_hierarchy:
-      business_process: create-or-edit-business-process
-      connectivity_need: create-or-retire-connectivity-need
-    states: [loading, loaded, empty, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
+      business_process: edit-business-process
+      connectivity_need: manage-connectivity-need
+    exits:
+      - select Business Process -> BUSINESS-CONNECTIVITY detail route
+      - create Business Process -> BUSINESS-CONNECTIVITY detail route
+    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    semantic_contract:
+      reads:
+        - id: catalogue
+          operation_id: listBusinessProcesses
+          projection: BusinessProcessCataloguePage
+          query:
+            search: {source: local:query.search, semantics: accepted-text-search}
+            criticalityLabel: {source: local:query.filters.criticality-label, semantics: exact-attribute-filter}
+            organizationExternalReference: {source: local:query.filters.organization-reference, semantics: exact-attribute-filter}
+            sortBy: {source: local:query.sort.field, accepted: [name, processRef, criticalityLabel]}
+            sortDirection: {source: local:query.sort.direction, accepted: [asc, desc]}
+            page: {source: local:query.page, minimum: 1}
+            pageSize: {source: local:query.page-size, default: 25, maximum: 100}
+        - {id: detail, operation_id: getBusinessProcess, projection: BusinessProcessView}
+      commands:
+        - {id: create-business-process, operation_id: createBusinessProcess}
+        - {id: set-responsible-organization, operation_id: setProcessResponsibleOrganization}
+        - {id: set-criticality, operation_id: setProcessCriticality}
+        - {id: declare-connectivity-need, operation_id: declareConnectivityNeed}
+        - {id: retire-connectivity-need, operation_id: retireConnectivityNeed}
+      view_model:
+        id: BusinessConnectivityScreenModel
+        fields:
+          - {id: processes, source: read:catalogue.items}
+          - {id: total, source: read:catalogue.total}
+          - {id: page, source: read:catalogue.page}
+          - {id: page_size, source: read:catalogue.pageSize}
+          - {id: process_ref, source: read:detail.processRef}
+          - {id: name, source: read:detail.name}
+          - {id: description, source: read:detail.description}
+          - {id: criticality_label, source: read:detail.criticalityLabel}
+          - {id: organization_external_reference, source: read:detail.organizationExternalReference}
+          - {id: organization_display_name, source: read:detail.organizationDisplayName}
+          - {id: version, source: read:detail.version}
+          - {id: needs, source: read:detail.needs}
+      capabilities:
+        allowed:
+          - {id: inspect-catalogue, backed_by: read:catalogue}
+          - {id: search, backed_by: read:catalogue}
+          - {id: filter, backed_by: read:catalogue}
+          - {id: sort, backed_by: read:catalogue}
+          - {id: pagination, backed_by: read:catalogue}
+          - {id: open-business-process, backed_by: navigation:business-process-detail}
+          - {id: create-business-process, backed_by: command:create-business-process}
+          - {id: inspect-business-process, backed_by: read:detail}
+          - {id: edit-business-process, backed_by: command:set-responsible-organization}
+          - {id: set-criticality, backed_by: command:set-criticality}
+          - {id: manage-connectivity-need, backed_by: command:declare-connectivity-need}
+          - {id: retire-connectivity-need, backed_by: command:retire-connectivity-need}
+        excluded: [bulk-operation, inline-edit-business-process, permission-outcome-edit]
+      pattern_mapping:
+        - {pattern: CATALOGUE, feature_bindings: {open-item: open-business-process, create-item: create-business-process}}
+        - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
+        - {pattern: DATA-TABLE, feature_bindings: {open-row: open-business-process, sort: sort, paging: pagination}}
+        - {pattern: DETAIL, feature_bindings: {show-primary: inspect-business-process}}
+        - {pattern: EDITOR, feature_bindings: {}}
+        - {pattern: STRUCTURED-LIST, feature_bindings: {row-action: retire-connectivity-need}}
+        - {pattern: TASK-ACTIONS, feature_bindings: {primary: create-business-process}}
+        - {pattern: STATUS, feature_bindings: {}}
+      state_mapping:
+        loading: [read:catalogue.pending, read:detail.pending]
+        loaded: [read:catalogue.200, read:detail.200]
+        empty: read:catalogue.200
+        editing: local:business-connectivity-editor
+        submitting: [command:create-business-process.pending, command:set-responsible-organization.pending, command:set-criticality.pending, command:declare-connectivity-need.pending, command:retire-connectivity-need.pending]
+        validation-rejected: [command:create-business-process.422, command:set-responsible-organization.422, command:set-criticality.422, command:declare-connectivity-need.422, command:retire-connectivity-need.422]
+        authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, command:create-business-process.401, command:create-business-process.403, command:set-responsible-organization.401, command:set-responsible-organization.403, command:set-criticality.401, command:set-criticality.403, command:declare-connectivity-need.401, command:declare-connectivity-need.403, command:retire-connectivity-need.401, command:retire-connectivity-need.403]
+        conflict: [command:set-responsible-organization.409, command:set-criticality.409, command:declare-connectivity-need.409, command:retire-connectivity-need.409]
+        not-found: read:detail.404
+        technical-error: [read:catalogue.failure, read:detail.failure, command:create-business-process.failure, command:set-responsible-organization.failure, command:set-criticality.failure, command:declare-connectivity-need.failure, command:retire-connectivity-need.failure]
+      verification:
+        contract: [operation:listBusinessProcesses-query-parameters, operation:getBusinessProcess, operation:createBusinessProcess, operation:setProcessResponsibleOrganization, operation:setProcessCriticality, operation:declareConnectivityNeed, operation:retireConnectivityNeed]
+        semantic: [business-process-catalogue-query-capability-and-state-closure, connectivity-need-remains-nested-business-justification]
+        rendered: [business-process-filter-table-detail-conformance]
     responsive:
-      - Business Process context precedes related Connectivity Need composition
-      - relationship labels remain visible when collections stack
+      - Business Process identity and accepted distinguishing attributes remain visible when the catalogue reflows
+      - query controls reflow without losing active state or clear action
+      - Connectivity Needs remain labeled nested records inside the selected Business Process detail
     overrides: []
 
   - id: ACCESS-REQUESTS
@@ -654,5 +762,5 @@ coverage:
     - ACCESS-REQUESTS
     - POLICY-RULES
     - POLICY-EXPORT
-  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, DEPLOYMENTS, DEPLOYMENT-DETAIL, POLICY-EXPORT]
+  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, DEPLOYMENTS, DEPLOYMENT-DETAIL, BUSINESS-CONNECTIVITY, POLICY-EXPORT]
   rule: FRONTEND-IMPLEMENTATION is not presentation-complete unless every required workspace has explicit composition and inherits the shared Presentation System; pilot screens additionally require machine-checked semantic closure.

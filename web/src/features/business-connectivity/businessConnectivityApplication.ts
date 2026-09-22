@@ -1,15 +1,21 @@
 import { api } from "../../app/api";
 import {
-  type BusinessProcessCatalogueItem,
+  type BusinessProcessCatalogueQueryState,
+  toBusinessProcessCatalogueQuery,
+} from "./businessProcessCatalogueQuery";
+import {
+  type BusinessProcessCatalogueScreenModel,
   type BusinessProcessDetailScreenModel,
-  toBusinessProcessCatalogue,
+  toBusinessProcessCatalogueScreenModel,
   toBusinessProcessDetail,
 } from "./businessConnectivityModels";
 
-export async function queryBusinessProcesses(): Promise<
-  BusinessProcessCatalogueItem[]
-> {
-  return toBusinessProcessCatalogue(await api.listProcesses());
+export async function queryBusinessProcesses(
+  query: BusinessProcessCatalogueQueryState,
+): Promise<BusinessProcessCatalogueScreenModel> {
+  return toBusinessProcessCatalogueScreenModel(
+    await api.listProcesses(toBusinessProcessCatalogueQuery(query)),
+  );
 }
 
 export async function queryBusinessProcess(

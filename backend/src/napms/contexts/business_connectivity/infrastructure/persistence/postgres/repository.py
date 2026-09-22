@@ -8,6 +8,12 @@ import psycopg
 from napms.contexts.business_connectivity.application.ports import (
     BusinessConnectivityVersionConflict,
 )
+from napms.contexts.business_connectivity.application.queries import (
+    BusinessProcessCataloguePage,
+    BusinessProcessCatalogueQuery,
+    BusinessProcessSortField,
+    SortDirection,
+)
 from napms.contexts.business_connectivity.domain.model import (
     BusinessProcess,
     ConnectivityNeed,
@@ -40,66 +46,132 @@ class PostgresBusinessProcessRepository:
                 ),
             )
 
-    def list_processes(self) -> tuple[BusinessProcess, ...]:
+    def query_processes(
+        self,
+        query: BusinessProcessCatalogueQuery,
+    ) -> BusinessProcessCataloguePage:
+        conditions: list[str] = []
+        parameters: list[object] = []
+
+        if query.search:
+            search = query.search.strip()
+            if search:
+                conditions.append(
+                    "(name ILIKE %s OR CAST(process_ref AS text) ILIKE %s)"
+                )
+                pattern = f"%{search}%"
+                parameters.extend((pattern, pattern))
+
+        if query.criticality_label is not None:
+            conditions.append("criticality_label = %s")
+            parameters.append(query.criticality_label)
+
+        if query.organization_external_reference is not None:
+            conditions.append("organization_external_reference = %s")
+            parameters.append(query.organization_external_reference)
+
+        where = "" if not conditions else " WHERE " + " AND ".join(conditions)
+        order_by = {
+            BusinessProcessSortField.NAME: "name",
+            BusinessProcessSortField.PROCESS_REF: "process_ref",
+            BusinessProcessSortField.CRITICALITY_LABEL: "criticality_label",
+        }[query.sort_by]
+        direction = "ASC" if query.sort_direction is SortDirection.ASC else "DESC"
+        offset = (query.page - 1) * query.page_size
+
         with psycopg.connect(self._dsn) as connection:
+            total_row = connection.execute(
+                f"""
+                SELECT COUNT(*)
+                FROM business_connectivity.business_process
+                {where}
+                """,
+                parameters,
+            ).fetchone()
+            total = 0 if total_row is None else total_row[0]
             rows = connection.execute(
-                """SELECT process_ref FROM business_connectivity.business_process ORDER BY name, process_ref"""
+                f"""
+                SELECT process_ref
+                FROM business_connectivity.business_process
+                {where}
+                ORDER BY {order_by} {direction} NULLS LAST, process_ref ASC
+                LIMIT %s OFFSET %s
+                """,
+                (*parameters, query.page_size, offset),
             ).fetchall()
-        return tuple(value for (ref,) in rows if (value := self.get_process(ref)) is not None)
+            items = tuple(
+                value
+                for (process_ref,) in rows
+                if (value := self.get_process_in(connection, process_ref)) is not None
+            )
+
+        return BusinessProcessCataloguePage(
+            items=items,
+            total=total,
+            page=query.page,
+            page_size=query.page_size,
+        )
 
     def get_process(self, process_ref: UUID) -> BusinessProcess | None:
         with psycopg.connect(self._dsn) as connection:
-            row = connection.execute(
-                """
-                SELECT process_ref, name, description,
-                       organization_external_reference, organization_display_name,
-                       criticality_label, version
-                FROM business_connectivity.business_process
-                WHERE process_ref = %s
-                """,
-                (process_ref,),
-            ).fetchone()
-            if row is None:
-                return None
-            needs = connection.execute(
-                """
-                SELECT need_ref, interaction_ref, participant_component_ref,
-                       business_basis, status, created_by_subject, retired_at
-                FROM business_connectivity.connectivity_need
-                WHERE process_ref = %s
-                ORDER BY created_at, need_ref
-                """,
-                (process_ref,),
-            ).fetchall()
-            return BusinessProcess(
-                process_ref=row[0],
-                name=row[1],
-                description=row[2],
-                organization_external_reference=row[3],
-                organization_display_name=row[4],
-                criticality_label=row[5],
-                version=row[6],
-                needs=tuple(
-                    ConnectivityNeed(
-                        need_ref=need_ref,
-                        interaction_ref=interaction_ref,
-                        participant_component_ref=participant_component_ref,
-                        business_basis=business_basis,
-                        status=NeedStatus(status),
-                        created_by_subject=created_by_subject,
-                        retired_at=retired_at,
-                    )
-                    for (
-                        need_ref,
-                        interaction_ref,
-                        participant_component_ref,
-                        business_basis,
-                        status,
-                        created_by_subject,
-                        retired_at,
-                    ) in needs
-                ),
-            )
+            return self.get_process_in(connection, process_ref)
+
+    @staticmethod
+    def get_process_in(
+        connection: psycopg.Connection[Any],
+        process_ref: UUID,
+    ) -> BusinessProcess | None:
+        row = connection.execute(
+            """
+            SELECT process_ref, name, description,
+                   organization_external_reference, organization_display_name,
+                   criticality_label, version
+            FROM business_connectivity.business_process
+            WHERE process_ref = %s
+            """,
+            (process_ref,),
+        ).fetchone()
+        if row is None:
+            return None
+        needs = connection.execute(
+            """
+            SELECT need_ref, interaction_ref, participant_component_ref,
+                   business_basis, status, created_by_subject, retired_at
+            FROM business_connectivity.connectivity_need
+            WHERE process_ref = %s
+            ORDER BY created_at, need_ref
+            """,
+            (process_ref,),
+        ).fetchall()
+        return BusinessProcess(
+            process_ref=row[0],
+            name=row[1],
+            description=row[2],
+            organization_external_reference=row[3],
+            organization_display_name=row[4],
+            criticality_label=row[5],
+            version=row[6],
+            needs=tuple(
+                ConnectivityNeed(
+                    need_ref=need_ref,
+                    interaction_ref=interaction_ref,
+                    participant_component_ref=participant_component_ref,
+                    business_basis=business_basis,
+                    status=NeedStatus(status),
+                    created_by_subject=created_by_subject,
+                    retired_at=retired_at,
+                )
+                for (
+                    need_ref,
+                    interaction_ref,
+                    participant_component_ref,
+                    business_basis,
+                    status,
+                    created_by_subject,
+                    retired_at,
+                ) in needs
+            ),
+        )
 
     @staticmethod
     def lock_current_need_in(

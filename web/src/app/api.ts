@@ -4,6 +4,10 @@ import {
 } from "./application-catalogue-query";
 import { authSession } from "./auth-session";
 import {
+  type BusinessProcessCatalogueQuery,
+  serializeBusinessProcessCatalogueQuery,
+} from "./business-process-catalogue-query";
+import {
   type DeploymentCatalogueQuery,
   serializeDeploymentCatalogueQuery,
 } from "./deployment-catalogue-query";
@@ -306,7 +310,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ componentRef, resourceRef }),
     }),
-  listProcesses: () => request<ProcessView[]>("/v1/processes"),
+  listProcesses: (query: BusinessProcessCatalogueQuery) =>
+    request<CataloguePage<ProcessView>>(
+      `/v1/processes?${serializeBusinessProcessCatalogueQuery(query)}`,
+    ),
   getProcess: (ref: string) => request<ProcessView>(`/v1/processes/${ref}`),
   createProcess: (body: {
     name: string;

@@ -64,6 +64,10 @@ catalogue_query_contract:
     search: [deploymentRef, componentRef, resourceRef]
     filters: [componentRef, resourceRef]
     sort_by: [deploymentRef, componentRef, resourceRef]
+  business_process_catalogue:
+    search: [name, processRef]
+    filters: [criticalityLabel, organizationExternalReference]
+    sort_by: [name, processRef, criticalityLabel]
 
 rules:
   - Authentication is OIDC Bearer token only; request bodies never contain trusted actor permission or authority fields.
@@ -82,6 +86,7 @@ rules:
   - GET /v1/applications/{applicationRef} returns Application identity/version, Components, and every directed Interaction touching those Components, including revision traffic semantics required by APPLICATION-DETAIL.
   - GET /v1/interactions/{interactionRef} reconstructs revision-authoring state after navigation or reload, including the authoritative current version and revision traffic semantics.
   - GET /v1/deployments/{deploymentRef} returns immutable Deployment identity plus ComponentRef and ResourceRef required by DEPLOYMENT-DETAIL.
+  - GET /v1/processes applies the accepted Business Process search/filter/sort/paging contract over the authoritative collection before page selection.
   - Connectivity Need retirement is an explicit optimistic-concurrency mutation; retirement preserves the Need and historical request/decision facts while changing its current status.
   - Access Request catalogue/detail reads expose immutable request subject, current decision outcome and version required by the canonical decision route.
   - Policy Rule catalogue/detail reads expose effective state plus authorization, business-justification and operational-history provenance required by the canonical Policy Rule workspace.

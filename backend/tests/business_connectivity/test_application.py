@@ -4,6 +4,12 @@ from uuid import UUID
 import pytest
 
 from napms.contexts.application_communication_catalogue.domain.model import Interaction
+from napms.contexts.business_connectivity.application.queries import (
+    BusinessProcessCataloguePage,
+    BusinessProcessCatalogueQuery,
+    BusinessProcessSortField,
+    SortDirection,
+)
 from napms.contexts.business_connectivity.application.service import BusinessConnectivityService
 from napms.contexts.business_connectivity.domain.model import BusinessProcess, NeedStatus
 
@@ -14,9 +20,22 @@ NOW = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)
 class Processes:
     def __init__(self, process: BusinessProcess) -> None:
         self.process = process
+        self.received_query: BusinessProcessCatalogueQuery | None = None
 
     def add(self, process: BusinessProcess) -> None:
         self.process = process
+
+    def query_processes(
+        self,
+        query: BusinessProcessCatalogueQuery,
+    ) -> BusinessProcessCataloguePage:
+        self.received_query = query
+        return BusinessProcessCataloguePage(
+            items=(self.process,),
+            total=1,
+            page=query.page,
+            page_size=query.page_size,
+        )
 
     def get_process(self, process_ref: UUID) -> BusinessProcess | None:
         return self.process if self.process.process_ref == process_ref else None
@@ -109,3 +128,35 @@ def test_retired_need_remains_resolvable_as_history_but_not_current() -> None:
             process_ref=process.process_ref,
             need_ref=UUID(int=14),
         )
+
+
+def test_business_process_catalogue_query_is_delegated_without_reinterpretation() -> None:
+    process = BusinessProcess.register(process_ref=UUID(int=20), name="Orders")
+    processes = Processes(process)
+    service = BusinessConnectivityService(
+        processes=processes,
+        interactions=Interactions(
+            Interaction.create(
+                interaction_ref=UUID(int=21),
+                source_component_ref=UUID(int=22),
+                destination_component_ref=UUID(int=23),
+            )
+        ),
+    )
+    query = BusinessProcessCatalogueQuery(
+        search="Orders",
+        criticality_label="HIGH",
+        organization_external_reference="ORG-1",
+        sort_by=BusinessProcessSortField.CRITICALITY_LABEL,
+        sort_direction=SortDirection.DESC,
+        page=2,
+        page_size=10,
+    )
+
+    result = service.list_business_processes(query)
+
+    assert processes.received_query == query
+    assert result.items == (process,)
+    assert result.total == 1
+    assert result.page == 2
+    assert result.page_size == 10

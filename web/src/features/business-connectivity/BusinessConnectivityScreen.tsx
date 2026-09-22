@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
   CataloguePattern,
   type CatalogueState,
+  type DataTableColumn,
+  DataTablePattern,
   DetailPattern,
   type DetailState,
   EditorPattern,
   type EditorPatternProps,
   type EditorState,
+  FilterBarPattern,
   StructuredListPattern,
 } from "../../presentation";
 import {
@@ -22,12 +25,17 @@ import {
 } from "./businessConnectivityApplication";
 import type {
   BusinessProcessCatalogueItem,
+  BusinessProcessCatalogueScreenModel,
   BusinessProcessDetailScreenModel,
 } from "./businessConnectivityModels";
+import {
+  type BusinessProcessCatalogueQueryState,
+  defaultBusinessProcessCatalogueQuery,
+} from "./businessProcessCatalogueQuery";
 
 type CatalogueLoadState =
   | { kind: "loading" }
-  | { kind: "loaded"; items: BusinessProcessCatalogueItem[] }
+  | { kind: "loaded"; model: BusinessProcessCatalogueScreenModel }
   | { kind: "authorization-rejected"; message: string }
   | { kind: "technical-error"; message: string };
 
@@ -103,15 +111,19 @@ function editorFailure(error: unknown): {
 }
 
 function BusinessProcessListMode() {
+  const [query, setQuery] = useState<BusinessProcessCatalogueQueryState>(
+    defaultBusinessProcessCatalogueQuery,
+  );
   const [loadState, setLoadState] = useState<CatalogueLoadState>({
     kind: "loading",
   });
 
   useEffect(() => {
     let active = true;
-    void queryBusinessProcesses()
-      .then((items) => {
-        if (active) setLoadState({ kind: "loaded", items });
+    setLoadState({ kind: "loading" });
+    void queryBusinessProcesses(query)
+      .then((model) => {
+        if (active) setLoadState({ kind: "loaded", model });
       })
       .catch((error) => {
         if (active) setLoadState(catalogueFailure(error));
@@ -119,9 +131,57 @@ function BusinessProcessListMode() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [query]);
 
-  const rows = loadState.kind === "loaded" ? loadState.items : [];
+  function updateQuery(
+    patch: Partial<BusinessProcessCatalogueQueryState>,
+    resetPage = true,
+  ) {
+    setQuery((current) => ({
+      ...current,
+      ...patch,
+      page: resetPage ? 1 : (patch.page ?? current.page),
+    }));
+  }
+
+  const columns = useMemo<
+    readonly DataTableColumn<BusinessProcessCatalogueItem>[]
+  >(
+    () => [
+      {
+        id: "name",
+        label: "Name",
+        emphasis: "primary",
+        sortKey: "name",
+        render: (row) => row.name,
+      },
+      {
+        id: "criticality",
+        label: "Criticality",
+        sortKey: "criticalityLabel",
+        render: (row) => row.criticalityLabel ?? "Unset",
+      },
+      {
+        id: "responsible-organization",
+        label: "Responsible organization",
+        render: (row) =>
+          row.organizationDisplayName ??
+          row.organizationExternalReference ??
+          "Unassigned",
+      },
+      {
+        id: "process-reference",
+        label: "Reference",
+        emphasis: "technical",
+        sortKey: "processRef",
+        render: (row) => row.processRef,
+      },
+    ],
+    [],
+  );
+
+  const model = loadState.kind === "loaded" ? loadState.model : undefined;
+  const rows = model?.processes ?? [];
   const state: CatalogueState =
     loadState.kind === "loaded"
       ? rows.length === 0
@@ -133,6 +193,13 @@ function BusinessProcessListMode() {
     loadState.kind === "technical-error"
       ? loadState.message
       : undefined;
+  const queryActive =
+    query.search !== "" ||
+    query.criticalityLabel !== "" ||
+    query.organizationExternalReference !== "" ||
+    query.sortBy !== defaultBusinessProcessCatalogueQuery.sortBy ||
+    query.sortDirection !== defaultBusinessProcessCatalogueQuery.sortDirection ||
+    query.pageSize !== defaultBusinessProcessCatalogueQuery.pageSize;
 
   return (
     <CataloguePattern
@@ -145,18 +212,73 @@ function BusinessProcessListMode() {
       }}
       state={state}
       statusMessage={statusMessage}
-      emptyMessage="No Business Processes."
+      emptyMessage="No Business Processes match the current query."
+      queryControls={
+        <FilterBarPattern
+          search={{
+            label: "Search Business Processes",
+            value: query.search,
+            placeholder: "Name or Process ID",
+            onChange: (value) => updateQuery({ search: value }),
+          }}
+          filters={[
+            {
+              id: "criticality-label",
+              label: "Criticality",
+              value: query.criticalityLabel,
+              onChange: (value) => updateQuery({ criticalityLabel: value }),
+            },
+            {
+              id: "organization-reference",
+              label: "Responsible organization reference",
+              value: query.organizationExternalReference,
+              onChange: (value) =>
+                updateQuery({ organizationExternalReference: value }),
+            },
+          ]}
+          sort={{
+            field: query.sortBy,
+            fields: [
+              { value: "name", label: "Name" },
+              { value: "processRef", label: "Reference" },
+              { value: "criticalityLabel", label: "Criticality" },
+            ],
+            direction: query.sortDirection,
+            onFieldChange: (field) =>
+              updateQuery({
+                sortBy: field as BusinessProcessCatalogueQueryState["sortBy"],
+              }),
+            onDirectionChange: (sortDirection) =>
+              updateQuery({ sortDirection }),
+          }}
+          active={queryActive}
+          onClear={() => setQuery(defaultBusinessProcessCatalogueQuery)}
+        />
+      }
     >
-      <StructuredListPattern
+      <DataTablePattern
         label="Business Processes"
         rows={rows}
+        columns={columns}
         rowKey={(row) => row.processRef}
-        primary={(row) => row.name}
-        secondary={(row) =>
-          `${row.processRef} · criticality ${row.criticalityLabel ?? "unset"}`
-        }
         onOpen={(row) => navigate(`/business-processes/${row.processRef}`)}
-        emptyMessage="No Business Processes."
+        sort={{
+          field: query.sortBy,
+          direction: query.sortDirection,
+          onChange: (field, sortDirection) =>
+            updateQuery({
+              sortBy: field as BusinessProcessCatalogueQueryState["sortBy"],
+              sortDirection,
+            }),
+        }}
+        paging={{
+          page: model?.page ?? query.page,
+          pageSize: model?.pageSize ?? query.pageSize,
+          total: model?.total ?? 0,
+          onPageChange: (page) => updateQuery({ page }, false),
+          onPageSizeChange: (pageSize) => updateQuery({ pageSize }),
+        }}
+        emptyMessage="No Business Processes match the current query."
       />
     </CataloguePattern>
   );

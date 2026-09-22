@@ -241,22 +241,42 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         deployment_row.click()
         page.wait_for_url(f"**/deployments/{deployment_ref}")
 
+        process_name = f"E2E Process {suffix}"
         goto(page, "/business-processes/new", "Business Processes")
-        page.get_by_label("Name").fill(f"E2E Process {suffix}")
+        page.get_by_label("Name").fill(process_name)
         page.get_by_label("Description").fill("Independent business justification")
         page.get_by_label("Criticality").fill("HIGH")
         page.get_by_role("button", name="Create Business Process", exact=True).click()
         page.wait_for_url("**/business-processes/*")
+        process_ref = page.url.rsplit("/", 1)[-1]
         page.get_by_text("Independent business justification").wait_for()
         page.get_by_label("Responsible organization reference").fill("ORG-E2E")
         page.get_by_label("Responsible organization name").fill("E2E Organization")
         page.get_by_role("button", name="Save responsible organization").click()
+        page.locator('[data-version="2"]').wait_for()
         page.get_by_label("Interaction ID").fill(interaction_ref)
         page.get_by_label("Participant Component ID").fill(source_ref)
         page.get_by_label("Business basis").fill("Required for order processing")
         page.locator("form").get_by_role("button", name="Declare Connectivity Need", exact=True).click()
+        page.locator('[data-version="3"]').wait_for()
         page.get_by_text("Required for order processing").wait_for()
         page.get_by_role("button", name="Retire Connectivity Need", exact=True).wait_for()
+
+        goto(page, "/business-processes", "Business Processes")
+        page.get_by_label("Search Business Processes").fill(process_name)
+        page.get_by_label("Criticality").fill("HIGH")
+        page.get_by_label("Responsible organization reference").fill("ORG-E2E")
+        page.get_by_label("Sort by").click()
+        page.get_by_role("option", name="Reference").click()
+        page.get_by_label("Sort direction").click()
+        page.get_by_role("option", name="Descending").click()
+        process_row = page.locator("tbody tr", has_text=process_name)
+        process_row.wait_for()
+        assert process_ref in (process_row.text_content() or "")
+        assert "E2E Organization" in (process_row.text_content() or "")
+        process_row.click()
+        page.wait_for_url(f"**/business-processes/{process_ref}")
+        page.get_by_text("Required for order processing").wait_for()
 
         for path, heading in [
             ("/access-requests", "Access Requests"),

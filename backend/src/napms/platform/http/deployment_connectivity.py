@@ -19,6 +19,11 @@ from napms.contexts.business_connectivity.application.ports import (
     BusinessConnectivityNotFound,
     BusinessConnectivityVersionConflict,
 )
+from napms.contexts.business_connectivity.application.queries import (
+    BusinessProcessCatalogueQuery,
+    BusinessProcessSortField,
+    SortDirection as BusinessProcessSortDirection,
+)
 from napms.contexts.business_connectivity.application.service import BusinessConnectivityService
 
 
@@ -152,32 +157,6 @@ def router(
             "resourceRef": str(value.resource_ref),
         }
 
-    @api.get("/processes")
-    def list_processes(
-        caller: Principal = Depends(identity),
-    ) -> list[dict[str, object]]:
-        permission(caller, "business.read")
-        return [
-            {
-                "processRef": str(value.process_ref),
-                "name": value.name,
-                "description": value.description,
-                "criticalityLabel": value.criticality_label,
-                "version": value.version,
-                "needs": [
-                    {
-                        "needRef": str(need.need_ref),
-                        "interactionRef": str(need.interaction_ref),
-                        "participantComponentRef": str(need.participant_component_ref),
-                        "businessBasis": need.business_basis,
-                        "status": need.status.value,
-                    }
-                    for need in value.needs
-                ],
-            }
-            for value in connectivity.list_business_processes()
-        ]
-
     def process_view(value) -> dict[str, object]:
         return {
             "processRef": str(value.process_ref),
@@ -199,22 +178,64 @@ def router(
             ],
         }
 
+    @api.get("/processes")
+    def list_processes(
+        search: str | None = Query(default=None, max_length=200),
+        criticality_label: str | None = Query(default=None, alias="criticalityLabel"),
+        organization_external_reference: str | None = Query(
+            default=None,
+            alias="organizationExternalReference",
+        ),
+        sort_by: BusinessProcessSortField = Query(
+            default=BusinessProcessSortField.NAME,
+            alias="sortBy",
+        ),
+        sort_direction: BusinessProcessSortDirection = Query(
+            default=BusinessProcessSortDirection.ASC,
+            alias="sortDirection",
+        ),
+        page: int = Query(default=1, ge=1),
+        page_size: int = Query(default=25, ge=1, le=100, alias="pageSize"),
+        caller: Principal = Depends(identity),
+    ) -> dict[str, object]:
+        permission(caller, "business.read")
+        result = connectivity.list_business_processes(
+            BusinessProcessCatalogueQuery(
+                search=search.strip() if search and search.strip() else None,
+                criticality_label=(
+                    criticality_label.strip()
+                    if criticality_label and criticality_label.strip()
+                    else None
+                ),
+                organization_external_reference=(
+                    organization_external_reference.strip()
+                    if organization_external_reference
+                    and organization_external_reference.strip()
+                    else None
+                ),
+                sort_by=sort_by,
+                sort_direction=sort_direction,
+                page=page,
+                page_size=page_size,
+            )
+        )
+        return {
+            "items": [process_view(value) for value in result.items],
+            "total": result.total,
+            "page": result.page,
+            "pageSize": result.page_size,
+        }
+
     @api.get("/processes/{process_ref}")
     def get_process(
         process_ref: UUID,
         caller: Principal = Depends(identity),
     ) -> dict[str, object]:
         permission(caller, "business.read")
-        value = next(
-            (
-                item
-                for item in connectivity.list_business_processes()
-                if item.process_ref == process_ref
-            ),
-            None,
-        )
-        if value is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        try:
+            value = connectivity.resolve_business_process(process_ref)
+        except BusinessConnectivityNotFound as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from exc
         return process_view(value)
 
     @api.post("/processes", status_code=status.HTTP_201_CREATED)

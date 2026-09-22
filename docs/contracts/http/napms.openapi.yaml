@@ -142,16 +142,28 @@ paths:
   /v1/processes:
     get:
       operationId: listBusinessProcesses
-      responses: {'200': {description: Business Process catalogue}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      parameters:
+        - {$ref: '#/components/parameters/CatalogueSearch'}
+        - {$ref: '#/components/parameters/ProcessCriticalityFilter'}
+        - {$ref: '#/components/parameters/ProcessOrganizationFilter'}
+        - {$ref: '#/components/parameters/ProcessSortBy'}
+        - {$ref: '#/components/parameters/CatalogueSortDirection'}
+        - {$ref: '#/components/parameters/CataloguePage'}
+        - {$ref: '#/components/parameters/CataloguePageSize'}
+      responses:
+        '200': {description: Business Process catalogue, content: {application/json: {schema: {$ref: '#/components/schemas/BusinessProcessCataloguePage'}}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
     post:
       operationId: createBusinessProcess
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateProcessRequest'}}}}
-      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/processes/{processRef}:
     get:
       operationId: getBusinessProcess
       parameters: [{$ref: '#/components/parameters/ProcessRef'}]
-      responses: {'200': {description: Business Process detail}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      responses: {'200': {description: Business Process detail, content: {application/json: {schema: {$ref: '#/components/schemas/BusinessProcessView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/processes/{processRef}/responsible-organization:
     put:
       operationId: setProcessResponsibleOrganization
@@ -163,7 +175,7 @@ paths:
       operationId: setProcessCriticality
       parameters: [{$ref: '#/components/parameters/ProcessRef'}, {$ref: '#/components/parameters/IfMatch'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SetCriticalityRequest'}}}}
-      responses: {'200': {description: Updated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      responses: {'200': {description: Updated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/processes/{processRef}/needs:
     post:
       operationId: declareConnectivityNeed
@@ -250,6 +262,9 @@ components:
     DeploymentComponentFilter: {name: componentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
     DeploymentResourceFilter: {name: resourceRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
     DeploymentSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [deploymentRef, componentRef, resourceRef], default: deploymentRef}}
+    ProcessCriticalityFilter: {name: criticalityLabel, in: query, required: false, schema: {type: string, minLength: 1}}
+    ProcessOrganizationFilter: {name: organizationExternalReference, in: query, required: false, schema: {type: string, minLength: 1}}
+    ProcessSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [name, processRef, criticalityLabel], default: name}}
     ResourceRef: {name: resourceRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     EndpointRef: {name: endpointRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     ResponsibilityRole: {name: role, in: path, required: true, schema: {type: string, enum: [OWNER, ADMINISTRATOR]}}
@@ -486,6 +501,55 @@ components:
       properties:
         componentRef: {$ref: '#/components/schemas/StableId'}
         resourceRef: {$ref: '#/components/schemas/StableId'}
+
+    BusinessProcessCataloguePage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/BusinessProcessView'}}
+        total: {type: integer, minimum: 0}
+        page: {type: integer, minimum: 1}
+        pageSize: {type: integer, minimum: 1, maximum: 100}
+
+    BusinessProcessView:
+      type: object
+      additionalProperties: false
+      required: [processRef, name, description, organizationExternalReference, organizationDisplayName, criticalityLabel, version, needs]
+      properties:
+        processRef: {$ref: '#/components/schemas/StableId'}
+        name: {type: string, minLength: 1}
+        description:
+          oneOf:
+            - {type: string}
+            - {type: 'null'}
+        organizationExternalReference:
+          oneOf:
+            - {type: string}
+            - {type: 'null'}
+        organizationDisplayName:
+          oneOf:
+            - {type: string}
+            - {type: 'null'}
+        criticalityLabel:
+          oneOf:
+            - {type: string}
+            - {type: 'null'}
+        version: {type: integer, minimum: 1}
+        needs:
+          type: array
+          items: {$ref: '#/components/schemas/ConnectivityNeedView'}
+
+    ConnectivityNeedView:
+      type: object
+      additionalProperties: false
+      required: [needRef, interactionRef, participantComponentRef, businessBasis, status]
+      properties:
+        needRef: {$ref: '#/components/schemas/StableId'}
+        interactionRef: {$ref: '#/components/schemas/StableId'}
+        participantComponentRef: {$ref: '#/components/schemas/StableId'}
+        businessBasis: {type: string, minLength: 1}
+        status: {type: string, enum: [ACTIVE, RETIRED]}
 
     CreateProcessRequest:
       type: object
