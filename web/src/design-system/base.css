@@ -334,7 +334,13 @@ label,
 .technical-reference {
   color: var(--napms-semantic-color-text-secondary);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  overflow-wrap: anywhere;
+}
+
+.data-table .technical-reference,
+.data-table .current-summary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .current-summary {
