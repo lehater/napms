@@ -15,6 +15,8 @@ basis:
 components:
   app_shell:
     owns: routing composition and top-level dependency wiring
+  development_authentication:
+    owns: local-dev sign-in state, credential submission and runtime bearer bootstrap before product-shell entry
   api_boundary:
     owns: OpenAPI DTO/request mapping and transport/error translation
   resource_feature:

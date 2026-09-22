@@ -12,6 +12,7 @@ basis:
   screen_view_design: docs/contracts/ui/mvp-screen-view-design.yaml
 
 tests:
+  - {id: UI-DEV-AUTH, subject: shared, oracle: Local-dev gates unauthenticated browser access; admin/admin acquires the accepted bearer identity while invalid credentials remain rejected.}
   - {id: UI-RESOURCE, subject: Resource management, oracle: Resource current/history and admitted mutations preserve accepted distinctions.}
   - {id: UI-APPLICATION, subject: Application management, oracle: Reusable Application description remains independent from deployment realization.}
   - {id: UI-COMPONENT, subject: Component management, oracle: Component authoring preserves participant semantics.}

@@ -15,10 +15,15 @@ import {
   ResourceDetail,
 } from "../features/resources/ResourceScreens";
 import { AppShell, PresentationRoot } from "../presentation";
+import { authSession } from "./auth-session";
+import { DevelopmentLogin } from "./DevelopmentLogin";
 import { primaryNavigation } from "./navigation";
 import { navigate, parseRoute, type Route } from "./router";
 
 function App() {
+  const [authenticated, setAuthenticated] = useState(
+    () => authSession.accessToken() !== null,
+  );
   const [route, setRoute] = useState<Route>(() =>
     parseRoute(window.location.pathname),
   );
@@ -28,6 +33,10 @@ function App() {
     window.addEventListener("popstate", update);
     return () => window.removeEventListener("popstate", update);
   }, []);
+
+  if (!authenticated) {
+    return <DevelopmentLogin onAuthenticated={() => setAuthenticated(true)} />;
+  }
 
   let screen: React.ReactNode;
   if (route.id === "resources") {

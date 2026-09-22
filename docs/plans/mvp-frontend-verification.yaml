@@ -74,6 +74,8 @@ required_subject_evidence:
   - Policy Export distinguishes complete success from unresolved/degraded output and preserves provenance.
 
 shared_evidence:
+  - local-dev without a bearer token renders the development sign-in gate before any protected product workspace request.
+  - admin/admin succeeds through the local-dev login endpoint, yields a bearer token and enters the requested product route; invalid credentials remain rejected.
   - every canonical workspace implements the Screen/View composition that inherits NAPMS-MVP-PRESENTATION-SYSTEM.
   - equivalent actions/states use the shared presentation patterns unless an accepted local deviation exists.
   - primary/secondary information and action hierarchy remains recognizable across workspaces.

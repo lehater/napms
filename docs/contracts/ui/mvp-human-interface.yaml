@@ -33,6 +33,17 @@ internationalization:
   rationale: No multilingual/localization requirement is accepted for first MVP.
   reopening_condition: A product requirement introduces multiple locales or localized formatting/content.
 
+development_authentication:
+  applicability: NAPMS_ENVIRONMENT=local-dev only
+  purpose: Gate the product shell until the developer has acquired the accepted bearer identity.
+  credentials: {login: admin, password: admin}
+  interaction:
+    inputs: [login, password]
+    success: Acquire the local OIDC-backed bearer token and enter the originally requested product route.
+    rejection: Remain on the sign-in view with generic invalid-credentials feedback.
+    dependency_failure: Remain on the sign-in view with retryable technical-failure feedback.
+  boundary: The sign-in view bootstraps development identity only; it never determines permissions or scoped authority.
+
 subjects:
   - subject: Resource management
     journeys: [RESOURCE-MANAGEMENT]
