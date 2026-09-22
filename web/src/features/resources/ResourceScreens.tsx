@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import { ApiError, api, type ResourceView } from "../../app/api";
 import { navigate } from "../../app/router";
 import {
+  DataTable,
+  DataTableCell,
+  DataTableHeadCell,
   EmptyState,
   FormSection,
   PageHeader,
+  PrimaryTableAction,
   ProvenancePanel,
   ReferenceField,
   StatusBanner,
@@ -13,6 +17,22 @@ import {
 
 function errorKind(error: unknown): string {
   return error instanceof ApiError ? error.kind : "technical";
+}
+
+function endpointSummary(resource: ResourceView): string {
+  const values = resource.current.endpoints.map((endpoint) =>
+    endpoint.address
+      ? `${endpoint.address.kind} ${endpoint.address.value}`
+      : `${endpoint.endpointRef}: no address`,
+  );
+  return values.length > 0 ? values.join(", ") : "No endpoints";
+}
+
+function responsibilitySummary(resource: ResourceView): string {
+  const values = resource.current.responsibilities.map(
+    (item) => `${item.role}: ${item.organizationRef}`,
+  );
+  return values.length > 0 ? values.join(", ") : "No responsibility";
 }
 
 export function ResourceCatalogue({ create = false }: { create?: boolean }) {
@@ -49,32 +69,72 @@ export function ResourceCatalogue({ create = false }: { create?: boolean }) {
 
   return (
     <>
-      <PageHeader eyebrow="Resource catalogue" title="Resources">
+      <PageHeader
+        eyebrow="Resource catalogue"
+        title={create ? "New Resource" : "Resources"}
+        actions={
+          !create ? (
+            <button
+              className="button-primary"
+              type="button"
+              onClick={() => navigate("/resources/new")}
+            >
+              Create Resource
+            </button>
+          ) : undefined
+        }
+      >
         <p className="lede">
           Locate a Resource by stable identity and inspect current facts before
           history.
         </p>
       </PageHeader>
+
       {state === "loading" && <StatusBanner>Loading Resources…</StatusBanner>}
-      {state !== "loading" && items.length === 0 && (
+
+      {!create && state !== "loading" && items.length === 0 && (
         <EmptyState>No Resources.</EmptyState>
       )}
-      <section className="panel">
-        {items.map((item) => (
-          <button
-            type="button"
-            key={item.resourceRef}
-            onClick={() => navigate(`/resources/${item.resourceRef}`)}
-          >
-            {item.displayName} · {item.resourceRef}
-          </button>
-        ))}
-      </section>
-      {!create && (
-        <button type="button" onClick={() => navigate("/resources/new")}>
-          Create Resource
-        </button>
+
+      {!create && state !== "loading" && items.length > 0 && (
+        <DataTable>
+          <thead>
+            <tr>
+              <DataTableHeadCell>Name</DataTableHeadCell>
+              <DataTableHeadCell>Reference</DataTableHeadCell>
+              <DataTableHeadCell>Site</DataTableHeadCell>
+              <DataTableHeadCell>Endpoints</DataTableHeadCell>
+              <DataTableHeadCell>Responsibilities</DataTableHeadCell>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item) => (
+              <tr key={item.resourceRef}>
+                <DataTableCell>
+                  <PrimaryTableAction
+                    onClick={() => navigate(`/resources/${item.resourceRef}`)}
+                  >
+                    {item.displayName}
+                  </PrimaryTableAction>
+                </DataTableCell>
+                <DataTableCell className="technical-reference">
+                  {item.resourceRef}
+                </DataTableCell>
+                <DataTableCell className="current-summary">
+                  {item.current.siteRef ?? "—"}
+                </DataTableCell>
+                <DataTableCell className="current-summary">
+                  {endpointSummary(item)}
+                </DataTableCell>
+                <DataTableCell className="current-summary">
+                  {responsibilitySummary(item)}
+                </DataTableCell>
+              </tr>
+            ))}
+          </tbody>
+        </DataTable>
       )}
+
       {create && (
         <FormSection onSubmit={submit}>
           <ReferenceField
@@ -93,6 +153,7 @@ export function ResourceCatalogue({ create = false }: { create?: boolean }) {
             onChange={setSiteRef}
           />
           <button
+            className="button-primary"
             type="submit"
             disabled={
               !displayName || !authorityScopeRef || state === "submitting"
@@ -102,6 +163,7 @@ export function ResourceCatalogue({ create = false }: { create?: boolean }) {
           </button>
         </FormSection>
       )}
+
       {!["loading", "loaded", "submitting"].includes(state) && (
         <StatusBanner kind="failed">Resource operation: {state}.</StatusBanner>
       )}
@@ -143,133 +205,174 @@ export function ResourceDetail({ resourceRef }: { resourceRef: string }) {
     }
   }
 
-  if (state === "loading")
+  if (state === "loading") {
     return <StatusBanner>Loading Resource…</StatusBanner>;
-  if (!resource)
+  }
+  if (!resource) {
     return <StatusBanner kind="failed">Resource: {state}.</StatusBanner>;
+  }
 
   return (
     <>
       <PageHeader eyebrow="Resource detail" title={resource.displayName}>
-        <p className="muted">
+        <p className="muted technical-reference">
           {resource.resourceRef} · authority {resource.authorityScopeRef}
         </p>
       </PageHeader>
+
       <VersionedEditor version={resource.version}>
         <h3>Current facts</h3>
-        <ReferenceField label="Site ID" value={siteRef} onChange={setSiteRef} />
-        <button
-          type="button"
-          onClick={() =>
-            void mutate(() =>
-              api.setResourceSite(
-                resource.resourceRef,
-                resource.version,
-                siteRef || null,
-              ),
-            )
-          }
-        >
-          Save site
-        </button>
-        <h4>Endpoints</h4>
-        {resource.current.endpoints.map((endpoint) => (
-          <p key={endpoint.endpointRef}>
-            {endpoint.endpointRef} ·{" "}
-            {endpoint.address
-              ? `${endpoint.address.kind} ${endpoint.address.value}`
-              : "No address"}
-          </p>
-        ))}
-        <button
-          type="button"
-          onClick={() =>
-            void mutate(() =>
-              api.addResourceEndpoint(resource.resourceRef, resource.version),
-            )
-          }
-        >
-          Add endpoint
-        </button>
-        <ReferenceField
-          label="Endpoint ID"
-          value={endpointRef}
-          onChange={setEndpointRef}
-        />
-        <label>
-          Address kind
-          <select
-            value={addressKind}
-            onChange={(event) => setAddressKind(event.target.value)}
-          >
-            <option value="HOST">HOST</option>
-            <option value="PREFIX">PREFIX</option>
-          </select>
-        </label>
-        <ReferenceField
-          label="Address value"
-          value={addressValue}
-          onChange={setAddressValue}
-        />
-        <button
-          type="button"
-          disabled={!endpointRef || !addressValue}
-          onClick={() =>
-            void mutate(() =>
-              api.setResourceAddress(
-                resource.resourceRef,
-                endpointRef,
-                resource.version,
-                { kind: addressKind, value: addressValue },
-              ),
-            )
-          }
-        >
-          Set endpoint address
-        </button>
-        <h4>Responsibilities</h4>
-        {resource.current.responsibilities.map((item) => (
-          <p key={item.role}>
-            {item.role}: {item.organizationRef}
-          </p>
-        ))}
-        <label>
-          Responsibility role
-          <select
-            value={role}
-            onChange={(event) =>
-              setRole(event.target.value as "OWNER" | "ADMINISTRATOR")
-            }
-          >
-            <option value="OWNER">OWNER</option>
-            <option value="ADMINISTRATOR">ADMINISTRATOR</option>
-          </select>
-        </label>
-        <ReferenceField
-          label="Organization ID"
-          value={organizationRef}
-          onChange={setOrganizationRef}
-        />
-        <button
-          type="button"
-          disabled={!role}
-          onClick={() =>
-            void mutate(() =>
-              api.setResourceResponsibility(
-                resource.resourceRef,
-                role,
-                resource.version,
-                organizationRef || null,
-              ),
-            )
-          }
-        >
-          Save responsibility
-        </button>
+
+        <section className="resource-current-group">
+          <h4>Site</h4>
+          <ReferenceField
+            label="Site ID"
+            value={siteRef}
+            onChange={setSiteRef}
+          />
+          <div>
+            <button
+              type="button"
+              onClick={() =>
+                void mutate(() =>
+                  api.setResourceSite(
+                    resource.resourceRef,
+                    resource.version,
+                    siteRef || null,
+                  ),
+                )
+              }
+            >
+              Save site
+            </button>
+          </div>
+        </section>
+
+        <section className="resource-current-group">
+          <h4>Endpoints</h4>
+          {resource.current.endpoints.length === 0 ? (
+            <p className="muted">No endpoints.</p>
+          ) : (
+            resource.current.endpoints.map((endpoint) => (
+              <p key={endpoint.endpointRef} className="current-summary">
+                <span className="technical-reference">
+                  {endpoint.endpointRef}
+                </span>
+                {" · "}
+                {endpoint.address
+                  ? `${endpoint.address.kind} ${endpoint.address.value}`
+                  : "No address"}
+              </p>
+            ))
+          )}
+          <div>
+            <button
+              type="button"
+              onClick={() =>
+                void mutate(() =>
+                  api.addResourceEndpoint(
+                    resource.resourceRef,
+                    resource.version,
+                  ),
+                )
+              }
+            >
+              Add endpoint
+            </button>
+          </div>
+          <ReferenceField
+            label="Endpoint ID"
+            value={endpointRef}
+            onChange={setEndpointRef}
+          />
+          <label>
+            Address kind
+            <select
+              value={addressKind}
+              onChange={(event) => setAddressKind(event.target.value)}
+            >
+              <option value="HOST">HOST</option>
+              <option value="PREFIX">PREFIX</option>
+            </select>
+          </label>
+          <ReferenceField
+            label="Address value"
+            value={addressValue}
+            onChange={setAddressValue}
+          />
+          <div>
+            <button
+              type="button"
+              disabled={!endpointRef || !addressValue}
+              onClick={() =>
+                void mutate(() =>
+                  api.setResourceAddress(
+                    resource.resourceRef,
+                    endpointRef,
+                    resource.version,
+                    { kind: addressKind, value: addressValue },
+                  ),
+                )
+              }
+            >
+              Set endpoint address
+            </button>
+          </div>
+        </section>
+
+        <section className="resource-current-group">
+          <h4>Responsibilities</h4>
+          {resource.current.responsibilities.length === 0 ? (
+            <p className="muted">No responsibilities.</p>
+          ) : (
+            resource.current.responsibilities.map((item) => (
+              <p key={item.role} className="current-summary">
+                {item.role}: {item.organizationRef}
+              </p>
+            ))
+          )}
+          <label>
+            Responsibility role
+            <select
+              value={role}
+              onChange={(event) =>
+                setRole(event.target.value as "OWNER" | "ADMINISTRATOR")
+              }
+            >
+              <option value="OWNER">OWNER</option>
+              <option value="ADMINISTRATOR">ADMINISTRATOR</option>
+            </select>
+          </label>
+          <ReferenceField
+            label="Organization ID"
+            value={organizationRef}
+            onChange={setOrganizationRef}
+          />
+          <div>
+            <button
+              type="button"
+              disabled={!role}
+              onClick={() =>
+                void mutate(() =>
+                  api.setResourceResponsibility(
+                    resource.resourceRef,
+                    role,
+                    resource.version,
+                    organizationRef || null,
+                  ),
+                )
+              }
+            >
+              Save responsibility
+            </button>
+          </div>
+        </section>
       </VersionedEditor>
+
       {state !== "loaded" && (
         <StatusBanner kind="failed">Resource operation: {state}.</StatusBanner>
       )}
+
       <ProvenancePanel>
         <pre>{JSON.stringify(resource.history, null, 2)}</pre>
       </ProvenancePanel>
