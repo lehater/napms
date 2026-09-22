@@ -4,6 +4,7 @@ import json
 import os
 import ssl
 import urllib.request
+from pathlib import Path
 from uuid import uuid4
 
 from playwright.sync_api import Browser, Page, sync_playwright
@@ -18,8 +19,14 @@ def token(profile: str = "full") -> str:
         return json.load(response)["access_token"]
 
 
-def page_with_token(browser: Browser, access_token: str | None = None, *, width: int = 1280) -> Page:
-    context = browser.new_context(viewport={"width": width, "height": 900})
+def page_with_token(
+    browser: Browser,
+    access_token: str | None = None,
+    *,
+    width: int = 1280,
+    height: int = 900,
+) -> Page:
+    context = browser.new_context(viewport={"width": width, "height": height})
     value = token("full") if access_token is None else access_token
     context.add_init_script("window.__NAPMS_RUNTIME_ACCESS_TOKEN__ = " + json.dumps(value) + ";")
     page = context.new_page()
@@ -56,6 +63,75 @@ def add_component(page: Page, application_ref: str, name: str) -> str:
     page.wait_for_url(f"**/applications/{application_ref}")
     line = page.get_by_text(name + " ·", exact=False).first.text_content() or ""
     return line.split("·", 1)[1].strip()
+
+
+def test_00_rendered_presentation_evidence() -> None:
+    artifacts = Path("e2e-artifacts")
+    artifacts.mkdir(exist_ok=True)
+
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch()
+        page = page_with_token(browser, width=1440, height=1000)
+
+        create_resource(page, "Rendered Resource")
+
+        drawer = page.locator(".MuiDrawer-paper")
+        drawer_box = drawer.bounding_box()
+        assert drawer_box is not None
+        assert round(drawer_box["width"]) == 232
+
+        main = page.locator("main")
+        padding_left = page.evaluate(
+            "(element) => parseFloat(getComputedStyle(element).paddingLeft)",
+            main.element_handle(),
+        )
+        assert round(padding_left) == 24
+
+        title_size = page.evaluate(
+            "(element) => getComputedStyle(element).fontSize",
+            page.get_by_role("heading", name="Rendered Resource").element_handle(),
+        )
+        assert title_size == "20px"
+
+        detail = page.locator('[data-presentation-pattern="detail"]')
+        main_box = main.bounding_box()
+        detail_box = detail.bounding_box()
+        assert main_box is not None and detail_box is not None
+        expected_detail_width = main_box["width"] - (2 * padding_left)
+        assert abs(detail_box["width"] - expected_detail_width) <= 1
+
+        page.screenshot(
+            path=str(artifacts / "resource-detail-desktop.png"),
+            full_page=True,
+            mask=[page.locator("[data-presentation-technical-context]")],
+        )
+
+        goto(page, "/resources", "Resources")
+        header_cell = page.locator("thead th").first
+        body_row = page.locator("tbody tr").first
+        header_box = header_cell.bounding_box()
+        row_box = body_row.bounding_box()
+        assert header_box is not None and row_box is not None
+        assert round(header_box["height"]) == 40
+        assert round(row_box["height"]) == 40
+
+        page.screenshot(
+            path=str(artifacts / "resource-catalogue-desktop.png"),
+            full_page=True,
+            mask=[page.locator('[data-emphasis="technical"]')],
+        )
+
+        narrow = page_with_token(browser, width=390, height=900)
+        goto(narrow, "/resources", "Resources")
+        assert narrow.locator(".MuiDrawer-paper").count() == 0
+        assert narrow.get_by_role("navigation", name="Primary").is_visible()
+        narrow.screenshot(
+            path=str(artifacts / "resource-catalogue-narrow.png"),
+            full_page=True,
+            mask=[narrow.locator('[data-emphasis="technical"]')],
+        )
+
+        browser.close()
 
 
 def test_browser_semantic_journey_and_shared_ui_evidence() -> None:

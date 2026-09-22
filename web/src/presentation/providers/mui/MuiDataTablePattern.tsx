@@ -46,6 +46,7 @@ export function MuiDataTablePattern<Row>({
               {columns.map((column) => (
                 <TableCell
                   key={column.id}
+                  data-emphasis={column.emphasis}
                   sx={
                     column.emphasis === "technical"
                       ? {
@@ -83,6 +84,7 @@ export function MuiDataTablePattern<Row>({
                     variant="outlined"
                     disabled={rowAction(row).disabled}
                     onClick={rowAction(row).onInvoke}
+                    sx={{ minHeight: 0, py: 0.25 }}
                   >
                     {rowAction(row).label}
                   </Button>

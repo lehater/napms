@@ -62,6 +62,7 @@ export function MuiDetailPattern({
         </Typography>
         {technicalContext ? (
           <Typography
+            data-presentation-technical-context
             color="text.secondary"
             sx={{ mt: 0.5, fontFamily: "monospace", fontSize: "0.78rem" }}
           >
@@ -114,6 +115,7 @@ export function MuiDetailPattern({
       {loaded ? (
         <Paper
           variant="outlined"
+          data-presentation-pattern="detail"
           data-version={version}
           sx={{ p: { xs: 2, sm: 3 } }}
         >

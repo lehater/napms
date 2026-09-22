@@ -323,7 +323,7 @@ Visual baselines prove accepted presentation invariants only; they do not author
 7. Legacy presentation infrastructure is removed after all required workspaces migrate; the boundary checker now forbids provider imports outside the MUI adapter root and forbids legacy presentation imports.
 8. Canonical design tokens are projected into a generated MUI theme-token artifact and checked for staleness in the Web build.
 9. Introduce MUI X DataGrid only on a future screen whose accepted semantics require its capabilities.
-10. Refresh rendered baselines only through explicit reference-conformance review.
+10. Rendered verification now captures deterministic desktop/narrow screenshots and asserts canonical shell/table/detail geometry. Captured images remain review evidence until explicitly accepted as regression baselines; baseline replacement cannot change canonical semantics.
 
 ## Priority findings
 
