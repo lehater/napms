@@ -25,9 +25,24 @@ structure:
     - security authority derived from hidden/disabled controls
     - persistent duplicate canonical domain state
 
+frontend_application:
+  transport_boundary: Typed HTTP client operations map canonical OpenAPI requests, responses and error outcomes without owning screen semantics.
+  screen_runtime: Feature-local query/command orchestration maps transport projections into provider-neutral Screen Models and owns request lifecycle plus ephemeral interaction state.
+  screen_contract: Canonical Screen/View Design remains the authority for screen purpose, states, capabilities, exclusions and presentation-pattern selection.
+  presentation_boundary: Feature screens consume project presentation-pattern adapters; concrete provider APIs remain behind the selected provider implementation.
+  bff:
+    state: NOT_APPLICABLE
+    rationale: Current First-MVP HTTP projections already supply the facts needed by browser screens; deterministic frontend mapping is sufficient and no trusted cross-service aggregation, credential mediation or server-side frontend composition is required.
+    reopening_conditions:
+      - material cross-service aggregation or request chattiness cannot be solved within accepted backend application contracts;
+      - frontend-specific orchestration must execute inside a trusted server boundary;
+      - server/edge caching or projection shaping becomes an architecture-significant requirement;
+      - a stable browser-facing API must insulate the client from independently evolving downstream APIs.
+
 state_model:
   remote_state: Server responses are authoritative snapshots and are refreshed after accepted mutations.
-  local_state: Form input, disclosure state, loading state and ephemeral view state only.
+  screen_state: Derived Screen Models plus request lifecycle; this state carries frontend application meaning but no independent domain truth.
+  local_state: Form input, disclosure state and other ephemeral interaction state only.
   errors: Preserve accepted not-found, validation, authorization, concurrency and technical-failure distinctions.
 
 security:
