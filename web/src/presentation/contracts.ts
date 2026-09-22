@@ -40,7 +40,6 @@ export type CataloguePatternProps<Row> = {
   emptyMessage: string;
 };
 
-
 export type EditorState =
   | "editing"
   | "submitting"
