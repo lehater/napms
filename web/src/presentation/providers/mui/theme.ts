@@ -67,10 +67,12 @@ export const napmsMuiTheme = createTheme({
             outline: `2px solid ${token.color.focus}`,
             outlineOffset: 2,
           },
-        },
-        containedPrimary: {
-          "&:hover": { backgroundColor: token.color.primaryHover },
-          "&:active": { backgroundColor: token.color.primaryActive },
+          "&.MuiButton-containedPrimary:hover": {
+            backgroundColor: token.color.primaryHover,
+          },
+          "&.MuiButton-containedPrimary:active": {
+            backgroundColor: token.color.primaryActive,
+          },
         },
       },
     },
