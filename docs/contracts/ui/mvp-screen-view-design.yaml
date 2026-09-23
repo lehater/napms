@@ -86,7 +86,7 @@ screens:
     primary_action_role: create-resource
     exits:
       - select Resource -> RESOURCE-DETAIL
-    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, technical-error]
+    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
     semantic_contract:
       task_refs: [RESOURCE-MANAGEMENT]
       reads:
@@ -137,10 +137,12 @@ screens:
         empty: read:catalogue.200
         editing: local:create-resource-form
         submitting: command:create-resource.pending
-        validation-rejected: command:create-resource.422
+        validation-rejected: [command:create-resource.422, command:create-resource.413]
         authorization-rejected: [read:catalogue.401, read:catalogue.403, command:create-resource.401, command:create-resource.403]
         conflict: command:create-resource.409
-        technical-error: [read:catalogue.failure, command:create-resource.failure]
+        technical-error: [read:catalogue.failure, command:create-resource.failure, read:catalogue.503, command:create-resource.503]
+      outcome_mapping:
+        command:create-resource.201: navigation:resource-detail
       verification:
         contract: [operation:listResources-query-parameters, operation:createResource]
         semantic: [resource-catalogue-query-capability-and-state-closure]
@@ -202,6 +204,11 @@ screens:
           - {id: inspect-current, backed_by: read:detail}
           - {id: inspect-history, backed_by: read:detail}
           - {id: edit-current, backed_by: local:resource-current-editors}
+          - {id: add-endpoint, backed_by: command:add-endpoint}
+          - {id: set-address, backed_by: command:set-address}
+          - {id: clear-address, backed_by: command:clear-address}
+          - {id: set-site, backed_by: command:set-site}
+          - {id: set-responsibility, backed_by: command:set-responsibility}
         excluded: [delete-resource, bulk-operation]
       pattern_mapping:
         - {pattern: DETAIL, feature_bindings: {show-primary: inspect-current, show-secondary: inspect-history}}
@@ -213,12 +220,18 @@ screens:
         loading: read:detail.pending
         loaded: read:detail.200
         empty-current: read:detail.200
-        not-found: read:detail.404
+        not-found: [read:detail.404, command:clear-address.404]
         submitting: [command:add-endpoint.pending, command:set-address.pending, command:clear-address.pending, command:set-site.pending, command:set-responsibility.pending]
-        validation-rejected: [command:set-address.422, command:set-site.422, command:set-responsibility.422]
+        validation-rejected: [command:set-address.422, command:set-site.422, command:set-responsibility.422, command:add-endpoint.413, command:set-address.413, command:set-site.413, command:set-responsibility.413]
         authorization-rejected: [read:detail.401, read:detail.403, command:add-endpoint.401, command:add-endpoint.403, command:set-address.401, command:set-address.403, command:clear-address.401, command:clear-address.403, command:set-site.401, command:set-site.403, command:set-responsibility.401, command:set-responsibility.403]
         conflict: [command:add-endpoint.409, command:set-address.409, command:clear-address.409, command:set-site.409, command:set-responsibility.409]
-        technical-error: [read:detail.failure, command:add-endpoint.failure, command:set-address.failure, command:clear-address.failure, command:set-site.failure, command:set-responsibility.failure]
+        technical-error: [read:detail.failure, command:add-endpoint.failure, command:set-address.failure, command:clear-address.failure, command:set-site.failure, command:set-responsibility.failure, read:detail.503, command:add-endpoint.503, command:set-address.503, command:clear-address.503, command:set-site.503, command:set-responsibility.503]
+      outcome_mapping:
+        command:add-endpoint.201: state:loaded
+        command:set-address.200: state:loaded
+        command:clear-address.204: state:loaded
+        command:set-site.200: state:loaded
+        command:set-responsibility.200: state:loaded
       verification:
         contract: [operation:getResource, operation:addResourceEndpoint, operation:setEndpointAddress, operation:clearEndpointAddress, operation:setResourceSite, operation:setResourceResponsibility]
         semantic: [resource-detail-current-history-command-state-closure]
@@ -318,10 +331,12 @@ screens:
         empty: read:catalogue.200
         editing: local:create-application-form
         submitting: command:create-application.pending
-        validation-rejected: command:create-application.422
+        validation-rejected: [command:create-application.422, command:create-application.413]
         authorization-rejected: [read:catalogue.401, read:catalogue.403, command:create-application.401, command:create-application.403]
         conflict: command:create-application.409
-        technical-error: [read:catalogue.failure, command:create-application.failure]
+        technical-error: [read:catalogue.failure, command:create-application.failure, read:catalogue.503, command:create-application.503]
+      outcome_mapping:
+        command:create-application.201: navigation:application-detail
       verification:
         contract: [operation:listApplications-query-parameters, operation:createApplication]
         semantic: [application-catalogue-query-capability-and-state-closure]
@@ -411,11 +426,11 @@ screens:
         empty-components: read:detail.200
         empty-interactions: read:detail.200
         submitting: [command:add-component.pending, command:create-interaction.pending, command:publish-revision.pending]
-        validation-rejected: [command:create-interaction.422, command:publish-revision.422]
+        validation-rejected: [command:create-interaction.422, command:publish-revision.422, command:add-component.413, command:create-interaction.413, command:publish-revision.413]
         authorization-rejected: [read:detail.401, read:detail.403, command:add-component.401, command:add-component.403, command:create-interaction.401, command:create-interaction.403, command:publish-revision.401, command:publish-revision.403]
         conflict: [command:add-component.409, command:create-interaction.409, command:publish-revision.409]
         not-found: read:detail.404
-        technical-error: [read:detail.failure, command:add-component.failure, command:create-interaction.failure, command:publish-revision.failure]
+        technical-error: [read:detail.failure, command:add-component.failure, command:create-interaction.failure, command:publish-revision.failure, read:detail.503, command:add-component.503, command:create-interaction.503, command:publish-revision.503]
       outcome_mapping:
         command:add-component.201: navigation:application-detail
         command:create-interaction.201: navigation:application-detail
@@ -460,14 +475,14 @@ screens:
         pattern: DATA-TABLE
         columns:
           - {id: deployment-reference, role: primary-identity, sort: deploymentRef}
-          - {id: component-reference, role: distinguishing-attribute, primary: componentName, technical_identity: componentRef, sort: componentRef}
-          - {id: resource-reference, role: distinguishing-attribute, primary: resourceDisplayName, technical_identity: resourceRef, sort: resourceRef}
+          - {id: component-reference, role: distinguishing-attribute, primary: componentName, technical_identity: componentRef, reference_contract: component, sort: componentRef}
+          - {id: resource-reference, role: distinguishing-attribute, primary: resourceDisplayName, technical_identity: resourceRef, reference_contract: resource, sort: resourceRef}
         row_action: open-deployment
       create-editor:
         pattern: EDITOR
         fields:
-          - {id: component-ref, source: request:createDeployment.componentRef, required: true, selection: {candidate_operation: listComponents, label: [name, applicationName], value: componentRef, search: server-backed}}
-          - {id: resource-ref, source: request:createDeployment.resourceRef, required: true, selection: {candidate_operation: listResources, label: displayName, value: resourceRef, search: server-backed}}
+          - {id: component-ref, source: request:createDeployment.componentRef, required: true, selection: {contract: component, candidate_operation: listComponents, label: [name, applicationName], value: componentRef, search: server-backed}}
+          - {id: resource-ref, source: request:createDeployment.resourceRef, required: true, selection: {contract: resource, candidate_operation: listResources, label: displayName, value: resourceRef, search: server-backed}}
         submit_action: create-deployment
     primary_action_role: create-deployment
     exits:
@@ -512,6 +527,21 @@ screens:
           - {id: open-deployment, backed_by: navigation:deployment-detail}
           - {id: create-deployment, backed_by: command:create-deployment}
         excluded: [bulk-operation, edit-item, delete-item]
+      references:
+        - id: component
+          use: display-selection
+          identity: componentRef
+          display: {primary: [name, applicationName], technical_identity: componentRef}
+          candidates: {operation_id: listComponents, mode: independent, search: server-backed}
+          submitted_value: componentRef
+          submits_to: command:create-deployment
+        - id: resource
+          use: display-selection
+          identity: resourceRef
+          display: {primary: displayName, technical_identity: resourceRef}
+          candidates: {operation_id: listResources, mode: independent, search: server-backed}
+          submitted_value: resourceRef
+          submits_to: command:create-deployment
       pattern_mapping:
         - {pattern: CATALOGUE, feature_bindings: {open-item: open-deployment, create-item: create-deployment}}
         - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
@@ -525,9 +555,11 @@ screens:
         empty: read:catalogue.200
         editing: local:create-deployment-form
         submitting: command:create-deployment.pending
-        validation-rejected: command:create-deployment.422
+        validation-rejected: [command:create-deployment.422, command:create-deployment.413]
         authorization-rejected: [read:catalogue.401, read:catalogue.403, command:create-deployment.401, command:create-deployment.403]
-        technical-error: [read:catalogue.failure, command:create-deployment.failure]
+        technical-error: [read:catalogue.failure, command:create-deployment.failure, read:catalogue.503, command:create-deployment.503]
+      outcome_mapping:
+        command:create-deployment.201: navigation:deployment-detail
       verification:
         contract: [operation:listDeployments-query-parameters, operation:createDeployment]
         semantic: [deployment-catalogue-query-capability-and-state-closure]
@@ -548,8 +580,8 @@ screens:
       root: detail-workspace
       ordered_regions: [identity-context, realization, feedback]
       realization:
-        component: {primary: componentName, technical_identity: componentRef}
-        resource: {primary: resourceDisplayName, technical_identity: resourceRef}
+        component: {primary: componentName, technical_identity: componentRef, reference_contract: component}
+        resource: {primary: resourceDisplayName, technical_identity: resourceRef, reference_contract: resource}
     states: [loading, loaded, not-found, authorization-rejected, technical-error]
     semantic_contract:
       task_refs: [DEPLOYMENT-MANAGEMENT]
@@ -569,6 +601,15 @@ screens:
           - {id: inspect-deployment, backed_by: read:detail}
           - {id: return-to-catalogue, backed_by: navigation:deployments}
         excluded: [edit-deployment, delete-deployment, bulk-operation]
+      references:
+        - id: component
+          use: display
+          identity: componentRef
+          display: {primary: componentName, technical_identity: componentRef}
+        - id: resource
+          use: display
+          identity: resourceRef
+          display: {primary: resourceDisplayName, technical_identity: resourceRef}
       pattern_mapping:
         - {pattern: DETAIL, feature_bindings: {show-primary: inspect-deployment}}
         - {pattern: STATUS, feature_bindings: {}}
@@ -577,7 +618,7 @@ screens:
         loaded: read:detail.200
         not-found: read:detail.404
         authorization-rejected: [read:detail.401, read:detail.403]
-        technical-error: read:detail.failure
+        technical-error: [read:detail.failure, read:detail.503]
       verification:
         contract: [operation:getDeployment]
         semantic: [deployment-detail-read-state-closure]
@@ -630,9 +671,9 @@ screens:
         row_action: retire-connectivity-need
       connectivity-need-authoring:
         interaction:
-          selection: {candidate_operation: listInteractions, label: [sourceComponentName, sourceApplicationName, destinationComponentName, destinationApplicationName, purpose], value: interactionRef, search: server-backed}
+          selection: {contract: interaction, candidate_operation: listInteractions, label: [sourceComponentName, sourceApplicationName, destinationComponentName, destinationApplicationName, purpose], value: interactionRef, search: server-backed}
         participant_component:
-          selection: {source: read:selected-interaction, candidates: [sourceComponentRef, destinationComponentRef], labels: [sourceComponentName, destinationComponentName], dependency: interaction}
+          selection: {contract: participant-component, source: read:selected-interaction, candidates: [sourceComponentRef, destinationComponentRef], labels: [sourceComponentName, destinationComponentName], dependency: interaction}
           authority: frontend narrowing is advisory; declareConnectivityNeed validates endpoint membership
     primary_action_role: create-business-process
     action_hierarchy:
@@ -697,6 +738,27 @@ screens:
           - {id: manage-connectivity-need, backed_by: command:declare-connectivity-need}
           - {id: retire-connectivity-need, backed_by: command:retire-connectivity-need}
         excluded: [bulk-operation, inline-edit-business-process, permission-outcome-edit]
+      references:
+        - id: interaction
+          use: selection
+          identity: interactionRef
+          display:
+            primary: [sourceComponentName, sourceApplicationName, destinationComponentName, destinationApplicationName, purpose]
+            technical_identity: interactionRef
+          candidates: {operation_id: listInteractions, mode: independent, search: server-backed}
+          submitted_value: interactionRef
+          submits_to: command:declare-connectivity-need
+        - id: participant-component
+          use: selection
+          identity: componentRef
+          display: {primary: [sourceComponentName, destinationComponentName], technical_identity: componentRef}
+          candidates:
+            source: read:selected-interaction.endpoint-components
+            mode: dependent
+            search: bounded-two-endpoints
+            depends_on: [interaction]
+          submitted_value: participantComponentRef
+          submits_to: command:declare-connectivity-need
       pattern_mapping:
         - {pattern: CATALOGUE, feature_bindings: {open-item: open-business-process, create-item: create-business-process}}
         - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
@@ -712,11 +774,17 @@ screens:
         empty: read:catalogue.200
         editing: local:business-connectivity-editor
         submitting: [command:create-business-process.pending, command:set-responsible-organization.pending, command:set-criticality.pending, command:declare-connectivity-need.pending, command:retire-connectivity-need.pending]
-        validation-rejected: [command:create-business-process.422, command:set-responsible-organization.422, command:set-criticality.422, command:declare-connectivity-need.422, command:retire-connectivity-need.422]
+        validation-rejected: [command:create-business-process.422, command:set-responsible-organization.422, command:set-criticality.422, command:declare-connectivity-need.422, command:retire-connectivity-need.422, command:create-business-process.413, command:set-responsible-organization.413, command:set-criticality.413, command:declare-connectivity-need.413]
         authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, read:interaction-candidates.401, read:interaction-candidates.403, read:selected-interaction.401, read:selected-interaction.403, command:create-business-process.401, command:create-business-process.403, command:set-responsible-organization.401, command:set-responsible-organization.403, command:set-criticality.401, command:set-criticality.403, command:declare-connectivity-need.401, command:declare-connectivity-need.403, command:retire-connectivity-need.401, command:retire-connectivity-need.403]
         conflict: [command:set-responsible-organization.409, command:set-criticality.409, command:declare-connectivity-need.409, command:retire-connectivity-need.409]
-        not-found: read:detail.404
-        technical-error: [read:catalogue.failure, read:detail.failure, read:interaction-candidates.failure, read:selected-interaction.failure, command:create-business-process.failure, command:set-responsible-organization.failure, command:set-criticality.failure, command:declare-connectivity-need.failure, command:retire-connectivity-need.failure]
+        not-found: [read:detail.404, read:selected-interaction.404]
+        technical-error: [read:catalogue.failure, read:detail.failure, read:interaction-candidates.failure, read:selected-interaction.failure, command:create-business-process.failure, command:set-responsible-organization.failure, command:set-criticality.failure, command:declare-connectivity-need.failure, command:retire-connectivity-need.failure, read:catalogue.503, read:detail.503, read:interaction-candidates.503, read:selected-interaction.503, command:create-business-process.503, command:set-responsible-organization.503, command:set-criticality.503, command:declare-connectivity-need.503, command:retire-connectivity-need.503]
+      outcome_mapping:
+        command:create-business-process.201: navigation:business-process-detail
+        command:set-responsible-organization.200: state:loaded
+        command:set-criticality.200: state:loaded
+        command:declare-connectivity-need.201: state:loaded
+        command:retire-connectivity-need.200: state:loaded
       verification:
         contract: [operation:listBusinessProcesses-query-parameters, operation:getBusinessProcess, operation:listInteractions, operation:getInteraction, operation:createBusinessProcess, operation:setProcessResponsibleOrganization, operation:setProcessCriticality, operation:declareConnectivityNeed, operation:retireConnectivityNeed]
         semantic: [business-process-catalogue-query-capability-and-state-closure, connectivity-need-remains-nested-business-justification]
@@ -757,6 +825,14 @@ screens:
           fields: [submittedAt, requestRef, decisionResult]
           default: {field: submittedAt, direction: asc}
         paging: {page: query:listAccessRequests.page, page_size: query:listAccessRequests.pageSize}
+      request-editor:
+        pattern: EDITOR
+        fields:
+          - {id: current-connectivity-need, source: request:submitAccessRequest.needRef, required: true, selection: {contract: current-connectivity-need}}
+          - {id: interaction-revision, source: request:submitAccessRequest.interactionRevisionRef, required: true, selection: {contract: interaction-revision}}
+          - {id: source-deployment, source: request:submitAccessRequest.sourceDeploymentRef, required: true, selection: {contract: source-deployment}}
+          - {id: destination-deployment, source: request:submitAccessRequest.destinationDeploymentRef, required: true, selection: {contract: destination-deployment}}
+        submit_action: submit-request
       requests:
         pattern: DATA-TABLE
         columns:
@@ -824,6 +900,35 @@ screens:
           - {id: inspect-outcome, backed_by: read:detail}
           - {id: record-decision, backed_by: command:record-decision}
         excluded: [bulk-operation, inline-edit-request-subject, rewrite-final-decision]
+      references:
+        - id: current-connectivity-need
+          use: selection
+          identity: needRef
+          display: {primary: [businessProcessName, businessBasis], technical_identity: needRef}
+          candidates: {mode: independent, search: server-backed}
+          submitted_value: needRef
+          submits_to: command:submit-request
+        - id: interaction-revision
+          use: selection
+          identity: interactionRevisionRef
+          display: {primary: [interactionPurpose, revisionNo], technical_identity: interactionRevisionRef}
+          candidates: {mode: dependent, search: bounded-by-current-need, depends_on: [current-connectivity-need]}
+          submitted_value: interactionRevisionRef
+          submits_to: command:submit-request
+        - id: source-deployment
+          use: selection
+          identity: deploymentRef
+          display: {primary: [componentName, resourceDisplayName], technical_identity: deploymentRef}
+          candidates: {mode: dependent, search: bounded-by-revision-source-component, depends_on: [interaction-revision]}
+          submitted_value: sourceDeploymentRef
+          submits_to: command:submit-request
+        - id: destination-deployment
+          use: selection
+          identity: deploymentRef
+          display: {primary: [componentName, resourceDisplayName], technical_identity: deploymentRef}
+          candidates: {mode: dependent, search: bounded-by-revision-destination-component, depends_on: [interaction-revision]}
+          submitted_value: destinationDeploymentRef
+          submits_to: command:submit-request
       pattern_mapping:
         - {pattern: CATALOGUE, feature_bindings: {open-item: open-access-request, create-item: submit-request}}
         - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
@@ -839,11 +944,14 @@ screens:
         empty: read:catalogue.200
         editing: local:access-request-editor
         submitting: [command:submit-request.pending, command:record-decision.pending]
-        validation-rejected: command:submit-request.422
+        validation-rejected: [command:submit-request.422, command:submit-request.413, command:record-decision.413]
         authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, command:submit-request.401, command:submit-request.403, command:record-decision.401, command:record-decision.403]
         conflict: [command:submit-request.409, command:record-decision.409]
         not-found: read:detail.404
-        technical-error: [read:catalogue.failure, read:detail.failure, command:submit-request.failure, command:record-decision.failure]
+        technical-error: [read:catalogue.failure, read:detail.failure, command:submit-request.failure, command:record-decision.failure, read:catalogue.503, read:detail.503, command:submit-request.503, command:record-decision.503]
+      outcome_mapping:
+        command:submit-request.201: navigation:access-request-detail
+        command:record-decision.200: state:loaded
       verification:
         contract: [operation:listAccessRequests-query-parameters, operation:getAccessRequest, operation:submitAccessRequest, operation:decideAccessRequest]
         semantic: [access-request-catalogue-query-capability-and-state-closure, pending-is-null-decision-not-new-domain-enum]
@@ -873,6 +981,11 @@ screens:
       modes:
         list: [context, actions, query-controls, rules, feedback]
         detail: [context, selected-rule, outcome, rule-editor, provenance-history, feedback]
+      rule-editor:
+        pattern: EDITOR
+        fields:
+          - {id: connectivity-need, source: request:attachPolicyRuleJustification.needRef, required: true, selection: {contract: connectivity-need}}
+        submit_action: attach-business-justification
       query-controls:
         pattern: FILTER-BAR
         search: {source: query:listPolicyRules.search, matches: [policyRuleRef]}
@@ -951,6 +1064,14 @@ screens:
           - {id: attach-business-justification, backed_by: command:attach-business-justification}
           - {id: export-effective-policy, backed_by: navigation:policy-export}
         excluded: [bulk-operation, inline-edit-rule-subject, rewrite-authorization-evidence]
+      references:
+        - id: connectivity-need
+          use: selection
+          identity: needRef
+          display: {primary: [businessProcessName, businessBasis], technical_identity: needRef}
+          candidates: {mode: independent, search: server-backed}
+          submitted_value: needRef
+          submits_to: command:attach-business-justification
       pattern_mapping:
         - {pattern: CATALOGUE, feature_bindings: {open-item: open-policy-rule}}
         - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
@@ -966,11 +1087,14 @@ screens:
         empty: read:catalogue.200
         editing: local:policy-rule-editor
         submitting: [command:change-supported-operational-state.pending, command:attach-business-justification.pending]
-        validation-rejected: [command:change-supported-operational-state.422, command:attach-business-justification.422]
+        validation-rejected: [command:change-supported-operational-state.422, command:attach-business-justification.422, command:change-supported-operational-state.413, command:attach-business-justification.413]
         authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, command:change-supported-operational-state.401, command:change-supported-operational-state.403, command:attach-business-justification.401, command:attach-business-justification.403]
         conflict: [command:change-supported-operational-state.409, command:attach-business-justification.409]
         not-found: read:detail.404
-        technical-error: [read:catalogue.failure, read:detail.failure, command:change-supported-operational-state.failure, command:attach-business-justification.failure]
+        technical-error: [read:catalogue.failure, read:detail.failure, command:change-supported-operational-state.failure, command:attach-business-justification.failure, read:catalogue.503, read:detail.503, command:change-supported-operational-state.503, command:attach-business-justification.503]
+      outcome_mapping:
+        command:change-supported-operational-state.200: state:loaded
+        command:attach-business-justification.200: state:loaded
       verification:
         contract: [operation:listPolicyRules-query-parameters, operation:getPolicyRule, operation:setPolicyRuleOperationalState, operation:attachPolicyRuleJustification]
         semantic: [policy-rule-catalogue-query-capability-and-state-closure, materialization-selection-remains-independent-from-ui-paging]
@@ -1027,9 +1151,9 @@ screens:
         submitting: command:materialize-policy.pending
         complete-success: command:materialize-policy.200-COMPLETE
         unresolved-or-degraded: command:materialize-policy.200-UNRESOLVED
-        validation-rejected: command:materialize-policy.422
+        validation-rejected: [command:materialize-policy.422, command:materialize-policy.413]
         authorization-rejected: [command:materialize-policy.401, command:materialize-policy.403]
-        technical-error: command:materialize-policy.failure
+        technical-error: [command:materialize-policy.failure, command:materialize-policy.503]
       verification:
         contract: [operation:materializeCurrentPolicy]
         semantic: [policy-export-complete-vs-unresolved-state-closure]
