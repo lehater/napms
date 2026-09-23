@@ -97,15 +97,13 @@ class AccessRequestSubmissionService:
             raise AccessRequestSubmissionRejected("need participant is not an interaction endpoint")
 
         source_scope = self._resource_scopes.resolve_authority_scope(source.resource_ref)
-        destination_scope = self._resource_scopes.resolve_authority_scope(destination.resource_ref)
-        if source_scope is None or destination_scope is None:
-            raise AccessRequestSubmissionRejected("resource authority scope is unresolved")
-        scopes = tuple(dict.fromkeys((source_scope, destination_scope)))
+        if source_scope is None:
+            raise AccessRequestSubmissionRejected("source resource authority scope is unresolved")
 
         authority_evidence = self._authority.require(
             principal=principal,
             action=ACCESS_REQUEST_ACTION,
-            scopes=scopes,
+            scopes=(source_scope,),
             evaluated_at=admission_at,
         )
         persisted_evidence = tuple(

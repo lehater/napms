@@ -21,7 +21,7 @@ drivers:
 
   - concern: latency-freshness
     state: RESOLVED
-    decision: no numeric latency target; correctness, coherent evaluation time and explicit unresolved outcomes take precedence
+    decision: no numeric latency target; correctness, coherent evaluation time and explicit row-level incomplete technical realization take precedence
     source_refs: [REQ-QUAL-001, REQ-EXP-003, REQ-EXP-005]
 
   - concern: availability

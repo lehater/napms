@@ -167,13 +167,12 @@ def fixture_service():
     return service, requests, source, destination, revision, need
 
 
-def test_submission_requires_every_distinct_resource_scope_and_persists_exact_evidence() -> None:
+def test_submission_requires_source_resource_scope_and_persists_exact_evidence() -> None:
     service, requests, source, destination, revision, need = fixture_service()
     principal = Principal(
         subject="subject:alice",
         authority_grants=(
             AuthorityGrant(action="access.request", scope="scope:source"),
-            AuthorityGrant(action="access.request", scope="scope:destination"),
         ),
     )
 
@@ -187,10 +186,7 @@ def test_submission_requires_every_distinct_resource_scope_and_persists_exact_ev
     )
 
     assert request.validated_business_process_version == 7
-    assert {item.scope_ref for item in request.authority_evidence} == {
-        "scope:source",
-        "scope:destination",
-    }
+    assert {item.scope_ref for item in request.authority_evidence} == {"scope:source"}
     assert all(item.evaluated_at == NOW for item in request.authority_evidence)
     assert requests.values[request.request_ref] == request
 
@@ -201,7 +197,6 @@ def test_submission_rejects_deployment_pair_that_does_not_realize_interaction() 
         subject="subject:alice",
         authority_grants=(
             AuthorityGrant(action="access.request", scope="scope:source"),
-            AuthorityGrant(action="access.request", scope="scope:destination"),
         ),
     )
     wrong_source = UUID(int=999)

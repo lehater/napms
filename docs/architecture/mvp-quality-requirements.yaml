@@ -7,11 +7,11 @@ scope: Architecture-significant first-MVP constraints. Numeric latency throughpu
 scenarios:
   - id: QR-CORRECTNESS-001
     characteristic: functional-suitability
-    requirement: COMPLETE export is coherent for one evaluationAt and contains all required selected-Rule provenance plus all technical rows for selected effective Rules; unresolved required effective realization cannot be silently omitted.
+    requirement: Export is coherent for one evaluationAt and completely represents selected effective policy with provenance; missing current address realization remains explicit in INCOMPLETE enriched rows and cannot be silently omitted or represented as a deployable tuple.
     evidence_refs: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, SYSTEM-RULES]
   - id: QR-AUTHORITY-001
     characteristic: security
-    requirement: Access request and policy export fail closed unless the actor has effective scoped authority for every relevant Resource AuthorityScopeRef at the server-owned admission or evaluation time.
+    requirement: Access request fails closed unless the actor has effective access.request authority for the source Resource scope at server-owned admission time; policy export fails closed unless the actor has effective policy.export authority for every selected Resource scope at evaluation time.
     evidence_refs: [FIRST-MVP-REQUIREMENTS, SECURITY-ARCHITECTURE]
   - id: QR-INTEGRITY-001
     characteristic: reliability

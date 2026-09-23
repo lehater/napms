@@ -20,7 +20,7 @@ supporting_owner:
 workflow_composition:
   name: Current Vendor-Neutral Policy Materialization
   peer_bounded_context: false
-  responsibility: Compose selected owner truth and scoped export admission into a complete vendor-neutral result without owning domain truth.
+  responsibility: Compose selected owner truth and scoped export admission into a complete enriched vendor-neutral policy representation without owning domain truth.
 
 required_semantics:
   - Resource has immutable AuthorityScopeRef and explicit logical Endpoints whose current address may change independently.
@@ -29,31 +29,31 @@ required_semantics:
   - Several independent Interactions may exist for the same directed Component pair.
   - ComponentDeployment binds one Component to one Resource and is independent from current address.
   - Deliberate AccessRequest requires one current participant-attributed Process-backed ConnectivityNeed.
-  - AccessRequest requires effective access.request authority for all distinct source/destination Resource scopes at server-owned admissionAt.
+  - AccessRequest requires effective access.request authority for the source Resource scope at server-owned admissionAt; destination request authority is not required merely to submit the request.
   - DENIED creates no PolicyRule.
   - ALLOWED resolves one PolicyRule per exact AccessSubject(source Deployment, destination Deployment, immutable InteractionRevision).
   - PolicyRule supports reversible ACTIVE/INACTIVE and absolute EffectiveWindow without new permission decision.
   - Additional current Needs add justification without duplicating Rule; zero current Needs is reconciliation and not automatic revocation.
   - Export selects all Rules or an explicit Rule subset and requires effective policy.export authority for all distinct selected Resource scopes at evaluationAt.
   - One database-owned logical evaluationAt and one coherent read snapshot govern effectiveness and materialization.
-  - Every selected Rule has self-contained permission/business provenance; only selected effective Rules require complete technical realization.
-  - Missing required realization for an effective Rule makes the result UNRESOLVED rather than silently partial.
+  - Every selected Rule has self-contained permission/business provenance; selected effective Rules are represented even when current address realization is missing.
+  - Missing current source or destination address is represented by an enriched INCOMPLETE row with Resource identity/name and null address rather than a global UNRESOLVED result or silent omission.
 
 cross_context_flow:
   - {step: 1, owner: Resource Catalogue, result: Resources exist with immutable AuthorityScopeRef plus logical Endpoints and current HostAddress-or-Prefix realization when known.}
   - {step: 2, owner: Application Communication Catalogue, result: Applications Components independent directed Interactions and exact immutable InteractionRevisions exist.}
   - {step: 3, owner: Application Deployment, result: Concrete source and destination ComponentDeployments bind participating Components to Resources.}
   - {step: 4, owner: Business Connectivity, result: Current Process-backed participant-attributed ConnectivityNeed supplies business justification.}
-  - {step: 5, owner: Authority Management, result: Request actor is effective for access.request on every distinct participating Resource scope at admissionAt.}
+  - {step: 5, owner: Authority Management, result: Request actor is effective for access.request on the source Resource scope at admissionAt; destination scope authority is not required for submission.}
   - {step: 6, owner: Access Policy, result: AccessRequest is submitted; DENIED creates no Rule and ALLOWED resolves one exact-subject PolicyRule with authorization evidence and initial justification.}
   - {step: 7, owner: Access Policy, result: PolicyRule may be ACTIVE or INACTIVE and may carry an absolute EffectiveWindow; additional Needs may attach without changing identity.}
   - {step: 8, owner: Authority Management, result: Export actor is effective for policy.export on every distinct selected Resource scope at the database-owned evaluationAt.}
-  - {step: 9, owner: Current Vendor-Neutral Policy Materialization, result: One coherent snapshot produces COMPLETE or UNRESOLVED self-contained policy output with provenance and normalized technical rows.}
+  - {step: 9, owner: Current Vendor-Neutral Policy Materialization, result: One coherent snapshot produces one complete enriched policy representation with provenance; READY rows have complete address/protocol/port tuples and INCOMPLETE rows retain policy/Resource meaning with missing addresses explicit.}
 
 materialization_join:
   policy: PolicyRule exact AccessSubject plus operational state window authorization evidence and justification refs
   traffic: ResolveInteractionRevision(interactionRevisionRef) -> canonical TrafficClauses
-  endpoints: ResolveComponentDeployment(source/destination) -> ResourceRef; Resource -> all current addressed Endpoints
+  endpoints: ResolveComponentDeployment(source/destination) -> ResourceRef; Resource -> all logical Endpoints with current address when known, retaining Resource identity/name when address is absent
   business: Resolve associated Needs -> current or retired justification plus reconciliation
   authority: selected Resource AuthorityScopeRefs -> effective policy.export grants at evaluationAt
   result_rule: Preserve independent Rule provenance and exact traffic semantics; no provider-specific rendering.

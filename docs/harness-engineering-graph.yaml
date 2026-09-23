@@ -94,7 +94,7 @@ authorities:
           - engineering.domain.strategic-model
 
   - id: APPLICATION-JOURNEY-DESIGN
-    responsibility: Own cross-context/application journey composition and complete-or-Unresolved behavior for the selected MVP flow.
+    responsibility: Own cross-context/application journey composition and policy-materialization behavior for the selected MVP flow.
     boundary:
       semantic_cohesion: Decisions describe application-level orchestration of accepted domain semantics.
       independent_change: Journey composition can evolve without re-owning tactical domain truth or technical architecture.

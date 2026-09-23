@@ -19,18 +19,18 @@ application_boundary_rules:
     - submit AccessRequests and record final ALLOWED or DENIED decisions
     - manage PolicyRule Active/Inactive EffectiveWindow and additional Need justification
     - materialize all current policy or explicit Rule subset with scoped export admission
-  error_rule: Missing effective technical realization yields explicit UNRESOLVED; dependency failure is not a successful materialization.
+  error_rule: Missing current Resource address remains explicit as an INCOMPLETE enriched export row; missing durable owner truth or dependency failure is not a successful materialization.
 
 interaction_rules:
   - Owner modules interact in-process through public application/read ports; HTTP and database tables are not internal integration boundaries.
   - Cross-owner references are opaque owner-defined identities; consumers do not duplicate peer mutable truth.
-  - AccessRequest submission validates current Need under an owner-provided lock and resolves source/destination Resource AuthorityScopeRefs before scoped request admission.
+  - AccessRequest submission validates current Need under an owner-provided lock, resolves the source Resource AuthorityScopeRef and requires access.request authority only for that source scope; destination scope is not request-admission authority.
   - DENIED finalization mutates only AccessRequest and creates no PolicyRule.
   - ALLOWED finalization atomically resolves or creates one Rule per AccessSubject and appends authorization and justification evidence.
   - Policy materialization is read-only composition and owns no domain truth.
   - Materialization uses one read-only REPEATABLE READ snapshot and database transaction_timestamp() as evaluationAt.
   - Export authority for every distinct selected Resource scope is evaluated at the same evaluationAt before result exposure.
-  - Preflight determines COMPLETE or UNRESOLVED before HTTP 200 commitment; post-commit stream failure is not a valid export artifact.
+  - Preflight validates selected Rule references, durable deployment/revision/Resource truth and export authority before HTTP 200 commitment; ordinary missing current Resource address is represented inside the enriched COMPLETE result as row-level INCOMPLETE data. Post-commit stream failure is not a valid export artifact.
 
 consistency:
   local: Aggregate invariants are transactional in the owning module.

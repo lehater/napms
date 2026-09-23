@@ -7,7 +7,7 @@ scope: Diagnostic evidence needed to operate the corrected backend MVP.
 requirements:
   - {id: OBS-REQ-001, requirement: Every HTTP request has correlationId propagated through application and database work.}
   - {id: OBS-AUTH-002, requirement: Authorization denial records operation and required permission or safe scopeRef without bearer contents.}
-  - {id: OBS-POLICY-003, requirement: Materialization completion records COMPLETE or UNRESOLVED evaluationAt selected-rule count row count unresolved count and duration only after a syntactically complete result.}
+  - {id: OBS-POLICY-003, requirement: Materialization completion records COMPLETE evaluationAt selected-rule count row count incomplete-row count and duration only after a syntactically complete result; validation/integrity/dependency failures remain separate outcomes.}
   - {id: OBS-OIDC-004, requirement: OIDC refresh success failure and unusable-key dependency state are distinguishable without logging tokens or keys.}
   - {id: OBS-DB-005, requirement: Database timeout unavailable and migration or schema failure are distinguishable from domain rejection.}
   - {id: OBS-SECRET-006, requirement: Tokens database DSN or password and secret material are never logged.}

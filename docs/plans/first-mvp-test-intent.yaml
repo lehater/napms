@@ -43,7 +43,7 @@ required_scenarios:
     expect: Participant-side Needs remain independent business justification; additional Needs do not duplicate Rule; retirement preserves history; zero current Needs does not revoke; criticalityLabel is opaque metadata.
   - id: MVP-REQ-REQUEST-AUTHORITY
     verifies: [REQ-AUTH-001, REQ-PERM-001]
-    expect: AccessRequest succeeds only with effective access.request grants for every distinct participating Resource scope at server-owned admissionAt and stores exact authority evidence.
+    expect: AccessRequest succeeds with effective access.request authority for the source Resource scope at server-owned admissionAt; destination request authority is not required; exact source authority evidence is stored and request admission remains distinct from later permission decision.
   - id: MVP-REQ-PERMISSION
     verifies: [REQ-PERM-002, REQ-PERM-003, REQ-RULE-001, REQ-RULE-002]
     expect: DENIED creates no Rule; ALLOWED creates or resolves exactly one Rule for exact Deployment pair plus immutable InteractionRevision and repeated allowed requests converge.
@@ -55,7 +55,7 @@ required_scenarios:
     expect: ALL or explicit subset materialization fails before result exposure unless policy.export is effective for every selected Resource scope at evaluationAt.
   - id: MVP-REQ-MATERIALIZATION
     verifies: [REQ-EXP-002, REQ-EXP-003, REQ-EXP-004, REQ-EXP-005, REQ-EXP-006, REQ-EXP-007]
-    expect: One REPEATABLE READ snapshot and one evaluationAt produce COMPLETE or UNRESOLVED; non-effective Rules emit no rows and waive only technical-realization completeness; traffic semantics and provenance are never merged away.
+    expect: One REPEATABLE READ snapshot and one evaluationAt produce one complete enriched selected-policy result; effective Rules with complete current addresses emit READY rows, effective Rules with missing current addresses remain represented by INCOMPLETE rows with Resource identity/name and null address fields, non-effective Rules emit no effective rows, and traffic semantics/provenance are never merged away.
   - id: MVP-REQ-PROVENANCE
     verifies: [REQ-PROV-001]
     expect: Export contains ExportAuthorityEvidence and per-Rule request authority permission Need state and technical actor/time provenance sufficient for explanation without policy.read.
