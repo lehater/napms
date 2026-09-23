@@ -300,8 +300,16 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.get_by_label("Responsible organization name").fill("E2E Organization")
         page.get_by_role("button", name="Save responsible organization").click()
         page.locator('[data-version="2"]').wait_for()
-        page.get_by_label("Interaction ID").fill(interaction_ref)
-        page.get_by_label("Participant Component ID").fill(source_ref)
+        interaction_label = (
+            f"{source_name} — {application_name} → "
+            f"{destination_name} — {application_name} — E2E directed business flow"
+        )
+        page.get_by_label("Interaction").fill("E2E directed business flow")
+        page.get_by_role("option", name=interaction_label).click()
+        page.get_by_label("Participant Component").click()
+        page.get_by_role(
+            "option", name=f"{source_name} — {application_name}"
+        ).click()
         page.get_by_label("Business basis").fill("Required for order processing")
         page.locator("form").get_by_role("button", name="Declare Connectivity Need", exact=True).click()
         page.locator('[data-version="3"]').wait_for()

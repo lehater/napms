@@ -8,6 +8,7 @@ from napms.contexts.application_communication_catalogue.application.queries impo
     ApplicationCatalogueQuery,
     ApplicationSortField,
     ComponentCatalogueQuery,
+    InteractionCatalogueQuery,
     SortDirection,
 )
 from napms.contexts.application_communication_catalogue.domain.model import (
@@ -134,3 +135,33 @@ def test_component_catalogue_query_searches_component_and_application_context() 
     assert page.items[0].component_ref == UUID(int=401)
     assert page.items[0].name == "API"
     assert page.items[0].application_name == "Payments"
+
+
+def test_interaction_catalogue_query_searches_endpoint_application_context() -> None:
+    repository = PostgresApplicationCommunicationCatalogue(DSN)
+    portal = Application.create(application_ref=UUID(int=501), name="Customer Portal")
+    identity = Application.create(application_ref=UUID(int=502), name="Identity")
+    repository.add(portal)
+    repository.add(identity)
+    portal = portal.add_component(component_ref=UUID(int=601), name="Web")
+    identity = identity.add_component(component_ref=UUID(int=602), name="Identity API")
+    repository.save_application(portal, expected_version=1)
+    repository.save_application(identity, expected_version=1)
+    interaction = Interaction.create(
+        interaction_ref=UUID(int=603),
+        source_component_ref=UUID(int=601),
+        destination_component_ref=UUID(int=602),
+        purpose="Authenticate customer",
+    )
+    repository.add(interaction)
+
+    page = repository.query_interactions(
+        InteractionCatalogueQuery(search="identity", page=1, page_size=10)
+    )
+
+    assert page.total == 1
+    item = page.items[0]
+    assert item.interaction_ref == interaction.interaction_ref
+    assert item.source_application_name == "Customer Portal"
+    assert item.destination_application_name == "Identity"
+    assert repository.resolve_component_context(UUID(int=602)) is not None

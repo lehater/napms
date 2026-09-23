@@ -1,4 +1,4 @@
-version: 4
+version: 5
 kind: module-contract-design
 id: NAPMS-FIRST-MVP-MODULE-CONTRACTS
 status: CURRENT
@@ -7,7 +7,7 @@ purpose: Define explicit in-process contracts required to realize the corrected 
 
 contracts:
   Resource Catalogue: [RegisterResource, AddEndpoint, SetEndpointAddress, ClearEndpointAddress, SetSite, SetResponsibility, ResolveResource, ReadResourceDetail, ResolveAuthorityScope, CurrentEndpointAddresses]
-  Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, PageComponents, ResolveComponent, ResolveInteraction, ResolveInteractionRevision]
+  Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, PageComponents, PageInteractions, ResolveComponent, ResolveComponentContext, ResolveInteraction, ResolveInteractionRevision]
   Application Deployment: [RegisterComponentDeployment, ResolveComponentDeployment, ReadComponentDeployment]
   Business Connectivity: [RegisterBusinessProcess, SetResponsibleOrganization, SetCriticalityLabel, DeclareNeed, RetireNeed, LockAndResolveCurrentNeed, ResolveNeedCurrentOrHistory]
   Access Policy: [SubmitAccessRequest, RecordPermissionDecision, SetPolicyRuleOperationalState, AttachPolicyRuleJustification, ReadPolicyRule, PageCurrentPolicyRules]
@@ -56,6 +56,15 @@ application_communication_query_contracts:
     input: [ComponentRef]
     output: [componentRef, name]
     invariant: Component name remains Application Communication Catalogue owner truth and is exposed read-only for relationship presentation.
+  ResolveComponentContext:
+    input: [ComponentRef]
+    output: [componentRef, name, applicationRef, applicationName]
+    invariant: Application context is owner-read presentation context and never changes ComponentRef identity.
+  PageInteractions:
+    input: [search, page, pageSize]
+    output: page of Interaction candidates with source/destination Component and Application context plus purpose
+    search_matches: [interactionRef, purpose, endpoint component names/refs, endpoint application names/refs]
+    invariant: Candidate narrowing aids recognition only; Connectivity Need endpoint validation remains authoritative in Business Connectivity.
   ResolveInteraction:
     input: [InteractionRef]
     output: [interactionRef, sourceComponentRef, destinationComponentRef, purpose, version]

@@ -1,6 +1,6 @@
 # Frontend usability closure research v1
 
-Status: Stages 1 and 2A implemented; Stage 2B implementation in progress. This file is non-canonical; accepted semantics remain owned by Product, Interface, Domain, HTTP and Verification artifacts.
+Status: Stages 1, 2A and 2B implemented; Stage 2C implementation in progress. This file is non-canonical; accepted semantics remain owned by Product, Interface, Domain, HTTP and Verification artifacts.
 
 ## Trigger
 
@@ -110,13 +110,22 @@ Selected implementation:
 
 ### Stage 2C — dependent/task-oriented pickers
 
-Design constrained selection for:
+#### Stage 2C1 — Connectivity Need
 
-- Business Connectivity: Interaction first, then endpoint participant Component;
+Selected implementation:
+
+- add paged `listInteractions` search over Interaction identity/purpose and endpoint Component/Application context;
+- select the Interaction first by human-readable directed-flow label;
+- load authoritative selected Interaction detail and derive exactly its endpoint Components as participant candidates;
+- reset participant selection when Interaction changes;
+- keep `declareConnectivityNeed` endpoint-membership validation authoritative.
+
+#### Later Stage 2C
+
 - Access Request: eligible subject selection rather than four independent identifiers;
 - Policy Rule justification: recognizable Connectivity Need context.
 
-This may require new backend read/query projections and must follow canonical Interface/API design.
+These require task-oriented backend read/query projections and remain separate from simple reference pickers.
 
 ### Stage 3 — editability closure
 

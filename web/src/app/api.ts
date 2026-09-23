@@ -21,6 +21,10 @@ import {
 } from "./deployment-catalogue-query";
 import { type ApiErrorKind, statusToErrorKind } from "./http-semantics";
 import {
+  type InteractionCatalogueQuery,
+  serializeInteractionCatalogueQuery,
+} from "./interaction-catalogue-query";
+import {
   type PolicyRuleCatalogueQuery,
   serializePolicyRuleCatalogueQuery,
 } from "./policy-rule-catalogue-query";
@@ -149,8 +153,12 @@ export type InteractionView = {
   interactionRef: string;
   sourceComponentRef: string;
   sourceComponentName?: string;
+  sourceApplicationRef?: string;
+  sourceApplicationName?: string;
   destinationComponentRef: string;
   destinationComponentName?: string;
+  destinationApplicationRef?: string;
+  destinationApplicationName?: string;
   purpose: string | null;
   version: number;
   revisions: Array<{
@@ -159,6 +167,19 @@ export type InteractionView = {
     trafficClauses: TrafficClauseView[];
     createdBySubject: string;
   }>;
+};
+
+export type InteractionCandidateView = {
+  interactionRef: string;
+  purpose: string | null;
+  sourceComponentRef: string;
+  sourceComponentName: string;
+  sourceApplicationRef: string;
+  sourceApplicationName: string;
+  destinationComponentRef: string;
+  destinationComponentName: string;
+  destinationApplicationRef: string;
+  destinationApplicationName: string;
 };
 
 export type ComponentCandidateView = {
@@ -295,6 +316,10 @@ export const api = {
         headers: { "If-Match": String(version) },
         body: JSON.stringify({ name }),
       },
+    ),
+  listInteractions: (query: InteractionCatalogueQuery) =>
+    request<CataloguePage<InteractionCandidateView>>(
+      `/v1/interactions?${serializeInteractionCatalogueQuery(query)}`,
     ),
   getInteraction: (ref: string) =>
     request<InteractionView>(`/v1/interactions/${ref}`),

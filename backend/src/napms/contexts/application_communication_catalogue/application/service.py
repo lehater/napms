@@ -6,8 +6,11 @@ from uuid import UUID, uuid4
 from napms.contexts.application_communication_catalogue.application.queries import (
     ApplicationCataloguePage,
     ApplicationCatalogueQuery,
+    ComponentCatalogueItem,
     ComponentCataloguePage,
     ComponentCatalogueQuery,
+    InteractionCataloguePage,
+    InteractionCatalogueQuery,
 )
 from napms.contexts.application_communication_catalogue.application.ports import (
     ApplicationRepository,
@@ -43,6 +46,15 @@ class ApplicationCommunicationCatalogue:
 
     def list_components(self, query: ComponentCatalogueQuery) -> ComponentCataloguePage:
         return self._applications.query_components(query)
+
+    def list_interactions(self, query: InteractionCatalogueQuery) -> InteractionCataloguePage:
+        return self._interactions.query_interactions(query)
+
+    def resolve_component_context(self, component_ref: UUID) -> ComponentCatalogueItem:
+        value = self._applications.resolve_component_context(component_ref)
+        if value is None:
+            raise CatalogueNotFound(str(component_ref))
+        return value
 
     def get_application_detail(
         self, application_ref: UUID

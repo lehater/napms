@@ -8,6 +8,8 @@ from napms.contexts.application_communication_catalogue.application.queries impo
     ComponentCatalogueItem,
     ComponentCataloguePage,
     ComponentCatalogueQuery,
+    InteractionCataloguePage,
+    InteractionCatalogueQuery,
 )
 from napms.contexts.application_communication_catalogue.application.service import (
     ApplicationCommunicationCatalogue,
@@ -52,6 +54,21 @@ class Applications:
         )
         return ComponentCataloguePage(items, len(items), query.page, query.page_size)
 
+    def resolve_component_context(
+        self,
+        component_ref: UUID,
+    ) -> ComponentCatalogueItem | None:
+        for application in self.values.values():
+            for component in application.components:
+                if component.component_ref == component_ref:
+                    return ComponentCatalogueItem(
+                        component_ref=component.component_ref,
+                        name=component.name,
+                        application_ref=application.application_ref,
+                        application_name=application.name,
+                    )
+        return None
+
     def get(self, application_ref: UUID) -> Application | None:
         return self.values.get(application_ref)
 
@@ -63,12 +80,17 @@ class Applications:
 class Interactions:
     def __init__(self) -> None:
         self.values: dict[UUID, Interaction] = {}
+        self.last_query: InteractionCatalogueQuery | None = None
 
     def add(self, interaction: Interaction) -> None:
         self.values[interaction.interaction_ref] = interaction
 
     def get_interaction(self, interaction_ref: UUID) -> Interaction | None:
         return self.values.get(interaction_ref)
+
+    def query_interactions(self, query: InteractionCatalogueQuery) -> InteractionCataloguePage:
+        self.last_query = query
+        return InteractionCataloguePage((), 0, query.page, query.page_size)
 
     def save_interaction(self, interaction: Interaction, *, expected_version: int) -> None:
         assert self.values[interaction.interaction_ref].version == expected_version
@@ -181,3 +203,19 @@ def test_component_catalogue_query_is_delegated_with_application_context() -> No
     assert applications.last_component_query == query
     assert result.items[0].component_ref == UUID(int=41)
     assert result.items[0].application_name == "Payments"
+
+
+def test_interaction_catalogue_query_is_delegated() -> None:
+    interactions = Interactions()
+    service = ApplicationCommunicationCatalogue(
+        applications=Applications(),
+        interactions=interactions,
+        components=Components(),
+    )
+    query = InteractionCatalogueQuery(search="payments", page=2, page_size=10)
+
+    result = service.list_interactions(query)
+
+    assert interactions.last_query == query
+    assert result.total == 0
+    assert result.page == 2

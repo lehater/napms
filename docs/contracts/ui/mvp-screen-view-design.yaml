@@ -559,6 +559,12 @@ screens:
         pattern: STRUCTURED-LIST
         role: nested-process-relationships
         row_action: retire-connectivity-need
+      connectivity-need-authoring:
+        interaction:
+          selection: {candidate_operation: listInteractions, label: [sourceComponentName, sourceApplicationName, destinationComponentName, destinationApplicationName, purpose], value: interactionRef, search: server-backed}
+        participant_component:
+          selection: {source: read:selected-interaction, candidates: [sourceComponentRef, destinationComponentRef], labels: [sourceComponentName, destinationComponentName], dependency: interaction}
+          authority: frontend narrowing is advisory; declareConnectivityNeed validates endpoint membership
     primary_action_role: create-business-process
     action_hierarchy:
       business_process: edit-business-process
@@ -581,6 +587,14 @@ screens:
             page: {source: local:query.page, minimum: 1}
             pageSize: {source: local:query.page-size, default: 25, maximum: 100}
         - {id: detail, operation_id: getBusinessProcess, projection: BusinessProcessView}
+        - id: interaction-candidates
+          operation_id: listInteractions
+          projection: InteractionCataloguePage
+          query:
+            search: {source: local:connectivity-need.interaction-search, semantics: accepted-text-search}
+            page: {source: constant:1, minimum: 1}
+            pageSize: {source: constant:20, maximum: 100}
+        - {id: selected-interaction, operation_id: getInteraction, projection: InteractionView}
       commands:
         - {id: create-business-process, operation_id: createBusinessProcess}
         - {id: set-responsible-organization, operation_id: setProcessResponsibleOrganization}
@@ -614,6 +628,8 @@ screens:
           - {id: inspect-business-process, backed_by: read:detail}
           - {id: edit-business-process, backed_by: command:set-responsible-organization}
           - {id: set-criticality, backed_by: command:set-criticality}
+          - {id: select-interaction, backed_by: read:interaction-candidates}
+          - {id: derive-participant-candidates, backed_by: read:selected-interaction}
           - {id: manage-connectivity-need, backed_by: command:declare-connectivity-need}
           - {id: retire-connectivity-need, backed_by: command:retire-connectivity-need}
         excluded: [bulk-operation, inline-edit-business-process, permission-outcome-edit]
@@ -627,18 +643,18 @@ screens:
         - {pattern: TASK-ACTIONS, feature_bindings: {primary: create-business-process}}
         - {pattern: STATUS, feature_bindings: {}}
       state_mapping:
-        loading: [read:catalogue.pending, read:detail.pending]
-        loaded: [read:catalogue.200, read:detail.200]
+        loading: [read:catalogue.pending, read:detail.pending, read:interaction-candidates.pending, read:selected-interaction.pending]
+        loaded: [read:catalogue.200, read:detail.200, read:interaction-candidates.200, read:selected-interaction.200]
         empty: read:catalogue.200
         editing: local:business-connectivity-editor
         submitting: [command:create-business-process.pending, command:set-responsible-organization.pending, command:set-criticality.pending, command:declare-connectivity-need.pending, command:retire-connectivity-need.pending]
         validation-rejected: [command:create-business-process.422, command:set-responsible-organization.422, command:set-criticality.422, command:declare-connectivity-need.422, command:retire-connectivity-need.422]
-        authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, command:create-business-process.401, command:create-business-process.403, command:set-responsible-organization.401, command:set-responsible-organization.403, command:set-criticality.401, command:set-criticality.403, command:declare-connectivity-need.401, command:declare-connectivity-need.403, command:retire-connectivity-need.401, command:retire-connectivity-need.403]
+        authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, read:interaction-candidates.401, read:interaction-candidates.403, read:selected-interaction.401, read:selected-interaction.403, command:create-business-process.401, command:create-business-process.403, command:set-responsible-organization.401, command:set-responsible-organization.403, command:set-criticality.401, command:set-criticality.403, command:declare-connectivity-need.401, command:declare-connectivity-need.403, command:retire-connectivity-need.401, command:retire-connectivity-need.403]
         conflict: [command:set-responsible-organization.409, command:set-criticality.409, command:declare-connectivity-need.409, command:retire-connectivity-need.409]
         not-found: read:detail.404
-        technical-error: [read:catalogue.failure, read:detail.failure, command:create-business-process.failure, command:set-responsible-organization.failure, command:set-criticality.failure, command:declare-connectivity-need.failure, command:retire-connectivity-need.failure]
+        technical-error: [read:catalogue.failure, read:detail.failure, read:interaction-candidates.failure, read:selected-interaction.failure, command:create-business-process.failure, command:set-responsible-organization.failure, command:set-criticality.failure, command:declare-connectivity-need.failure, command:retire-connectivity-need.failure]
       verification:
-        contract: [operation:listBusinessProcesses-query-parameters, operation:getBusinessProcess, operation:createBusinessProcess, operation:setProcessResponsibleOrganization, operation:setProcessCriticality, operation:declareConnectivityNeed, operation:retireConnectivityNeed]
+        contract: [operation:listBusinessProcesses-query-parameters, operation:getBusinessProcess, operation:listInteractions, operation:getInteraction, operation:createBusinessProcess, operation:setProcessResponsibleOrganization, operation:setProcessCriticality, operation:declareConnectivityNeed, operation:retireConnectivityNeed]
         semantic: [business-process-catalogue-query-capability-and-state-closure, connectivity-need-remains-nested-business-justification]
         rendered: [business-process-filter-table-detail-conformance]
     responsive:

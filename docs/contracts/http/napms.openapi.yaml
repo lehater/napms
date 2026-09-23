@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: NAPMS First MVP Backend API
-  version: 2.2.0
+  version: 2.3.0
 security:
   - OIDCBearer: []
 
@@ -108,6 +108,19 @@ paths:
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateNamedRequest'}}}}
       responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/interactions:
+    get:
+      operationId: listInteractions
+      parameters:
+        - {$ref: '#/components/parameters/CatalogueSearch'}
+        - {$ref: '#/components/parameters/CataloguePage'}
+        - {$ref: '#/components/parameters/CataloguePageSize'}
+      responses:
+        '200':
+          description: Interaction candidate page
+          content: {application/json: {schema: {$ref: '#/components/schemas/InteractionCataloguePage'}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
     post:
       operationId: createInteraction
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateInteractionRequest'}}}}
@@ -517,6 +530,32 @@ components:
         components: {type: array, items: {$ref: '#/components/schemas/ApplicationComponentSummary'}}
         interactions: {type: array, items: {$ref: '#/components/schemas/InteractionView'}}
 
+    InteractionCataloguePage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/InteractionCandidateView'}}
+        total: {type: integer, minimum: 0}
+        page: {type: integer, minimum: 1}
+        pageSize: {type: integer, minimum: 1, maximum: 100}
+
+    InteractionCandidateView:
+      type: object
+      additionalProperties: false
+      required: [interactionRef, purpose, sourceComponentRef, sourceComponentName, sourceApplicationRef, sourceApplicationName, destinationComponentRef, destinationComponentName, destinationApplicationRef, destinationApplicationName]
+      properties:
+        interactionRef: {$ref: '#/components/schemas/StableId'}
+        purpose: {type: [string, 'null']}
+        sourceComponentRef: {$ref: '#/components/schemas/StableId'}
+        sourceComponentName: {type: string, minLength: 1}
+        sourceApplicationRef: {$ref: '#/components/schemas/StableId'}
+        sourceApplicationName: {type: string, minLength: 1}
+        destinationComponentRef: {$ref: '#/components/schemas/StableId'}
+        destinationComponentName: {type: string, minLength: 1}
+        destinationApplicationRef: {$ref: '#/components/schemas/StableId'}
+        destinationApplicationName: {type: string, minLength: 1}
+
     InteractionView:
       type: object
       additionalProperties: false
@@ -525,8 +564,12 @@ components:
         interactionRef: {$ref: '#/components/schemas/StableId'}
         sourceComponentRef: {$ref: '#/components/schemas/StableId'}
         sourceComponentName: {type: string, minLength: 1}
+        sourceApplicationRef: {$ref: '#/components/schemas/StableId'}
+        sourceApplicationName: {type: string, minLength: 1}
         destinationComponentRef: {$ref: '#/components/schemas/StableId'}
         destinationComponentName: {type: string, minLength: 1}
+        destinationApplicationRef: {$ref: '#/components/schemas/StableId'}
+        destinationApplicationName: {type: string, minLength: 1}
         purpose: {type: [string, 'null']}
         version: {type: integer, minimum: 1}
         revisions: {type: array, items: {$ref: '#/components/schemas/InteractionRevisionView'}}

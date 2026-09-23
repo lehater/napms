@@ -19,6 +19,51 @@ export async function queryComponentReferenceCandidates(
   }));
 }
 
+export async function queryInteractionReferenceCandidates(
+  search: string,
+): Promise<ReferenceCandidate[]> {
+  const page = await api.listInteractions({
+    ...(search.trim() ? { search } : {}),
+    page: 1,
+    pageSize: 20,
+  });
+  return page.items.map((item) => {
+    const direction =
+      `${item.sourceComponentName} — ${item.sourceApplicationName} → ` +
+      `${item.destinationComponentName} — ${item.destinationApplicationName}`;
+    return {
+      value: item.interactionRef,
+      label: item.purpose ? `${direction} — ${item.purpose}` : direction,
+    };
+  });
+}
+
+export async function queryInteractionParticipantCandidates(
+  interactionRef: string,
+): Promise<ReferenceCandidate[]> {
+  const interaction = await api.getInteraction(interactionRef);
+  const values = [
+    {
+      value: interaction.sourceComponentRef,
+      label: interaction.sourceApplicationName
+        ? `${interaction.sourceComponentName ?? interaction.sourceComponentRef} — ` +
+          interaction.sourceApplicationName
+        : (interaction.sourceComponentName ?? interaction.sourceComponentRef),
+    },
+    {
+      value: interaction.destinationComponentRef,
+      label: interaction.destinationApplicationName
+        ? `${interaction.destinationComponentName ?? interaction.destinationComponentRef} — ` +
+          interaction.destinationApplicationName
+        : (interaction.destinationComponentName ?? interaction.destinationComponentRef),
+    },
+  ];
+  return values.filter(
+    (candidate, index) =>
+      values.findIndex((item) => item.value === candidate.value) === index,
+  );
+}
+
 export async function queryResourceReferenceCandidates(
   search: string,
 ): Promise<ReferenceCandidate[]> {
