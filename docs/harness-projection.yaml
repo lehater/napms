@@ -25,7 +25,9 @@ authorities:
   - {id: TEST-DESIGN}
 
 bindings:
-  - {artifact: FIRST-MVP-REQUIREMENTS, authority: PRODUCT-REQUIREMENTS, provides: [engineering.requirements.product-intent, engineering.requirements.acceptance]}
+  - {artifact: FIRST-MVP-HCD-PROBLEM-EVIDENCE, authority: DISCOVERY, provides: [engineering.hcd.first-mvp.problem-evidence]}
+  - {artifact: FIRST-MVP-HCD-USER-NEEDS, authority: DISCOVERY, provides: [engineering.hcd.application-components.user-needs, engineering.hcd.access-request.user-needs, engineering.hcd.policy-export.user-needs]}
+  - {artifact: FIRST-MVP-REQUIREMENTS, authority: PRODUCT-REQUIREMENTS, provides: [engineering.requirements.product-intent, engineering.requirements.acceptance, engineering.hcd.application-components.requirements, engineering.hcd.access-request.requirements, engineering.hcd.policy-export.requirements]}
   - {artifact: RC-DISCOVERY, authority: DISCOVERY, provides: [engineering.discovery.problem-evidence]}
 
   - {artifact: STRATEGIC-CAPABILITIES, authority: STRATEGIC-DOMAIN-DESIGN, provides: []}
@@ -66,14 +68,34 @@ bindings:
   - {artifact: BACKEND-COMPONENT-DESIGN, authority: COMPONENT-DESIGN, provides: [engineering.backend.component-design]}
   - {artifact: MVP-IMPLEMENTATION-READINESS, authority: IMPLEMENTATION-DESIGN, provides: [engineering.implementation.plan, engineering.implementation.completion-criteria]}
   - {artifact: MVP-TEST-INTENT, authority: VERIFICATION-DESIGN, provides: [engineering.verification.strategy, engineering.verification.acceptance-scenarios]}
-  - {artifact: FRONTEND-HUMAN-INTERFACE, authority: INTERFACE-DESIGN, provides: [engineering.frontend.human-interface]}
+  - {artifact: FRONTEND-HUMAN-INTERFACE, authority: INTERFACE-DESIGN, provides: [engineering.frontend.human-interface, engineering.hcd.application-components.human-interface, engineering.hcd.access-request.human-interface, engineering.hcd.policy-export.human-interface]}
   - {artifact: FRONTEND-DESIGN-TOKENS, authority: INTERFACE-DESIGN, provides: []}
   - {artifact: FRONTEND-PRESENTATION-SYSTEM, authority: INTERFACE-DESIGN, provides: [engineering.frontend.presentation-system]}
-  - {artifact: FRONTEND-SCREEN-VIEW-DESIGN, authority: INTERFACE-DESIGN, provides: [engineering.frontend.screen-view-design]}
+  - {artifact: FRONTEND-SCREEN-VIEW-DESIGN, authority: INTERFACE-DESIGN, provides: [engineering.frontend.screen-view-design, engineering.hcd.application-components.screen-view, engineering.hcd.access-request.screen-view, engineering.hcd.policy-export.screen-view]}
   - {artifact: FRONTEND-ARCHITECTURE, authority: SYSTEM-ARCHITECTURE, provides: [engineering.frontend.architecture]}
   - {artifact: FRONTEND-COMPONENT-DESIGN, authority: COMPONENT-DESIGN, provides: [engineering.frontend.component-design]}
   - {artifact: FRONTEND-VERIFICATION, authority: VERIFICATION-DESIGN, provides: [engineering.frontend.verification, engineering.frontend.presentation-verification]}
   - {artifact: FRONTEND-TEST-DESIGN, authority: TEST-DESIGN, provides: [engineering.frontend.test-design]}
   - {artifact: FRONTEND-IMPLEMENTATION-DESIGN, authority: IMPLEMENTATION-DESIGN, provides: [engineering.frontend.implementation-design]}
 
-questions: []
+questions:
+  - id: Q-APP-01
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: How does the user recognize the correct existing Application/Component communication profile to reuse rather than creating another one?
+    blocks_capabilities: [engineering.hcd.application-components.task-model]
+  - id: Q-APP-02
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: Which information must be simultaneously available while defining or changing Components and communication intent?
+    blocks_capabilities: [engineering.hcd.application-components.task-model]
+  - id: Q-REQUEST-01
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: What minimum information must the requester inspect or compare before deciding that the concrete request subject is intended?
+    blocks_capabilities: [engineering.hcd.access-request.task-model]
+  - id: Q-REQUEST-02
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: What human work follows request-authority rejection versus a later NotAllowed permission decision?
+    blocks_capabilities: [engineering.hcd.access-request.task-model]
+  - id: Q-EXPORT-02
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: What should the user do after an UNRESOLVED export and which diagnostics are necessary for that recovery work?
+    blocks_capabilities: [engineering.hcd.policy-export.task-model]

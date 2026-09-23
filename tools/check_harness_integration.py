@@ -33,13 +33,19 @@ def main() -> int:
     projection = load("docs/harness-projection.yaml")
     graph = load("docs/harness-engineering-graph.yaml")
 
-    aligned = validate_project_alignment(
+    backend_alignment = validate_project_alignment(
         source,
         projection,
         graph,
         target_consumer="BACKEND-IMPLEMENTATION",
     )
-    model = aligned["model"]
+    frontend_alignment = validate_project_alignment(
+        source,
+        projection,
+        graph,
+        target_consumer="FRONTEND-IMPLEMENTATION",
+    )
+    model = frontend_alignment["model"]
 
     backend = evaluate_engineering_target(
         graph, "BACKEND-IMPLEMENTATION", model
@@ -52,16 +58,41 @@ def main() -> int:
     frontend = evaluate_engineering_target(
         graph, "FRONTEND-IMPLEMENTATION", model
     )
-    actual_frontier = {item["capability"] for item in frontend["create"]}
-    if frontend["status"] != "COMPLETE" or actual_frontier:
+    actual_create = {item["capability"] for item in frontend["create"]}
+    actual_wait = {item["capability"] for item in frontend["wait"]}
+    actual_questions = {
+        question
+        for item in frontend["wait"]
+        for question in item.get("questions", [])
+    }
+    expected_wait = {
+        "engineering.hcd.application-components.task-model",
+        "engineering.hcd.access-request.task-model",
+        "engineering.hcd.policy-export.task-model",
+    }
+    expected_questions = {
+        "Q-APP-01",
+        "Q-APP-02",
+        "Q-REQUEST-01",
+        "Q-REQUEST-02",
+        "Q-EXPORT-02",
+    }
+    if (
+        frontend["status"] != "BLOCKED"
+        or actual_create
+        or actual_wait != expected_wait
+        or actual_questions != expected_questions
+    ):
         raise SystemExit(
-            "FRONTEND-IMPLEMENTATION target mismatch: "
-            f"status={frontend['status']} create={sorted(actual_frontier)}"
+            "FRONTEND-IMPLEMENTATION causal blocker mismatch: "
+            f"status={frontend['status']} create={sorted(actual_create)} "
+            f"wait={sorted(actual_wait)} questions={sorted(actual_questions)}"
         )
 
     print("NAPMS pinned Harness integration PASS")
     print("BACKEND-IMPLEMENTATION: COMPLETE")
-    print("FRONTEND-IMPLEMENTATION: COMPLETE")
+    print("FRONTEND-IMPLEMENTATION: BLOCKED")
+    print("HCD blocker: five Task Model Questions across application-components, access-request, policy-export")
     return 0
 
 

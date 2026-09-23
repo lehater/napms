@@ -1,0 +1,71 @@
+version: 1
+kind: problem-evidence
+id: NAPMS-FIRST-MVP-HCD-PROBLEM-EVIDENCE
+status: ACCEPTED
+
+knowledge_coverage:
+  subject: FIRST-MVP-HCD
+  knowledge: problem-evidence
+
+scope:
+  selected_causal_subjects: [application-components, access-request, policy-export]
+  boundary: Human-facing first-MVP work for the selected subjects; no screen, route or layout decisions.
+
+problem_statement: >-
+  People responsible for application connectivity need to preserve reusable
+  network communication-profile meaning, submit concrete connectivity requests,
+  and obtain explainable vendor-neutral policy output without reconstructing
+  intent from current technical realization or collapsing request authority,
+  permission outcome and export completeness into one kind of truth.
+
+observations:
+  - id: OBS-APP-01
+    subject: application-components
+    statement: >-
+      Reusable network communication meaning must remain distinct from concrete
+      deployment and changing technical realization.
+    evidence_refs:
+      - docs/horizontal/s0/problem-landscape.md#application-communication-meaning
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-001
+      - current-stakeholder-input:2026-09-23
+  - id: OBS-REQUEST-01
+    subject: access-request
+    statement: >-
+      Deliberate connectivity work must preserve business justification, the exact
+      request subject and the distinction between authority to request and the
+      later permission outcome.
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j5--propose-and-decide-concrete-access
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-BUS-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-001
+      - current-stakeholder-input:2026-09-23
+  - id: OBS-EXPORT-01
+    subject: policy-export
+    statement: >-
+      Policy/network users need complete source-neutral policy output or an
+      explicitly unresolved result; missing realization must not appear as
+      successful completeness.
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j9--materialize-and-export-required-policy
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-004
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-005
+      - current-stakeholder-input:2026-09-23
+
+semantic_decision:
+  application_term: >-
+    Application is the established short term for a reusable Application
+    Communication Profile: a template classifying network communication roles and
+    requirements, not inventory identity for one concrete software product.
+  interaction_boundary: >-
+    Every Interaction connects Components of one Application communication
+    profile. Cross-Application Interaction is invalid.
+  reuse_rule: >-
+    Concrete systems needing the same communication contract reuse the relevant
+    profile through ComponentDeployments instead of creating cross-Application
+    Interactions.
+  evidence_ref: current-stakeholder-input:2026-09-23
+
+acceptance:
+  status: ACCEPTED
+  accepted_at: 2026-09-23
+  basis: Stakeholder explicitly confirmed the goals/User Needs and clarified Application/Interaction semantics.

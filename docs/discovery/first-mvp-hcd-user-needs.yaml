@@ -1,0 +1,138 @@
+version: 1
+kind: user-needs
+id: NAPMS-FIRST-MVP-HCD-USER-NEEDS
+status: ACCEPTED
+
+knowledge_coverage:
+  subject: FIRST-MVP-HCD
+  knowledge: user-needs
+
+problem_evidence_ref: FIRST-MVP-HCD-PROBLEM-EVIDENCE
+
+context_of_use:
+  usage_context: >-
+    First-MVP use is ordinary interactive catalogue, request and policy-export
+    work for one organization, primarily exercised by one developer and
+    potentially a small number of concurrent users.
+  evidence_refs:
+    - docs/requirements/first-mvp-product-requirements.yaml#REQ-SCALE-001
+    - docs/requirements/first-mvp-product-requirements.yaml#REQ-SCALE-002
+    - docs/requirements/first-mvp-product-requirements.yaml#REQ-SCALE-004
+
+actors:
+  - id: ACTOR-CATALOGUE-CURATOR
+    subject: application-components
+    description: Person maintaining reusable application communication-profile knowledge.
+  - id: ACTOR-CONNECTIVITY-REQUESTER
+    subject: access-request
+    description: Authorized actor initiating deliberate connectivity work from accepted business/connectivity truth.
+  - id: ACTOR-POLICY-NETWORK-USER
+    subject: policy-export
+    description: Policy/network user consuming vendor-neutral current effective-policy output.
+
+goals:
+  - id: GOAL-APP-COMMUNICATION
+    subject: application-components
+    statement: >-
+      Capture a reusable network communication profile so later connectivity
+      reasoning uses stable role/traffic meaning rather than reconstructing intent
+      from concrete software-system identity, deployment placement or current addresses.
+  - id: GOAL-ACCESS-REQUEST
+    subject: access-request
+    statement: >-
+      Submit and later explain a concrete connectivity request without confusing
+      authority to request with the eventual Allowed/NotAllowed permission outcome.
+  - id: GOAL-POLICY-EXPORT
+    subject: policy-export
+    statement: >-
+      Inspect current effective policy as one complete explainable vendor-neutral
+      technical view and hand the same semantic result to downstream processing, or
+      receive an explicit unresolved result when completeness cannot be established.
+
+user_needs:
+  - id: NEED-APP-01
+    subject: application-components
+    goal_ref: GOAL-APP-COMMUNICATION
+    statement: >-
+      The catalogue curator needs to express reusable communication-profile roles
+      and intended network interactions independently from concrete software-system
+      inventory, deployment and current network realization.
+    evidence_refs:
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-002
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-INT-003
+      - current-stakeholder-input:2026-09-23
+
+  - id: NEED-REQUEST-01
+    subject: access-request
+    goal_ref: GOAL-ACCESS-REQUEST
+    statement: >-
+      The requester needs to understand the exact connectivity subject and its
+      business basis before submitting a deliberate access request.
+    evidence_refs:
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-BUS-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-BUS-003
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-002
+      - current-stakeholder-input:2026-09-23
+
+  - id: NEED-REQUEST-02
+    subject: access-request
+    goal_ref: GOAL-ACCESS-REQUEST
+    statement: >-
+      The requester needs request-authority status and the later permission outcome
+      to remain distinguishable and explainable for the exact submitted subject.
+    evidence_refs:
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-AUTH-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-002
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-003
+      - current-stakeholder-input:2026-09-23
+
+  - id: NEED-EXPORT-01
+    subject: policy-export
+    goal_ref: GOAL-POLICY-EXPORT
+    statement: >-
+      The policy/network user needs to select the intended current policy scope in
+      domain-policy terms rather than vendor/device syntax.
+    evidence_refs:
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-001
+      - current-stakeholder-input:2026-09-23
+
+  - id: NEED-EXPORT-02
+    subject: policy-export
+    goal_ref: GOAL-POLICY-EXPORT
+    statement: >-
+      The policy/network user needs a coherent complete source-neutral result, or
+      explicit unresolved diagnostics, with evaluation-time and provenance facts
+      sufficient to explain what the result represents.
+    evidence_refs:
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-003
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-004
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-005
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PROV-001
+      - current-stakeholder-input:2026-09-23
+
+task_model_questions:
+  - id: Q-APP-01
+    subject: application-components
+    question: How does the user recognize the correct existing Application/Component profile to reuse rather than creating another one?
+  - id: Q-APP-02
+    subject: application-components
+    question: Which information must be simultaneously available while defining or changing Components and communication intent?
+  - id: Q-REQUEST-01
+    subject: access-request
+    question: What minimum information must the requester inspect or compare before deciding the concrete request subject is intended?
+  - id: Q-REQUEST-02
+    subject: access-request
+    question: What human work follows request-authority rejection versus a later NotAllowed permission decision?
+  - id: Q-EXPORT-02
+    subject: policy-export
+    question: What should the user do after an UNRESOLVED export and which diagnostics are necessary for that recovery work?
+
+sufficiency_review:
+  status: ACCEPTED
+  accepted_at: 2026-09-23
+  conclusion: >-
+    The three goals and five solution-independent User Needs are accepted. The five
+    remaining questions concern intended task decomposition, information
+    requirements and recovery behavior and therefore route to Task Model.

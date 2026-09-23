@@ -110,7 +110,8 @@ jobs:
               assert result["question_frontier"] == []
 
           print(
-              "NAPMS Engineering Coverage COMPLETE:",
+              "NAPMS concern/subject Engineering Coverage COMPLETE "
+              "(independent of structural Consumer target):",
               backend["activated_count"],
               frontend["activated_count"],
           )
