@@ -26,6 +26,14 @@ from napms.contexts.resource_catalogue.infrastructure.persistence.postgres.repos
 )
 
 
+class PolicyMaterializationRejected(ValueError):
+    pass
+
+
+class PolicyMaterializationIntegrityError(RuntimeError):
+    pass
+
+
 @dataclass(frozen=True)
 class MaterializationIssue:
     rule_ref: UUID
@@ -72,14 +80,16 @@ class PostgresPolicyMaterialization:
             connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
             evaluation_at = self._evaluation_at(connection)
             rules, missing = self._select_rules(connection, rule_refs)
+            if missing:
+                raise PolicyMaterializationRejected(
+                    "selected policy rule does not exist: "
+                    + ", ".join(str(value) for value in missing)
+                )
+
             selection: dict[str, object] = {
                 "mode": "ALL" if rule_refs is None else "EXPLICIT",
                 "policyRuleRefs": [str(rule.rule_ref) for rule in rules],
             }
-            issues = [
-                MaterializationIssue(rule_ref, "selected policy rule unresolved")
-                for rule_ref in missing
-            ]
             non_effective: list[dict[str, object]] = []
             provenance = [self._provenance(rule) for rule in rules]
             realization: dict[UUID, tuple[Any, Any, Any, Any, Any]] = {}
@@ -94,6 +104,7 @@ class PostgresPolicyMaterialization:
                         }
                     )
                     continue
+
                 subject = rule.access_subject
                 source = PostgresComponentDeploymentRepository.resolve_deployment_in(
                     connection, subject.source_deployment_ref
@@ -105,10 +116,10 @@ class PostgresPolicyMaterialization:
                     connection, subject.interaction_revision_ref
                 )
                 if source is None or destination is None or revision is None:
-                    issues.append(
-                        MaterializationIssue(rule.rule_ref, "technical reference unresolved")
+                    raise PolicyMaterializationIntegrityError(
+                        f"policy rule {rule.rule_ref} references missing deployment/revision truth"
                     )
-                    continue
+
                 source_resource = PostgresResourceCatalogueRepository.resolve_resource_in(
                     connection, source.resource_ref
                 )
@@ -116,21 +127,16 @@ class PostgresPolicyMaterialization:
                     connection, destination.resource_ref
                 )
                 if source_resource is None or destination_resource is None:
-                    issues.append(MaterializationIssue(rule.rule_ref, "resource unresolved"))
-                    continue
+                    raise PolicyMaterializationIntegrityError(
+                        f"policy rule {rule.rule_ref} references missing Resource truth"
+                    )
+
                 scopes.update(
                     (
                         source_resource.authority_scope_ref,
                         destination_resource.authority_scope_ref,
                     )
                 )
-                if not self._addresses(source_resource) or not self._addresses(
-                    destination_resource
-                ):
-                    issues.append(
-                        MaterializationIssue(rule.rule_ref, "address realization unresolved")
-                    )
-                    continue
                 realization[rule.rule_ref] = (
                     source,
                     destination,
@@ -147,47 +153,82 @@ class PostgresPolicyMaterialization:
                 )
                 for scope in sorted(scopes)
             )
-            rows: list[dict[str, object]] = []
-            if not issues:
-                for rule in rules:
-                    facts = realization.get(rule.rule_ref)
-                    if facts is None:
-                        continue
-                    source, destination, revision, source_resource, destination_resource = facts
-                    for source_address in self._addresses(source_resource):
-                        for destination_address in self._addresses(destination_resource):
-                            for clause in revision.revision.traffic_clauses:
-                                rows.append(
-                                    {
-                                        "policyRuleRef": str(rule.rule_ref),
-                                        "sourceDeploymentRef": str(source.deployment_ref),
-                                        "destinationDeploymentRef": str(destination.deployment_ref),
-                                        "interactionRevisionRef": str(
-                                            rule.access_subject.interaction_revision_ref
-                                        ),
-                                        "sourceAddress": source_address,
-                                        "destinationAddress": destination_address,
-                                        "ipProtocol": clause.ip_protocol,
-                                        "sourcePorts": [
-                                            {"start": item.start, "end": item.end}
-                                            for item in clause.source_ports
-                                        ],
-                                        "destinationPorts": [
-                                            {"start": item.start, "end": item.end}
-                                            for item in clause.destination_ports
-                                        ],
-                                    }
-                                )
 
+            rows: list[dict[str, object]] = []
+            incomplete_rules: set[UUID] = set()
+            for rule in rules:
+                facts = realization.get(rule.rule_ref)
+                if facts is None:
+                    continue
+                source, destination, revision, source_resource, destination_resource = facts
+
+                for source_endpoint_ref, source_address in self._endpoint_realizations(
+                    source_resource
+                ):
+                    for (
+                        destination_endpoint_ref,
+                        destination_address,
+                    ) in self._endpoint_realizations(destination_resource):
+                        ready = source_address is not None and destination_address is not None
+                        if not ready:
+                            incomplete_rules.add(rule.rule_ref)
+
+                        for clause in revision.revision.traffic_clauses:
+                            rows.append(
+                                {
+                                    "policyRuleRef": str(rule.rule_ref),
+                                    "technicalStatus": "READY" if ready else "INCOMPLETE",
+                                    "sourceDeploymentRef": str(source.deployment_ref),
+                                    "destinationDeploymentRef": str(destination.deployment_ref),
+                                    "interactionRevisionRef": str(
+                                        rule.access_subject.interaction_revision_ref
+                                    ),
+                                    "sourceResourceRef": str(source_resource.resource_ref),
+                                    "sourceResourceName": source_resource.display_name,
+                                    "sourceEndpointRef": (
+                                        None
+                                        if source_endpoint_ref is None
+                                        else str(source_endpoint_ref)
+                                    ),
+                                    "sourceAddress": source_address,
+                                    "destinationResourceRef": str(
+                                        destination_resource.resource_ref
+                                    ),
+                                    "destinationResourceName": (destination_resource.display_name),
+                                    "destinationEndpointRef": (
+                                        None
+                                        if destination_endpoint_ref is None
+                                        else str(destination_endpoint_ref)
+                                    ),
+                                    "destinationAddress": destination_address,
+                                    "ipProtocol": clause.ip_protocol,
+                                    "sourcePorts": [
+                                        {"start": item.start, "end": item.end}
+                                        for item in clause.source_ports
+                                    ],
+                                    "destinationPorts": [
+                                        {"start": item.start, "end": item.end}
+                                        for item in clause.destination_ports
+                                    ],
+                                }
+                            )
+
+            issues = tuple(
+                MaterializationIssue(
+                    rule_ref,
+                    "current address realization incomplete",
+                )
+                for rule_ref in sorted(incomplete_rules, key=str)
+            )
             return MaterializationResult(
-                status="UNRESOLVED" if issues else "COMPLETE",
+                status="COMPLETE",
                 evaluation_at=evaluation_at,
                 selection=selection,
                 export_authority_evidence=authority_evidence,
                 rule_provenance=tuple(provenance),
                 non_effective=tuple(non_effective),
                 rows=tuple(rows),
-                issues=tuple(issues),
+                issues=issues,
             )
 
     @staticmethod
@@ -214,11 +255,19 @@ class PostgresPolicyMaterialization:
         return tuple(rules), tuple(missing)
 
     @staticmethod
-    def _addresses(resource: Any) -> tuple[str, ...]:
+    def _endpoint_realizations(resource: Any) -> tuple[tuple[UUID | None, str | None], ...]:
+        if not resource.endpoints:
+            return ((None, None),)
         return tuple(
-            endpoint.current_address.address.value
+            (
+                endpoint.endpoint_ref,
+                (
+                    None
+                    if endpoint.current_address is None
+                    else endpoint.current_address.address.value
+                ),
+            )
             for endpoint in resource.endpoints
-            if endpoint.current_address is not None
         )
 
     @staticmethod

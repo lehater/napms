@@ -4,7 +4,7 @@ id: NAPMS-STRATEGIC-CONTEXT-RELATIONSHIPS
 
 whole_domain_relationships:
   - {from: Resource Catalogue, to: Authority Management, semantics: Resource supplies immutable AuthorityScopeRef affiliation; it does not grant actor authority.}
-  - {from: Authority Management, to: Access Policy, semantics: AccessRequest submission consumes effective access.request authority for all participating Resource scopes at admission time.}
+  - {from: Authority Management, to: Access Policy, semantics: AccessRequest submission consumes effective access.request authority for the source Resource scope at admission time; destination request authority is not required merely to submit.}
   - {from: Authority Management, to: Required Policy Materialization, semantics: Export consumes effective policy.export authority for all selected Resource scopes at evaluation time.}
   - {from: Application Communication Catalogue, to: Application Deployment, semantics: Deployment references Component identity while ACC retains communication ownership.}
   - {from: Resource Catalogue, to: Application Deployment, semantics: Deployment references Resource identity while RC retains realization and scope ownership.}
@@ -33,4 +33,4 @@ strategic_invariants:
   - denied permission creates no PolicyRule
   - technical realization does not define access identity
   - zero current Need does not automatically revoke access
-  - unresolved effective materialization is not successful complete policy
+  - missing current address realization is explicit incomplete technical realization and is not silently omitted from exported policy

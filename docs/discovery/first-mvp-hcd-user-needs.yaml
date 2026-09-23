@@ -46,8 +46,8 @@ goals:
     subject: policy-export
     statement: >-
       Inspect current effective policy as one complete explainable vendor-neutral
-      technical view and hand the same semantic result to downstream processing, or
-      receive an explicit unresolved result when completeness cannot be established.
+      enriched view and hand the same semantic result to downstream processing while
+      keeping missing current address realization explicit at row level.
 
 user_needs:
   - id: NEED-APP-01
@@ -67,8 +67,10 @@ user_needs:
     subject: access-request
     goal_ref: GOAL-ACCESS-REQUEST
     statement: >-
-      The requester needs to understand the exact connectivity subject and its
-      business basis before submitting a deliberate access request.
+      The requester needs to choose access from a Resource under their request
+      authority to a technically possible destination Resource, understand the
+      communication meaning and business basis, and submit without constructing
+      internal Deployment/Revision identifiers.
     evidence_refs:
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-BUS-001
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-BUS-003
@@ -102,9 +104,9 @@ user_needs:
     subject: policy-export
     goal_ref: GOAL-POLICY-EXPORT
     statement: >-
-      The policy/network user needs a coherent complete source-neutral result, or
-      explicit unresolved diagnostics, with evaluation-time and provenance facts
-      sufficient to explain what the result represents.
+      The policy/network user needs a coherent complete source-neutral enriched
+      result with evaluation-time and provenance facts, including Resource identity
+      and explicit row-level indication when current address realization is missing.
     evidence_refs:
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-003
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-004
@@ -112,40 +114,51 @@ user_needs:
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-PROV-001
       - current-stakeholder-input:2026-09-23
 
-resolved_task_model_questions:
+resolved_resolved_task_model_questions:
   - id: Q-APP-01
     subject: application-components
-    resolution: >-
-      Reuse is determined by the network communication contract, not concrete
-      software-system identity. Profiles are shared when participant roles and
-      required protocol/port semantics represent the same reusable pattern.
+    resolution: Reuse is determined by the network communication contract rather than concrete software-system identity.
     resolution_ref: docs/model/tasks/application-components-task-model.yaml
     evidence_ref: current-stakeholder-input:2026-09-23
   - id: Q-APP-02
     subject: application-components
-    resolution: >-
-      Task work needs the selected communication profile, participant Component
-      roles, Interaction direction/reason and the required protocol/port semantics
-      available as one coherent decision context.
+    resolution: Component/Interaction authoring requires one coherent view of profile, roles, direction, reason and protocol/port semantics.
     resolution_ref: docs/model/tasks/application-components-task-model.yaml
     evidence_ref: current-stakeholder-input:2026-09-23
-
-task_model_questions:
   - id: Q-REQUEST-01
     subject: access-request
-    question: What minimum information must the requester inspect or compare before deciding the concrete request subject is intended?
+    resolution: >-
+      The user selects one Resource under their request authority, then a destination
+      and communication candidate that the system derives as technically possible
+      from deployments and directed Interaction semantics; raw internal refs are not
+      the human selection model.
+    resolution_ref: docs/model/tasks/access-request-task-model.yaml
+    evidence_ref: current-stakeholder-input:2026-09-23
   - id: Q-REQUEST-02
     subject: access-request
-    question: What human work follows request-authority rejection versus a later NotAllowed permission decision?
+    resolution: >-
+      A DENIED submitted request remains in history with outcome, actor and time and
+      creates no PolicyRule; source-scope authority rejection happens before request
+      creation and is not a permission decision.
+    resolution_ref: docs/model/tasks/access-request-task-model.yaml
+    evidence_ref: current-stakeholder-input:2026-09-23
   - id: Q-EXPORT-02
     subject: policy-export
-    question: What should the user do after an UNRESOLVED export and which diagnostics are necessary for that recovery work?
+    resolution: >-
+      Missing current IP/prefix does not create a global UNRESOLVED workflow state.
+      MVP export uses an enriched row with Resource identity/name, nullable address
+      and explicit incomplete technical status; no mandatory recovery workflow is
+      required.
+    resolution_ref: docs/model/tasks/policy-export-task-model.yaml
+    evidence_ref: current-stakeholder-input:2026-09-23
+
+task_model_questions: []
 
 sufficiency_review:
   status: ACCEPTED
   accepted_at: 2026-09-23
   conclusion: >-
     The three goals and five solution-independent User Needs are accepted.
-    Application/Components Task Model questions are resolved by explicit stakeholder
-    clarification; the remaining three questions concern Access Request and Policy
-    Export task/recovery semantics and remain routed to Task Model.
+    All three selected HCD subjects now have accepted Task Model decisions from
+    explicit stakeholder clarification. Interface Design is the next downstream
+    authority for Access Request and Policy Export realization.

@@ -260,7 +260,7 @@ paths:
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/PolicyMaterializationRequest'}}}}
       responses:
         '200':
-          description: COMPLETE or UNRESOLVED application result
+          description: Complete enriched selected-policy representation; individual rows may be technically INCOMPLETE when current address realization is missing
           content: {application/json: {schema: {$ref: '#/components/schemas/PolicyMaterializationResult'}}}
         '401': {$ref: '#/components/responses/Unauthenticated'}
         '403': {$ref: '#/components/responses/Forbidden'}
@@ -736,15 +736,85 @@ components:
         effectiveUntil: {$ref: '#/components/schemas/Timestamp'}
         evaluatedAt: {$ref: '#/components/schemas/Timestamp'}
 
+    MaterializedPortRange:
+      type: object
+      additionalProperties: false
+      required: [start, end]
+      properties:
+        start: {type: integer, minimum: 0, maximum: 65535}
+        end: {type: integer, minimum: 0, maximum: 65535}
+
+    PolicyMaterializationRow:
+      type: object
+      additionalProperties: false
+      required:
+        - policyRuleRef
+        - technicalStatus
+        - sourceDeploymentRef
+        - destinationDeploymentRef
+        - interactionRevisionRef
+        - sourceResourceRef
+        - sourceResourceName
+        - sourceEndpointRef
+        - sourceAddress
+        - destinationResourceRef
+        - destinationResourceName
+        - destinationEndpointRef
+        - destinationAddress
+        - ipProtocol
+        - sourcePorts
+        - destinationPorts
+      properties:
+        policyRuleRef: {$ref: '#/components/schemas/StableId'}
+        technicalStatus: {type: string, enum: [READY, INCOMPLETE]}
+        sourceDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        destinationDeploymentRef: {$ref: '#/components/schemas/StableId'}
+        interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        sourceResourceRef: {$ref: '#/components/schemas/StableId'}
+        sourceResourceName: {type: string, minLength: 1}
+        sourceEndpointRef:
+          oneOf:
+            - {$ref: '#/components/schemas/StableId'}
+            - {type: 'null'}
+        sourceAddress:
+          oneOf:
+            - {type: string, minLength: 1}
+            - {type: 'null'}
+        destinationResourceRef: {$ref: '#/components/schemas/StableId'}
+        destinationResourceName: {type: string, minLength: 1}
+        destinationEndpointRef:
+          oneOf:
+            - {$ref: '#/components/schemas/StableId'}
+            - {type: 'null'}
+        destinationAddress:
+          oneOf:
+            - {type: string, minLength: 1}
+            - {type: 'null'}
+        ipProtocol: {type: integer, minimum: 0, maximum: 255}
+        sourcePorts:
+          type: array
+          items: {$ref: '#/components/schemas/MaterializedPortRange'}
+        destinationPorts:
+          type: array
+          items: {$ref: '#/components/schemas/MaterializedPortRange'}
+
+    PolicyMaterializationIssue:
+      type: object
+      additionalProperties: false
+      required: [policyRuleRef, reason]
+      properties:
+        policyRuleRef: {$ref: '#/components/schemas/StableId'}
+        reason: {type: string, minLength: 1}
+
     PolicyMaterializationResult:
       type: object
       required: [status, evaluationAt, selection, exportAuthorityEvidence, ruleProvenance, nonEffective, rows, issues]
       properties:
-        status: {type: string, enum: [COMPLETE, UNRESOLVED]}
+        status: {type: string, enum: [COMPLETE]}
         evaluationAt: {$ref: '#/components/schemas/Timestamp'}
         selection: {type: object}
         exportAuthorityEvidence: {type: array, items: {$ref: '#/components/schemas/AuthorityEvidence'}}
         ruleProvenance: {type: array, items: {type: object}}
         nonEffective: {type: array, items: {type: object}}
-        rows: {type: array, items: {type: object}}
-        issues: {type: array, items: {type: object}}
+        rows: {type: array, items: {$ref: '#/components/schemas/PolicyMaterializationRow'}}
+        issues: {type: array, items: {$ref: '#/components/schemas/PolicyMaterializationIssue'}}

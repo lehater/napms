@@ -49,6 +49,7 @@ def coverage_check(
     obligations_path: str,
     semantic_evaluations=None,
     expected_status: str = "COMPLETE",
+    expected_create_capabilities: set[str] | None = None,
     expected_wait_capabilities: set[str] | None = None,
     expected_question_ids: set[str] | None = None,
 ) -> None:
@@ -66,6 +67,7 @@ def coverage_check(
         for item in target["wait"]
         for question in item.get("questions", [])
     }
+    expected_create = expected_create_capabilities or set()
     expected_wait = expected_wait_capabilities or set()
     expected_questions = expected_question_ids or set()
     require(
@@ -73,8 +75,8 @@ def coverage_check(
         f"{consumer} structural target is {target['status']}, expected {expected_status}",
     )
     require(
-        not actual_create,
-        f"{consumer} has unexpected CREATE frontier: {sorted(actual_create)}",
+        actual_create == expected_create,
+        f"{consumer} CREATE frontier mismatch: {sorted(actual_create)} != {sorted(expected_create)}",
     )
     require(
         actual_wait == expected_wait,
@@ -166,15 +168,10 @@ def main() -> int:
         consumer="FRONTEND-IMPLEMENTATION",
         obligations_path="docs/harness/coverage/frontend-subject-obligations-v1.yaml",
         semantic_evaluations=evaluate_frontend_coverage_semantics(),
-        expected_status="BLOCKED",
-        expected_wait_capabilities={
-            "engineering.hcd.access-request.task-model",
-            "engineering.hcd.policy-export.task-model",
-        },
-        expected_question_ids={
-            "Q-REQUEST-01",
-            "Q-REQUEST-02",
-            "Q-EXPORT-02",
+        expected_status="READY",
+        expected_create_capabilities={
+            "engineering.hcd.access-request.human-interface",
+            "engineering.hcd.policy-export.human-interface",
         },
     )
     requirement_verification_check()
@@ -182,7 +179,7 @@ def main() -> int:
 
     print("NAPMS implementation-design closure PASS")
     print("BACKEND-IMPLEMENTATION: structural target + concern/subject coverage COMPLETE")
-    print("FRONTEND-IMPLEMENTATION: structural target BLOCKED on remaining Access Request/Policy Export Task Model Questions")
+    print("FRONTEND-IMPLEMENTATION: structural target READY for Access Request/Policy Export Human Interface redesign")
     print("FRONTEND concern/subject coverage of currently materialized artifacts: COMPLETE")
     print("Requirement verification traceability: COMPLETE")
     print("Frontend subject test coverage of currently materialized artifacts: COMPLETE")

@@ -1,0 +1,123 @@
+version: 1
+kind: task-model
+id: NAPMS-HCD-ACCESS-REQUEST-TASK-MODEL
+status: ACCEPTED
+
+knowledge_coverage:
+  subject: access-request
+  knowledge: task-model
+
+goal_refs: [GOAL-ACCESS-REQUEST]
+user_need_refs: [NEED-REQUEST-01, NEED-REQUEST-02]
+requirement_refs:
+  - REQ-AUTH-001
+  - REQ-BUS-001
+  - REQ-BUS-003
+  - REQ-PERM-001
+  - REQ-PERM-002
+  - REQ-PERM-003
+
+purpose: >-
+  Define the human work for requesting technically possible network access from
+  a Resource under the requester's authority to another Resource, without asking
+  the user to construct internal Deployment/InteractionRevision identifiers.
+
+plan:
+  - id: REQUEST-TASK-1
+    responsibility: SYSTEM
+    outcome: Candidate source Resources under the requester's access.request authority are available.
+    system_support:
+      - evaluate effective access.request authority against source Resource AuthorityScopeRef
+      - preserve Resource identity independently from current address
+    rule: Destination Resource request-authority is not required merely to ask for access to it.
+    evidence_refs:
+      - current-stakeholder-input:2026-09-23
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-AUTH-001
+
+  - id: REQUEST-TASK-2
+    responsibility: USER
+    depends_on: [REQUEST-TASK-1]
+    outcome: One requester-controlled source Resource is selected.
+    required_information:
+      - source Resource identity and human-recognizable name
+      - enough current Resource context to distinguish it from other Resources
+    decision: Choose the Resource from which access is needed.
+
+  - id: REQUEST-TASK-3
+    responsibility: SYSTEM
+    depends_on: [REQUEST-TASK-2]
+    outcome: Technically possible destination choices are derived from accepted communication/deployment truth.
+    system_support:
+      - resolve ComponentDeployments on the selected source Resource
+      - find directed Interactions whose source Component is realized there
+      - find destination ComponentDeployments realizing the destination Component
+      - expose the corresponding destination Resources and current immutable Interaction revision/traffic meaning
+    rule: Technical possibility comes from deployed Components plus an accepted directed Interaction; it is not itself permission.
+
+  - id: REQUEST-TASK-4
+    responsibility: USER
+    depends_on: [REQUEST-TASK-3]
+    outcome: The intended destination Resource and communication possibility are selected.
+    required_information:
+      - destination Resource identity and human-recognizable name
+      - communication purpose/meaning
+      - protocol and port semantics needed to understand the requested network access
+      - associated current Process-backed business justification
+    decision: Select the intended technically possible access.
+    input: Select destination/communication candidate and the applicable business justification.
+    rule: Raw sourceDeploymentRef destinationDeploymentRef interactionRevisionRef and needRef are system identities, not the primary human selection model.
+
+  - id: REQUEST-TASK-5
+    responsibility: SYSTEM
+    depends_on: [REQUEST-TASK-4]
+    outcome: One exact immutable AccessSubject is derived and validated.
+    system_support:
+      - resolve exact source/destination ComponentDeployments
+      - resolve exact immutable InteractionRevision
+      - validate one current Process-backed ConnectivityNeed for the selected Interaction
+      - evaluate access.request authority for the source Resource scope at admission time
+
+  - id: REQUEST-TASK-6
+    responsibility: USER
+    depends_on: [REQUEST-TASK-5]
+    outcome: The exact request is deliberately submitted for permission decision.
+    required_information:
+      - selected source Resource
+      - selected destination Resource
+      - communication meaning/traffic semantics
+      - business justification
+    decision: Submit or abandon the request.
+
+  - id: REQUEST-TASK-7
+    responsibility: SYSTEM
+    depends_on: [REQUEST-TASK-6]
+    outcome: The Access Request remains inspectable with its immutable subject and eventual decision history.
+    system_support:
+      - persist request actor and submission time
+      - persist final ALLOWED or DENIED result with deciding actor and time
+      - create/resolve a PolicyRule only for ALLOWED
+      - create no PolicyRule for DENIED
+
+alternate_and_recovery:
+  - trigger: Requester lacks effective access.request authority for the selected source Resource.
+    system_outcome: Reject submission before creating an Access Request.
+    user_work: No permission decision exists to continue; the attempted action ends as an authority rejection.
+  - trigger: No directed Interaction/deployment combination makes the selected destination technically possible.
+    system_outcome: Do not offer the destination as a requestable communication candidate.
+    user_work: Choose another technically possible destination/communication or return to catalogue work.
+  - trigger: Submitted Access Request is DENIED.
+    system_outcome: Persist request, DENIED result, deciding actor and decision time; create no PolicyRule.
+    user_work: The request ends; no additional recovery workflow is required for the first MVP.
+  - trigger: Submitted Access Request is ALLOWED.
+    system_outcome: Create or resolve one PolicyRule for the exact AccessSubject.
+    user_work: The resulting access can later be inspected as current outgoing/incoming policy.
+
+sufficiency_review:
+  status: ACCEPTED
+  accepted_at: 2026-09-23
+  resolved_questions: [Q-REQUEST-01, Q-REQUEST-02]
+  basis:
+    - current-stakeholder-input:2026-09-23
+    - docs/requirements/first-mvp-product-requirements.yaml
+    - docs/model/contexts/access-policy/domain-model.yaml
+  unresolved_questions: []

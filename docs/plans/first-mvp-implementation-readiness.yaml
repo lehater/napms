@@ -38,13 +38,13 @@ completion_definition:
   - Application is treated as a reusable network communication profile; cross-Application Interaction is rejected while multiple independent Interactions for the same intra-Application Component pair remain supported.
   - Resource has immutable AuthorityScopeRef and explicit logical Endpoint membership; no automatic grouping by address Site responsibility or name occurs.
   - BusinessProcess criticalityLabel is representable without score ordering taxonomy or propagation.
-  - AccessRequest requires current participant-attributed Need plus effective scoped access.request authority for every participating Resource scope at admissionAt.
+  - AccessRequest requires a current participant-attributed Need plus effective scoped access.request authority for the source Resource scope at admissionAt; destination scope authority is not required merely to submit.
   - DENIED creates no PolicyRule; ALLOWED converges one PolicyRule per exact AccessSubject including immutable InteractionRevision.
   - PolicyRule supports reversible ACTIVE/INACTIVE and absolute EffectiveWindow without new permission decision.
   - Additional Needs attach without duplicate Rule; zero current Needs yields reconciliation and no automatic revoke.
   - Materialization supports ALL or explicit Rule subset and requires scoped policy.export authority for every selected Resource scope at evaluationAt.
   - One read-only REPEATABLE READ snapshot and database transaction_timestamp() govern materialization.
-  - Export is self-contained for request authority permission business and technical provenance; only selected effective Rules require technical realization.
+  - Export is self-contained for request authority permission business and technical provenance; each selected effective Rule remains represented even when a current source/destination address is absent, with row-level technical readiness distinguishing deployable tuples from incomplete realization.
   - Idempotency replays exact persisted response and has no first-MVP TTL.
   - migrate owns DDL and advisory serialization; serve verifies exact migration IDs/checksums and never auto-migrates.
   - OIDC HTTPS issuer/discovery/JWKS algorithm kid audience time subject permission and authority-claim semantics are proven.
@@ -64,7 +64,7 @@ delivery_contract:
     - An incompatible migration requires an explicitly tested reverse/repair migration or restoration of a compatible pre-migration database state; code must not reinterpret a newer incompatible schema.
     - A destructive or semantics-changing migration without an accepted recovery path blocks release.
 error_handling_contract:
-  - Domain rejection, UNRESOLVED materialization, authentication/authorization denial, concurrency conflict and technical dependency failure remain distinct through application and HTTP mapping.
+  - Domain rejection, invalid export selection, authentication/authorization denial, concurrency conflict and technical dependency failure remain distinct through application and HTTP mapping; missing current address is normal enriched export data, not an application failure.
   - Infrastructure/library exceptions are translated at their owning adapter boundary; framework/database/OIDC exception types do not cross into domain contracts.
   - Catch-all handling must not convert unknown commit outcome, dependency inability or internal failure into an accepted domain result.
   - Errors exposed externally use the accepted HTTP status/representation contract; diagnostic detail remains safe and correlation-friendly without leaking secrets.

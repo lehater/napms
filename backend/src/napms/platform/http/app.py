@@ -36,7 +36,11 @@ from napms.platform.database.idempotency import (
     PersistedHttpResponse,
     PostgresIdempotencyStore,
 )
-from napms.platform.database.policy_materialization import MaterializationResult
+from napms.platform.database.policy_materialization import (
+    MaterializationResult,
+    PolicyMaterializationIntegrityError,
+    PolicyMaterializationRejected,
+)
 from napms.platform.database.policy_rule_justification import JustificationRejected
 from napms.contexts.application_communication_catalogue.application.service import (
     ApplicationCommunicationCatalogue,
@@ -647,6 +651,10 @@ def create_app(dependencies: HttpDependencies) -> FastAPI:
             )
         except AuthorityForbidden as exc:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN) from exc
+        except PolicyMaterializationRejected as exc:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
+        except PolicyMaterializationIntegrityError as exc:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE) from exc
         return result.as_http()
 
     if (

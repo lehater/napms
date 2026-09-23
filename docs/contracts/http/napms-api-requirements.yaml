@@ -79,7 +79,7 @@ catalogue_query_contract:
 
 rules:
   - Authentication is OIDC Bearer token only; request bodies never contain trusted actor permission or authority fields.
-  - access.request is admitted from effective scoped AuthorityGrants for every source/destination Resource AuthorityScopeRef at server-owned admissionAt.
+  - access.request is admitted from effective scoped AuthorityGrants for the source Resource AuthorityScopeRef at server-owned admissionAt; destination request authority is not required merely to submit.
   - policy.export is admitted from effective scoped AuthorityGrants for every selected Resource AuthorityScopeRef at database-owned evaluationAt.
   - Interaction creation resolves both Component owners server-side and rejects source/destination Components that belong to different Applications.
   - Idempotent state-creating POST operations require Idempotency-Key; replay returns exact persisted original status/body/Location/ETag before NEW-command If-Match evaluation.
@@ -87,9 +87,9 @@ rules:
   - DENIED AccessRequest decision creates no PolicyRule.
   - PolicyRule operational state supports ACTIVE or INACTIVE plus optional half-open EffectiveWindow.
   - Policy materialization accepts all Rules or an explicit non-empty unique Rule subset.
-  - COMPLETE and UNRESOLVED are HTTP 200 application results; dependency inability is 503 before response commitment.
+  - Successful policy materialization returns one complete enriched selected-policy representation; missing current Resource addresses are row-level INCOMPLETE data, not a global UNRESOLVED application result. Invalid explicit Rule selection is rejected before result exposure and dependency/integrity inability is not converted into success.
   - Export response is self-contained with ExportAuthorityEvidence and per-Rule authorization/business provenance.
-  - Missing technical realization for a selected non-effective Rule does not make export incomplete.
+  - Selected non-effective Rules contribute no effective technical rows; selected effective Rules with missing current address remain visible as enriched INCOMPLETE rows with Resource identity/name and nullable address fields.
   - Catalogue GET operations return authoritative read collections required by the accepted frontend catalogue workspaces and use the corresponding read permission.
   - GET /v1/applications/{applicationRef} returns Application identity/version, Components, and every directed Interaction touching those Components, including revision traffic semantics required by APPLICATION-DETAIL.
   - GET /v1/interactions/{interactionRef} reconstructs revision-authoring state after navigation or reload, including the authoritative current version and revision traffic semantics.

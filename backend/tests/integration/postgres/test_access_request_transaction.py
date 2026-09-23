@@ -184,10 +184,7 @@ def test_submit_request_uses_one_transaction_and_exact_scoped_authority() -> Non
     refs = iter((UUID(int=100), UUID(int=101), UUID(int=102)))
     principal = Principal(
         subject="subject:alice",
-        authority_grants=(
-            AuthorityGrant(action="access.request", scope="scope:source"),
-            AuthorityGrant(action="access.request", scope="scope:destination"),
-        ),
+        authority_grants=(AuthorityGrant(action="access.request", scope="scope:source"),),
     )
     submission = PostgresAccessRequestSubmission(
         dsn=DSN,
@@ -206,10 +203,7 @@ def test_submit_request_uses_one_transaction_and_exact_scoped_authority() -> Non
     persisted = PostgresAccessPolicyRepository(DSN).get_request(request.request_ref)
     assert persisted == request
     assert request.validated_business_process_version == 1
-    assert tuple(item.scope_ref for item in request.authority_evidence) == (
-        "scope:destination",
-        "scope:source",
-    )
+    assert tuple(item.scope_ref for item in request.authority_evidence) == ("scope:source",)
 
 
 def test_current_need_lock_blocks_retirement_until_owner_transaction_ends() -> None:
@@ -338,6 +332,9 @@ def test_policy_materialization_resolves_addresses_and_emits_provenance() -> Non
     assert result.status == "COMPLETE"
     assert result.issues == ()
     assert len(result.rows) == 1
+    assert result.rows[0]["technicalStatus"] == "READY"
+    assert result.rows[0]["sourceResourceName"] == "source"
+    assert result.rows[0]["destinationResourceName"] == "destination"
     assert result.rows[0]["sourceAddress"] == "10.0.0.1"
     assert result.rows[0]["destinationAddress"] == "10.0.0.2"
     assert result.rows[0]["ipProtocol"] == 1
@@ -348,16 +345,23 @@ def test_policy_materialization_resolves_addresses_and_emits_provenance() -> Non
     assert result.rule_provenance[0]["policyRuleRef"] == str(rule_ref)
 
 
-def test_policy_materialization_reports_unresolved_address_without_rows() -> None:
+def test_policy_materialization_keeps_policy_row_when_address_is_missing() -> None:
     _, rule_ref = seed_materializable_rule(with_addresses=False)
     result = PostgresPolicyMaterialization(dsn=DSN).materialize(
         principal=export_principal(),
         rule_refs=(rule_ref,),
     )
 
-    assert result.status == "UNRESOLVED"
-    assert result.rows == ()
-    assert [issue.reason for issue in result.issues] == ["address realization unresolved"]
+    assert result.status == "COMPLETE"
+    assert len(result.rows) == 1
+    row = result.rows[0]
+    assert row["technicalStatus"] == "INCOMPLETE"
+    assert row["sourceResourceName"] == "source"
+    assert row["destinationResourceName"] == "destination"
+    assert row["sourceAddress"] is None
+    assert row["destinationAddress"] is None
+    assert row["ipProtocol"] == 1
+    assert [issue.reason for issue in result.issues] == ["current address realization incomplete"]
     assert {item["scopeRef"] for item in result.export_authority_evidence} == {
         "scope:source",
         "scope:destination",

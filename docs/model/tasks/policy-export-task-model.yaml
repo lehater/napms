@@ -1,0 +1,90 @@
+version: 1
+kind: task-model
+id: NAPMS-HCD-POLICY-EXPORT-TASK-MODEL
+status: ACCEPTED
+
+knowledge_coverage:
+  subject: policy-export
+  knowledge: task-model
+
+goal_refs: [GOAL-POLICY-EXPORT]
+user_need_refs: [NEED-EXPORT-01, NEED-EXPORT-02]
+requirement_refs:
+  - REQ-AUTH-002
+  - REQ-EXP-001
+  - REQ-EXP-002
+  - REQ-EXP-003
+  - REQ-EXP-004
+  - REQ-EXP-005
+  - REQ-EXP-006
+  - REQ-EXP-007
+  - REQ-PROV-001
+
+purpose: >-
+  Define the work for exporting the policy that has actually been formed, while
+  showing incomplete address realization explicitly instead of converting it into
+  a global UNRESOLVED workflow state.
+
+plan:
+  - id: EXPORT-TASK-1
+    responsibility: USER
+    outcome: The desired policy scope is selected.
+    required_information:
+      - current Policy Rule identity and state
+      - enough policy meaning to select all current policy or an explicit subset
+    decision: Export all current effective policy or an explicit Policy Rule subset.
+
+  - id: EXPORT-TASK-2
+    responsibility: SYSTEM
+    depends_on: [EXPORT-TASK-1]
+    outcome: The selected effective policy is evaluated coherently.
+    system_support:
+      - use one logical evaluation time and coherent snapshot
+      - enforce policy.export authority for selected Resource scopes
+      - retain per-Rule permission/business provenance
+      - exclude selected Rules that are not effective at evaluation time from technical rows
+
+  - id: EXPORT-TASK-3
+    responsibility: SYSTEM
+    depends_on: [EXPORT-TASK-2]
+    outcome: Each selected effective Policy Rule is represented in an enriched vendor-neutral table.
+    system_support:
+      - resolve source/destination Resource identities and human-recognizable names
+      - resolve immutable InteractionRevision traffic clauses
+      - include source/destination address when currently known
+      - keep a row with nullable/missing address when a Resource has no current address
+      - mark whether a row is technically READY or INCOMPLETE
+    rule: >-
+      Missing current address realization does not make the whole export UNRESOLVED
+      and must not silently remove the corresponding policy meaning. An INCOMPLETE
+      row is not a deployable firewall permit.
+
+  - id: EXPORT-TASK-4
+    responsibility: USER
+    depends_on: [EXPORT-TASK-3]
+    outcome: The user can inspect or hand off the complete enriched policy representation.
+    required_information:
+      - Resource names/identities
+      - source/destination addresses when known
+      - protocol and port semantics
+      - row technical readiness
+      - evaluation time and provenance
+    decision: Use READY rows as fully materialized technical rules and treat INCOMPLETE rows as policy whose current address realization is missing.
+
+alternate_and_recovery:
+  - trigger: A selected effective Rule has no current source or destination IP/prefix.
+    system_outcome: Export succeeds with an INCOMPLETE enriched row carrying Resource identity/name and null address fields.
+    user_work: No mandatory recovery workflow is required; the user may complete Resource address data and export again later.
+  - trigger: A selected Rule is inactive or otherwise non-effective.
+    system_outcome: It contributes no effective technical row and remains separately explainable as non-effective.
+  - trigger: Export authority is absent for selected scope.
+    system_outcome: Reject export; do not expose the selected policy result.
+
+sufficiency_review:
+  status: ACCEPTED
+  accepted_at: 2026-09-23
+  resolved_questions: [Q-EXPORT-02]
+  basis:
+    - current-stakeholder-input:2026-09-23
+    - docs/requirements/first-mvp-product-requirements.yaml
+  unresolved_questions: []

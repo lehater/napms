@@ -106,7 +106,7 @@ dependency_rules:
   - Diagnostics may be called from adapters and application boundaries but must not become a semantic dependency of domain decisions.
 
 error_handling:
-  - Domain rejection, unresolved materialization, authentication failure, authorization denial, concurrency conflict and technical dependency failure remain distinct types/categories until the HTTP boundary maps them.
+  - Domain rejection, invalid export selection, authentication failure, authorization denial, concurrency conflict and technical dependency failure remain distinct types/categories until the HTTP boundary maps them; missing current Resource address is represented as enriched policy data rather than an error category.
   - Adapter/library exceptions are translated at the adapter that owns the dependency.
   - Unknown commit outcome or unavailable dependency is never converted to a successful or accepted domain result.
   - Retry behavior is explicit at the owning contract; generic wrappers do not invent retries.

@@ -24,12 +24,16 @@ content:
 
     - id: REQ-AUTH-001
       statement: >-
-        Connectivity request submission shall require effective request authority for
-        the relevant scope at the relevant time.
+        Connectivity request submission shall require effective access.request
+        authority for the source Resource from which the actor requests access at
+        the server-owned admission time. Request authority over the destination
+        Resource is not required merely to ask for access to it.
       status: ACCEPTED
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-001
         - c403ceed:docs/requirements/wave1-acceptance-examples.md#E1
+        - current-stakeholder-input:2026-09-23
+      rationale: A requester asks from a Resource under their authority to another Resource; destination permission is decided later and is distinct from request authority.
 
     - id: REQ-AUTH-002
       statement: >-
@@ -337,23 +341,29 @@ content:
 
     - id: REQ-EXP-004
       statement: >-
-        The product shall produce a complete vendor-neutral normalized policy export for
-        the selected effective access without requiring downstream consumers to
-        reconstruct missing semantic meaning.
+        The product shall produce a complete vendor-neutral enriched representation
+        of the selected effective policy without requiring downstream consumers to
+        reconstruct Resource identity, traffic semantics or provenance. Fully
+        materialized rows shall expose the technical address/protocol/port tuple.
       status: ACCEPTED
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-010
+        - current-stakeholder-input:2026-09-23
 
     - id: REQ-EXP-005
       statement: >-
-        Missing, stale or unknown technical realization required by selected effective
-        access shall prevent the result from being presented as a complete successful
-        export; diagnostic partial information may be returned only as explicitly
-        unresolved or degraded output.
+        Missing current source or destination address realization shall not remove
+        an otherwise valid selected effective Policy Rule from the MVP export.
+        Instead the enriched row shall retain Resource identity/name and traffic
+        semantics, expose the missing address as null/empty, and mark the row as
+        technically incomplete rather than as a deployable permit. Missing address
+        realization shall not make the whole export UNRESOLVED.
       status: ACCEPTED
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-009-REQ-W1-011
         - c403ceed:docs/requirements/wave1-acceptance-examples.md#E10
+        - current-stakeholder-input:2026-09-23
+      rationale: The MVP proves that formed policy can be exported even when a Resource has not yet been assigned a current address; richer rows make that state visible without silently omitting policy.
 
     - id: REQ-EXP-006
       statement: >-
@@ -366,10 +376,11 @@ content:
 
     - id: REQ-EXP-007
       statement: >-
-        Normalization may expand one semantic access requirement into multiple technical
-        rows when required, but it shall not broaden or narrow represented traffic
-        semantics or merge independently authoritative access when doing so would lose
-        provenance.
+        Normalization may expand one semantic access requirement into multiple
+        enriched technical rows when required by endpoint/address or traffic-clause
+        multiplicity, but it shall not broaden or narrow represented traffic
+        semantics, hide rows whose current address is missing, or merge independently
+        authoritative access when doing so would lose provenance.
       status: ACCEPTED
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-012

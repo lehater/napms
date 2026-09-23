@@ -13,10 +13,11 @@ scope:
 
 problem_statement: >-
   People responsible for application connectivity need to preserve reusable
-  network communication-profile meaning, submit concrete connectivity requests,
-  and obtain explainable vendor-neutral policy output without reconstructing
-  intent from current technical realization or collapsing request authority,
-  permission outcome and export completeness into one kind of truth.
+  network communication-profile meaning, submit concrete connectivity requests
+  from Resources under their request authority, and obtain an explainable
+  vendor-neutral representation of formed policy without reconstructing intent
+  from current technical realization or collapsing request authority, permission
+  outcome and technical materialization readiness into one kind of truth.
 
 observations:
   - id: OBS-APP-01
@@ -42,9 +43,9 @@ observations:
   - id: OBS-EXPORT-01
     subject: policy-export
     statement: >-
-      Policy/network users need complete source-neutral policy output or an
-      explicitly unresolved result; missing realization must not appear as
-      successful completeness.
+      Policy/network users need the formed policy represented completely in
+      source-neutral form; missing current address realization must remain visible
+      as incomplete technical materialization rather than silently removing policy.
     evidence_refs:
       - docs/horizontal/s0/user-journeys.md#j9--materialize-and-export-required-policy
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-004

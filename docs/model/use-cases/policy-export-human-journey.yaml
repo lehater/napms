@@ -1,0 +1,52 @@
+version: 1
+kind: user-journey-design
+id: NAPMS-HCD-POLICY-EXPORT-JOURNEY
+status: ACCEPTED
+
+knowledge_coverage:
+  subject: policy-export
+  knowledge: user-journey-design
+
+actor: ACTOR-POLICY-NETWORK-USER
+goal_ref: GOAL-POLICY-EXPORT
+task_model_ref: NAPMS-HCD-POLICY-EXPORT-TASK-MODEL
+
+entry_condition: The user wants to inspect or hand off policy that has already been formed by accepted Policy Rules.
+
+preconditions:
+  - Policy Rules exist from ALLOWED access decisions.
+  - The actor has effective policy.export authority for the selected scope.
+
+interactions:
+  - step: 1
+    user: Select all current effective policy or an explicit domain-policy subset.
+    system: Keep selection in Policy Rule terms rather than vendor/device syntax.
+  - step: 2
+    user: Execute export.
+    system: Evaluate the selected policy at one logical time in one coherent snapshot.
+  - step: 3
+    system: Produce an enriched vendor-neutral table for every selected effective Rule, including Resource names/identities, protocol/ports, provenance and current addresses when known.
+  - step: 4
+    system: Mark rows with missing current address realization as INCOMPLETE with null address fields rather than omitting the policy or returning a global UNRESOLVED result.
+    user: Inspect READY and INCOMPLETE rows; optionally correct Resource address data and export again.
+
+alternate_paths:
+  - condition: A selected Rule is non-effective.
+    result: It contributes no effective technical row and is reported separately as non-effective.
+  - condition: Current source or destination address is missing.
+    result: The enriched row remains present with Resource identity/name, null address and INCOMPLETE technical status.
+  - condition: Export authority is denied.
+    result: No selected policy export is exposed.
+
+completion_condition: The user receives one complete enriched representation of the selected effective policy at one evaluation time.
+
+externally_visible_side_effects:
+  - Export is read-only and creates no policy truth.
+  - READY rows contain fully materialized network tuples; INCOMPLETE rows preserve policy meaning without pretending to be deployable permits.
+
+upstream_refs:
+  - docs/discovery/first-mvp-hcd-user-needs.yaml
+  - docs/requirements/first-mvp-product-requirements.yaml
+  - docs/model/use-cases/first-mvp-policy-export.yaml
+
+unresolved_questions: []

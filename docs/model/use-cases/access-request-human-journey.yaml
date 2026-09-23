@@ -1,0 +1,61 @@
+version: 1
+kind: user-journey-design
+id: NAPMS-HCD-ACCESS-REQUEST-JOURNEY
+status: ACCEPTED
+
+knowledge_coverage:
+  subject: access-request
+  knowledge: user-journey-design
+
+actor: ACTOR-CONNECTIVITY-REQUESTER
+goal_ref: GOAL-ACCESS-REQUEST
+task_model_ref: NAPMS-HCD-ACCESS-REQUEST-TASK-MODEL
+
+entry_condition: The user needs network access from one Resource under their request authority.
+
+preconditions:
+  - Source and candidate destination Resources exist.
+  - Application communication profiles, Components, directed Interactions and concrete ComponentDeployments exist.
+  - A current Process-backed ConnectivityNeed can provide business justification for the selected Interaction.
+
+interactions:
+  - step: 1
+    system: Present source Resources for which the actor currently has access.request authority.
+    user: Select the Resource from which access is needed.
+  - step: 2
+    system: Derive technically possible communication candidates from deployed Components and directed Interactions and present destination Resources with communication meaning.
+    user: Select the intended destination/communication candidate and applicable business justification.
+  - step: 3
+    system: Resolve the exact source/destination deployments and immutable InteractionRevision and validate the current Need and source-scope request authority.
+    user: Review the selected source, destination, traffic meaning and business basis and submit.
+  - step: 4
+    system: Persist the Access Request and expose its pending/final outcome without changing its subject.
+  - step: 5
+    system: On ALLOWED create or resolve one PolicyRule; on DENIED persist decision actor/time and create no PolicyRule.
+    user: Inspect the final decision and, when allowed, the resulting policy access.
+
+alternate_paths:
+  - condition: Source-scope request authority is absent.
+    result: Submission is rejected before Access Request creation; this is not a DENIED permission decision.
+  - condition: Destination has no technically possible deployed Interaction from the selected source.
+    result: It is not offered as a requestable communication candidate.
+  - condition: Permission decision is DENIED.
+    result: Request history remains visible with decision/time/actor and no PolicyRule.
+  - condition: Permission decision is ALLOWED.
+    result: Exact-subject PolicyRule becomes authoritative desired access.
+
+completion_condition: The request has an immutable subject and a final ALLOWED or DENIED outcome, with a PolicyRule only for ALLOWED.
+
+externally_visible_side_effects:
+  - Request history preserves submitter/time and final decision/time/actor.
+  - Allowed access becomes inspectable policy for the exact technical subject.
+
+upstream_refs:
+  - docs/discovery/first-mvp-hcd-user-needs.yaml
+  - docs/requirements/first-mvp-product-requirements.yaml
+  - docs/model/contexts/access-policy/domain-model.yaml
+  - docs/model/contexts/application-deployment/domain-model.yaml
+  - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+  - docs/model/contexts/business-connectivity/domain-model.yaml
+
+unresolved_questions: []
