@@ -78,4 +78,24 @@ bindings:
   - {artifact: FRONTEND-TEST-DESIGN, authority: TEST-DESIGN, provides: [engineering.frontend.test-design]}
   - {artifact: FRONTEND-IMPLEMENTATION-DESIGN, authority: IMPLEMENTATION-DESIGN, provides: [engineering.frontend.implementation-design]}
 
-questions: []
+questions:
+  - id: Q-APP-01
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: How does the user recognize the correct existing Application/Component communication profile to reuse rather than creating another one?
+    blocks_capabilities: [engineering.hcd.application-components.task-model]
+  - id: Q-APP-02
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: Which information must be simultaneously available while defining or changing Components and communication intent?
+    blocks_capabilities: [engineering.hcd.application-components.task-model]
+  - id: Q-REQUEST-01
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: What minimum information must the requester inspect or compare before deciding that the concrete request subject is intended?
+    blocks_capabilities: [engineering.hcd.access-request.task-model]
+  - id: Q-REQUEST-02
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: What human work follows request-authority rejection versus a later NotAllowed permission decision?
+    blocks_capabilities: [engineering.hcd.access-request.task-model]
+  - id: Q-EXPORT-02
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: What should the user do after an UNRESOLVED export and which diagnostics are necessary for that recovery work?
+    blocks_capabilities: [engineering.hcd.policy-export.task-model]

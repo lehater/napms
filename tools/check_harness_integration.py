@@ -58,22 +58,41 @@ def main() -> int:
     frontend = evaluate_engineering_target(
         graph, "FRONTEND-IMPLEMENTATION", model
     )
-    actual_frontier = {item["capability"] for item in frontend["create"]}
-    expected_frontier = {
+    actual_create = {item["capability"] for item in frontend["create"]}
+    actual_wait = {item["capability"] for item in frontend["wait"]}
+    actual_questions = {
+        question
+        for item in frontend["wait"]
+        for question in item.get("questions", [])
+    }
+    expected_wait = {
         "engineering.hcd.application-components.task-model",
         "engineering.hcd.access-request.task-model",
         "engineering.hcd.policy-export.task-model",
     }
-    if frontend["status"] != "READY" or actual_frontier != expected_frontier:
+    expected_questions = {
+        "Q-APP-01",
+        "Q-APP-02",
+        "Q-REQUEST-01",
+        "Q-REQUEST-02",
+        "Q-EXPORT-02",
+    }
+    if (
+        frontend["status"] != "BLOCKED"
+        or actual_create
+        or actual_wait != expected_wait
+        or actual_questions != expected_questions
+    ):
         raise SystemExit(
-            "FRONTEND-IMPLEMENTATION causal frontier mismatch: "
-            f"status={frontend['status']} create={sorted(actual_frontier)}"
+            "FRONTEND-IMPLEMENTATION causal blocker mismatch: "
+            f"status={frontend['status']} create={sorted(actual_create)} "
+            f"wait={sorted(actual_wait)} questions={sorted(actual_questions)}"
         )
 
     print("NAPMS pinned Harness integration PASS")
     print("BACKEND-IMPLEMENTATION: COMPLETE")
-    print("FRONTEND-IMPLEMENTATION: READY")
-    print("HCD frontier: task-model[application-components, access-request, policy-export]")
+    print("FRONTEND-IMPLEMENTATION: BLOCKED")
+    print("HCD blocker: five Task Model Questions across application-components, access-request, policy-export")
     return 0
 
 
