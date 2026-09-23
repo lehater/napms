@@ -175,3 +175,103 @@ If the executable result passes, the pilot supports three conclusions:
    artifacts;
 3. the first repair should be Discovery/User Needs and Task Model elicitation, not
    more navigation/screen redesign.
+
+
+## Elicitation pass 1 — source-bounded User Needs candidate
+
+A repository evidence pass found a stronger upstream source than the current UI:
+`docs/horizontal/s0/problem-landscape.md` and
+`docs/horizontal/s0/user-journeys.md`. These files are explicitly non-canonical,
+but their source ledger states that they reconstruct problem/actor/goal material
+from accepted `docs/**`. They are therefore useful as **candidate evidence**, not
+as accepted User Needs.
+
+Two research artifacts now materialize that distinction:
+
+- `candidate-problem-evidence.yaml`;
+- `candidate-user-needs.yaml`.
+
+Neither is registered as a Discovery provider. The executable test uses them only
+in a simulated promotion step after first proving that the real current model still
+routes `CREATE problem-evidence`.
+
+### Source precedence finding
+
+The horizontal reconstruction is not safe to promote wholesale. Its application
+communication S1 material contains the older rule that Interactions are
+same-Application only, while current canonical `REQ-INT-001` explicitly rejects a
+blanket cross-Application prohibition.
+
+Therefore the candidate contract applies this precedence:
+
+```text
+current canonical first-MVP requirements
+    > conflicting historical/horizontal candidate detail
+```
+
+Horizontal S0 is used only for actor/goal/problem framing.
+
+### Candidate goals and User Needs
+
+**Application / Components**
+
+Goal candidate: capture reusable application communication intent so later
+connectivity reasoning can use stable semantic meaning rather than reconstructing
+intent from deployment placement/current addresses.
+
+Candidate need:
+
+- express reusable application participants and communication intent independently
+  from concrete deployment and current network realization.
+
+**Access Request**
+
+Goal candidate: submit and later explain a concrete connectivity request without
+confusing authority to request with the eventual permission outcome.
+
+Candidate needs:
+
+- understand the exact connectivity subject and business basis before submission;
+- keep request-authority status and later permission outcome distinguishable and
+  explainable for the exact submitted subject.
+
+**Policy Export**
+
+Goal candidate: obtain a complete explainable vendor-neutral projection of selected
+current effective policy, or an explicit unresolved result.
+
+Candidate needs:
+
+- select intended current policy scope in domain-policy terms rather than
+  vendor/device syntax;
+- receive a coherent complete source-neutral result, or explicit unresolved
+  diagnostics, with enough evaluation-time/provenance information to explain it.
+
+### Why these are still not accepted
+
+Six blocking questions remain:
+
+1. how a user recognizes an existing Application/Component semantic object to reuse;
+2. what information must be available together while defining/changing Components
+   and communication intent;
+3. what minimum information a requester must inspect before submission;
+4. what human recovery differs between authority rejection and a later NotAllowed
+   decision;
+5. which concrete first-MVP human decision/action consumes the vendor-neutral export;
+6. what human recovery follows an UNRESOLVED export and which diagnostics it needs.
+
+These questions affect Task Model structure and information requirements. Treating
+the current catalogue/detail/request/export screens as their answers would recreate
+the causal inversion the experiment is intended to remove.
+
+The candidate therefore has:
+
+```yaml
+status: CANDIDATE_REQUIRES_HUMAN_ACCEPTANCE
+sufficiency_review:
+  status: UNRESOLVED
+```
+
+The next semantic step is human disposition of these questions. Only after that
+should the three `user-needs` capabilities be registered and Task Model work become
+real rather than simulated.

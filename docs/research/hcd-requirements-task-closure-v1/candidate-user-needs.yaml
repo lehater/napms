@@ -1,0 +1,210 @@
+version: 1
+kind: user-needs-candidate
+id: NAPMS-FIRST-MVP-HCD-PILOT-USER-NEEDS
+status: CANDIDATE_REQUIRES_HUMAN_ACCEPTANCE
+canonical: false
+
+scope:
+  pilot_subjects: [application-components, access-request, policy-export]
+
+source_policy:
+  problem_candidate_ref: docs/research/hcd-requirements-task-closure-v1/candidate-problem-evidence.yaml
+  current_canonical_requirement_source: docs/requirements/first-mvp-product-requirements.yaml
+  candidate_s0_source: docs/horizontal/s0/user-journeys.md
+  rule: >-
+    Use horizontal S0 only for problem/actor/goal framing. Current canonical
+    requirements override conflicting historical/candidate details. Do not derive
+    User Needs from routes, workspaces, screens, components, API shape or code.
+  forbidden_derivation_sources:
+    - docs/contracts/ui/**
+    - web/**
+    - backend/**
+    - docs/architecture/**
+
+context_of_use:
+  usage_context:
+    statement: >-
+      First-MVP use is ordinary interactive catalogue, request and policy-export
+      work for one organization, primarily exercised by one developer and
+      potentially a small number of concurrent users.
+    evidence_refs:
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-SCALE-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-SCALE-002
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-SCALE-004
+  actors:
+    - id: ACTOR-CATALOGUE-CURATOR
+      subject: application-components
+      status: candidate
+      description: Person responsible for maintaining reusable application communication knowledge.
+      evidence_refs:
+        - docs/horizontal/s0/user-journeys.md#j1--curate-application-communication-knowledge
+    - id: ACTOR-CONNECTIVITY-REQUESTER
+      subject: access-request
+      status: candidate
+      description: Authorized actor initiating deliberate connectivity work from accepted business/connectivity truth.
+      evidence_refs:
+        - docs/horizontal/s0/user-journeys.md#j5--propose-and-decide-concrete-access
+        - docs/requirements/first-mvp-product-requirements.yaml#REQ-AUTH-001
+        - docs/requirements/first-mvp-product-requirements.yaml#REQ-BUS-001
+    - id: ACTOR-POLICY-NETWORK-USER
+      subject: policy-export
+      status: candidate
+      description: Policy/network user consuming vendor-neutral current effective-policy output.
+      evidence_refs:
+        - docs/horizontal/s0/user-journeys.md#j9--materialize-and-export-required-policy
+        - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-004
+
+goals:
+  - id: GOAL-APP-COMMUNICATION
+    subject: application-components
+    statement: >-
+      Capture reusable application communication intent so later connectivity
+      reasoning can use stable semantic meaning rather than reconstructing intent
+      from deployment placement or current addresses.
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j1--curate-application-communication-knowledge
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-002
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-INT-003
+
+  - id: GOAL-ACCESS-REQUEST
+    subject: access-request
+    statement: >-
+      Submit and later explain a concrete connectivity request without confusing
+      authority to request with the eventual Allowed/NotAllowed permission outcome.
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j5--propose-and-decide-concrete-access
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-AUTH-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-002
+
+  - id: GOAL-POLICY-EXPORT
+    subject: policy-export
+    statement: >-
+      Obtain a complete explainable vendor-neutral projection of selected current
+      effective policy, or an explicit unresolved result when completeness cannot
+      be established.
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j9--materialize-and-export-required-policy
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-004
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-005
+
+user_needs:
+  - id: NEED-APP-01
+    subject: application-components
+    goal_ref: GOAL-APP-COMMUNICATION
+    statement: >-
+      The catalogue curator needs to express reusable application participants and
+      communication intent independently from concrete deployment and current
+      network realization.
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j1--curate-application-communication-knowledge
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-002
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-INT-003
+
+  - id: NEED-REQUEST-01
+    subject: access-request
+    goal_ref: GOAL-ACCESS-REQUEST
+    statement: >-
+      The requester needs to understand the exact connectivity subject and its
+      business basis before submitting a deliberate access request.
+    evidence_refs:
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-BUS-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-BUS-003
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-002
+
+  - id: NEED-REQUEST-02
+    subject: access-request
+    goal_ref: GOAL-ACCESS-REQUEST
+    statement: >-
+      The requester needs request-authority status and the later permission outcome
+      to remain distinguishable and explainable for the exact submitted subject.
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j5--propose-and-decide-concrete-access
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-AUTH-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-002
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-003
+
+  - id: NEED-EXPORT-01
+    subject: policy-export
+    goal_ref: GOAL-POLICY-EXPORT
+    statement: >-
+      The policy/network user needs to select the intended current policy scope in
+      domain-policy terms rather than vendor/device syntax.
+    evidence_refs:
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-001
+
+  - id: NEED-EXPORT-02
+    subject: policy-export
+    goal_ref: GOAL-POLICY-EXPORT
+    statement: >-
+      The policy/network user needs a coherent complete source-neutral result, or
+      explicit unresolved diagnostics, with evaluation-time and provenance facts
+      sufficient to explain what the result represents.
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j9--materialize-and-export-required-policy
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-003
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-004
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-005
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PROV-001
+
+questions:
+  - id: Q-APP-01
+    subject: application-components
+    blocking: true
+    question: >-
+      How does the user recognize that an existing Application/Component description
+      is the correct semantic object to reuse rather than creating another one?
+    reason: Required to derive locate/select/create human tasks without copying current catalogue screens.
+
+  - id: Q-APP-02
+    subject: application-components
+    blocking: true
+    question: >-
+      Which information must be simultaneously available while defining or changing
+      Components and communication intent?
+    reason: Required for Task Model information requirements and later interaction grouping.
+
+  - id: Q-REQUEST-01
+    subject: access-request
+    blocking: true
+    question: >-
+      What minimum information must the requester inspect or compare to judge that
+      the concrete request subject is the intended one before submission?
+    reason: Current requirements define semantic validity but not the human decision context.
+
+  - id: Q-REQUEST-02
+    subject: access-request
+    blocking: true
+    question: >-
+      What human work should follow authority rejection versus a later NotAllowed
+      permission decision?
+    reason: Required to distinguish recovery/alternate tasks rather than only error states.
+
+  - id: Q-EXPORT-01
+    subject: policy-export
+    blocking: true
+    question: >-
+      Which concrete human decision or downstream action is the vendor-neutral
+      export intended to support in the first MVP?
+    reason: Current requirements define export correctness strongly but leave the consuming human outcome underspecified.
+
+  - id: Q-EXPORT-02
+    subject: policy-export
+    blocking: true
+    question: >-
+      What should the user do after an UNRESOLVED/incomplete export, and which
+      diagnostics are necessary to perform that recovery work?
+    reason: Required to derive recovery tasks without treating current diagnostics UI as upstream truth.
+
+sufficiency_review:
+  status: UNRESOLVED
+  conclusion: >-
+    The candidate identifies evidence-supported goals and five solution-independent
+    User Needs, but the six blocking questions materially affect intended human
+    tasks and information requirements. Do not register these candidates as accepted
+    user-needs capabilities yet.
+  acceptance_required: explicit human review of actors, goals, needs and blocking-question dispositions

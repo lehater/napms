@@ -1,0 +1,91 @@
+version: 1
+kind: hcd-problem-evidence-candidate
+id: NAPMS-FIRST-MVP-HCD-PILOT-PROBLEM-EVIDENCE
+status: CANDIDATE_REQUIRES_HUMAN_ACCEPTANCE
+canonical: false
+
+scope:
+  pilot_subjects: [application-components, access-request, policy-export]
+  boundary: first-MVP interactive work only; no UI/navigation/screen decisions
+
+source_policy:
+  current_canonical_requirement_source: docs/requirements/first-mvp-product-requirements.yaml
+  problem_space_candidate_sources:
+    - docs/horizontal/s0/problem-landscape.md
+    - docs/horizontal/s0/user-journeys.md
+  provenance_source:
+    - docs/horizontal/source-ledger.md
+  precedence_rule: >-
+    Current canonical first-MVP requirements override any stale or conflicting
+    detail in the non-canonical horizontal reconstruction.
+  forbidden_as_problem_evidence:
+    - docs/contracts/ui/**
+    - web/**
+    - backend/**
+    - implementation-derived behavior
+
+problem_statement: >-
+  People responsible for application connectivity need to preserve reusable
+  application communication meaning, submit concrete connectivity requests and
+  obtain explainable vendor-neutral policy output without reconstructing intent
+  from current technical realization or collapsing request authority, permission
+  outcome and export completeness into one kind of truth.
+
+observations:
+  - id: OBS-APP-01
+    subject: application-components
+    statement: >-
+      The documented problem space requires reusable application communication
+      meaning to remain distinct from concrete deployment and changing technical
+      realization.
+    evidence_strength: candidate-problem-space-plus-current-requirements
+    evidence_refs:
+      - docs/horizontal/s0/problem-landscape.md#application-communication-meaning
+      - docs/horizontal/s0/user-journeys.md#j1--curate-application-communication-knowledge
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-002
+
+  - id: OBS-REQUEST-01
+    subject: access-request
+    statement: >-
+      Deliberate connectivity work must preserve business justification, exact
+      request subject and the distinction between authority to request and the
+      later permission outcome.
+    evidence_strength: candidate-problem-space-plus-current-requirements
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j5--propose-and-decide-concrete-access
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-BUS-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-AUTH-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-002
+
+  - id: OBS-EXPORT-01
+    subject: policy-export
+    statement: >-
+      Policy/network users need complete source-neutral policy output or an
+      explicitly unresolved result; missing realization must not be presented as
+      successful completeness.
+    evidence_strength: candidate-problem-space-plus-current-requirements
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j9--materialize-and-export-required-policy
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-003
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-004
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-005
+
+known_source_conflict:
+  id: CONFLICT-HORIZONTAL-J1-CROSS-APPLICATION
+  statement: >-
+    The horizontal candidate REQ-ACC/J1 family contains an older same-Application
+    restriction. Current REQ-INT-001 explicitly says a described Interaction must
+    not be rejected solely because Components belong to different Applications.
+  disposition: CURRENT_CANONICAL_REQUIREMENT_WINS
+  refs:
+    - docs/horizontal/s1/capability-requirements.md#application-communication-catalogue
+    - docs/requirements/first-mvp-product-requirements.yaml#REQ-INT-001
+
+acceptance:
+  status: UNRESOLVED
+  reason: >-
+    This is a source-bounded candidate synthesis. It is not registered as
+    engineering.discovery.problem-evidence until a human accepts the problem,
+    actors and scope.
