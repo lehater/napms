@@ -6,6 +6,11 @@ from uuid import UUID, uuid4
 from napms.contexts.application_communication_catalogue.application.queries import (
     ApplicationCataloguePage,
     ApplicationCatalogueQuery,
+    ComponentCatalogueItem,
+    ComponentCataloguePage,
+    ComponentCatalogueQuery,
+    InteractionCataloguePage,
+    InteractionCatalogueQuery,
 )
 from napms.contexts.application_communication_catalogue.application.ports import (
     ApplicationRepository,
@@ -16,6 +21,7 @@ from napms.contexts.application_communication_catalogue.application.ports import
 )
 from napms.contexts.application_communication_catalogue.domain.model import (
     Application,
+    Component,
     Interaction,
     TrafficClause,
 )
@@ -38,6 +44,18 @@ class ApplicationCommunicationCatalogue:
     def list_applications(self, query: ApplicationCatalogueQuery) -> ApplicationCataloguePage:
         return self._applications.query_applications(query)
 
+    def list_components(self, query: ComponentCatalogueQuery) -> ComponentCataloguePage:
+        return self._applications.query_components(query)
+
+    def list_interactions(self, query: InteractionCatalogueQuery) -> InteractionCataloguePage:
+        return self._interactions.query_interactions(query)
+
+    def resolve_component_context(self, component_ref: UUID) -> ComponentCatalogueItem:
+        value = self._applications.resolve_component_context(component_ref)
+        if value is None:
+            raise CatalogueNotFound(str(component_ref))
+        return value
+
     def get_application_detail(
         self, application_ref: UUID
     ) -> tuple[Application, tuple[Interaction, ...]]:
@@ -46,6 +64,12 @@ class ApplicationCommunicationCatalogue:
             raise CatalogueNotFound(str(application_ref))
         component_refs = tuple(item.component_ref for item in application.components)
         return application, self._interactions.list_interactions_for_components(component_refs)
+
+    def resolve_component(self, component_ref: UUID) -> Component:
+        component = self._components.resolve(component_ref)
+        if component is None:
+            raise CatalogueNotFound(str(component_ref))
+        return component
 
     def create_application(self, *, name: str) -> Application:
         value = Application.create(application_ref=self._new_ref(), name=name)

@@ -26,5 +26,7 @@ tests:
   - {id: UI-RESPONSIVE, subject: shared, oracle: Required information/actions remain available across supported viewport classes.}
   - {id: UI-PRESENTATION-INHERITANCE, subject: shared, oracle: Every canonical workspace inherits shared presentation rules and has no unexplained local presentation deviation.}
   - {id: UI-SCREEN-COMPOSITION, subject: shared, oracle: Every canonical workspace exposes the required regions, hierarchy, patterns and state variants from the Screen/View contract.}
+  - {id: UI-REFERENCE-PICKER, subject: shared, oracle: Simple entity references can be found by human-readable server-backed search, select stable reference values, and remain subject to backend validation.}
+  - {id: UI-DEPENDENT-REFERENCE, subject: Business process and connectivity need, oracle: Connectivity Need authoring selects an Interaction by human-readable search and limits participant choices to that Interaction's endpoint Components without replacing backend endpoint validation.}
 
 oracle_rule: Tests prove accepted contracts; snapshots/pixel output alone are not semantic proof.

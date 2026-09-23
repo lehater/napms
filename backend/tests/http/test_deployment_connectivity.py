@@ -7,6 +7,7 @@ from napms.contexts.application_deployment.application.ports import DeploymentNo
 from napms.contexts.application_deployment.application.queries import (
     DeploymentCataloguePage,
     DeploymentCatalogueQuery,
+    DeploymentReadModel,
     DeploymentSortField,
     SortDirection,
 )
@@ -37,6 +38,18 @@ class Deployments:
             if item.deployment_ref == deployment_ref:
                 return item
         raise DeploymentNotFound(str(deployment_ref))
+
+    def describe_component_deployment(
+        self,
+        deployment: ComponentDeployment,
+    ) -> DeploymentReadModel:
+        return DeploymentReadModel(
+            deployment_ref=deployment.deployment_ref,
+            component_ref=deployment.component_ref,
+            component_name="Payments API",
+            resource_ref=deployment.resource_ref,
+            resource_display_name="payments-node",
+        )
 
 
 class Connectivity:
@@ -74,7 +87,9 @@ def test_deployment_catalogue_query_maps_http_params_to_application_query() -> N
             {
                 "deploymentRef": str(item.deployment_ref),
                 "componentRef": str(item.component_ref),
+                "componentName": "Payments API",
                 "resourceRef": str(item.resource_ref),
+                "resourceDisplayName": "payments-node",
             }
         ],
         "total": 1,
@@ -101,5 +116,7 @@ def test_deployment_detail_returns_entity_or_not_found() -> None:
 
     assert detail.status_code == 200
     assert detail.json()["componentRef"] == str(item.component_ref)
+    assert detail.json()["componentName"] == "Payments API"
     assert detail.json()["resourceRef"] == str(item.resource_ref)
+    assert detail.json()["resourceDisplayName"] == "payments-node"
     assert missing.status_code == 404

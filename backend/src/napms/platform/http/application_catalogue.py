@@ -13,12 +13,16 @@ from napms.contexts.application_communication_catalogue.application.ports import
 from napms.contexts.application_communication_catalogue.application.queries import (
     ApplicationCatalogueQuery,
     ApplicationSortField,
+    ComponentCatalogueItem,
+    ComponentCatalogueQuery,
+    InteractionCatalogueQuery,
     SortDirection,
 )
 from napms.contexts.application_communication_catalogue.application.service import (
     ApplicationCommunicationCatalogue,
 )
 from napms.contexts.application_communication_catalogue.domain.model import (
+    Interaction,
     PortRange,
     TrafficClause,
 )
@@ -90,6 +94,47 @@ def router(
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
 
+    def clause_view(clause: TrafficClause) -> dict[str, object]:
+        return {
+            "ipProtocol": clause.ip_protocol,
+            "sourcePorts": [{"from": item.start, "to": item.end} for item in clause.source_ports],
+            "destinationPorts": [
+                {"from": item.start, "to": item.end} for item in clause.destination_ports
+            ],
+        }
+
+    def component_context(component_ref: UUID) -> ComponentCatalogueItem:
+        try:
+            return catalogue.resolve_component_context(component_ref)
+        except CatalogueNotFound as exc:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE) from exc
+
+    def interaction_view(item: Interaction) -> dict[str, object]:
+        source = component_context(item.source_component_ref)
+        destination = component_context(item.destination_component_ref)
+        return {
+            "interactionRef": str(item.interaction_ref),
+            "sourceComponentRef": str(item.source_component_ref),
+            "sourceComponentName": source.name,
+            "sourceApplicationRef": str(source.application_ref),
+            "sourceApplicationName": source.application_name,
+            "destinationComponentRef": str(item.destination_component_ref),
+            "destinationComponentName": destination.name,
+            "destinationApplicationRef": str(destination.application_ref),
+            "destinationApplicationName": destination.application_name,
+            "purpose": item.purpose,
+            "version": item.version,
+            "revisions": [
+                {
+                    "interactionRevisionRef": str(revision.revision_ref),
+                    "revisionNo": revision.revision_no,
+                    "trafficClauses": [clause_view(clause) for clause in revision.traffic_clauses],
+                    "createdBySubject": revision.created_by_subject,
+                }
+                for revision in item.revisions
+            ],
+        }
+
     @api.get("/applications")
     def list_applications(
         search: str | None = Query(default=None, max_length=200),
@@ -135,6 +180,36 @@ def router(
             "pageSize": result.page_size,
         }
 
+    @api.get("/components")
+    def list_components(
+        search: str | None = Query(default=None, max_length=200),
+        page: int = Query(default=1, ge=1),
+        page_size: int = Query(default=25, ge=1, le=100, alias="pageSize"),
+        caller: Principal = Depends(identity),
+    ) -> dict[str, object]:
+        permission(caller, "application.read")
+        result = catalogue.list_components(
+            ComponentCatalogueQuery(
+                search=search.strip() if search and search.strip() else None,
+                page=page,
+                page_size=page_size,
+            )
+        )
+        return {
+            "items": [
+                {
+                    "componentRef": str(item.component_ref),
+                    "name": item.name,
+                    "applicationRef": str(item.application_ref),
+                    "applicationName": item.application_name,
+                }
+                for item in result.items
+            ],
+            "total": result.total,
+            "page": result.page,
+            "pageSize": result.page_size,
+        }
+
     @api.get("/applications/{application_ref}")
     def get_application(
         application_ref: UUID,
@@ -146,17 +221,6 @@ def router(
         except CatalogueNotFound as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from exc
 
-        def clause_view(clause: TrafficClause) -> dict[str, object]:
-            return {
-                "ipProtocol": clause.ip_protocol,
-                "sourcePorts": [
-                    {"from": item.start, "to": item.end} for item in clause.source_ports
-                ],
-                "destinationPorts": [
-                    {"from": item.start, "to": item.end} for item in clause.destination_ports
-                ],
-            }
-
         return {
             "applicationRef": str(application.application_ref),
             "name": application.name,
@@ -165,27 +229,7 @@ def router(
                 {"componentRef": str(item.component_ref), "name": item.name}
                 for item in application.components
             ],
-            "interactions": [
-                {
-                    "interactionRef": str(item.interaction_ref),
-                    "sourceComponentRef": str(item.source_component_ref),
-                    "destinationComponentRef": str(item.destination_component_ref),
-                    "purpose": item.purpose,
-                    "version": item.version,
-                    "revisions": [
-                        {
-                            "interactionRevisionRef": str(revision.revision_ref),
-                            "revisionNo": revision.revision_no,
-                            "trafficClauses": [
-                                clause_view(clause) for clause in revision.traffic_clauses
-                            ],
-                            "createdBySubject": revision.created_by_subject,
-                        }
-                        for revision in item.revisions
-                    ],
-                }
-                for item in interactions
-            ],
+            "interactions": [interaction_view(item) for item in interactions],
         }
 
     @api.post("/applications", status_code=status.HTTP_201_CREATED)
@@ -218,6 +262,42 @@ def router(
             "version": value.version,
         }
 
+    @api.get("/interactions")
+    def list_interactions(
+        search: str | None = Query(default=None, max_length=200),
+        page: int = Query(default=1, ge=1),
+        page_size: int = Query(default=25, ge=1, le=100, alias="pageSize"),
+        caller: Principal = Depends(identity),
+    ) -> dict[str, object]:
+        permission(caller, "application.read")
+        result = catalogue.list_interactions(
+            InteractionCatalogueQuery(
+                search=search.strip() if search and search.strip() else None,
+                page=page,
+                page_size=page_size,
+            )
+        )
+        return {
+            "items": [
+                {
+                    "interactionRef": str(item.interaction_ref),
+                    "purpose": item.purpose,
+                    "sourceComponentRef": str(item.source_component_ref),
+                    "sourceComponentName": item.source_component_name,
+                    "sourceApplicationRef": str(item.source_application_ref),
+                    "sourceApplicationName": item.source_application_name,
+                    "destinationComponentRef": str(item.destination_component_ref),
+                    "destinationComponentName": item.destination_component_name,
+                    "destinationApplicationRef": str(item.destination_application_ref),
+                    "destinationApplicationName": item.destination_application_name,
+                }
+                for item in result.items
+            ],
+            "total": result.total,
+            "page": result.page,
+            "pageSize": result.page_size,
+        }
+
     @api.get("/interactions/{interaction_ref}")
     def get_interaction(
         interaction_ref: UUID,
@@ -228,34 +308,7 @@ def router(
             item = catalogue.get_interaction(interaction_ref)
         except CatalogueNotFound as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from exc
-        return {
-            "interactionRef": str(item.interaction_ref),
-            "sourceComponentRef": str(item.source_component_ref),
-            "destinationComponentRef": str(item.destination_component_ref),
-            "purpose": item.purpose,
-            "version": item.version,
-            "revisions": [
-                {
-                    "interactionRevisionRef": str(revision.revision_ref),
-                    "revisionNo": revision.revision_no,
-                    "trafficClauses": [
-                        {
-                            "ipProtocol": clause.ip_protocol,
-                            "sourcePorts": [
-                                {"from": port.start, "to": port.end} for port in clause.source_ports
-                            ],
-                            "destinationPorts": [
-                                {"from": port.start, "to": port.end}
-                                for port in clause.destination_ports
-                            ],
-                        }
-                        for clause in revision.traffic_clauses
-                    ],
-                    "createdBySubject": revision.created_by_subject,
-                }
-                for revision in item.revisions
-            ],
-        }
+        return interaction_view(item)
 
     @api.post("/interactions", status_code=status.HTTP_201_CREATED)
     def create_interaction(

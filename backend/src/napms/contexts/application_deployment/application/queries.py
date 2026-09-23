@@ -41,3 +41,12 @@ class DeploymentCataloguePage:
     total: int
     page: int
     page_size: int
+
+
+@dataclass(frozen=True)
+class DeploymentReadModel:
+    deployment_ref: UUID
+    component_ref: UUID
+    component_name: str
+    resource_ref: UUID
+    resource_display_name: str

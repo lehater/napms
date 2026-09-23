@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { breadcrumbsForRoute } from "../src/app/navigation.ts";
 import { parseRoute } from "../src/app/router.ts";
 
 test("canonical static routes resolve to their workspace ids", () => {
@@ -38,4 +39,27 @@ test("canonical reference routes decode stable references", () => {
   assert.equal(parseRoute("/business-processes/p-1").id, "process-detail");
   assert.equal(parseRoute("/access-requests/a-1/decision").id, "access-request-decision");
   assert.equal(parseRoute("/policy-rules/rule-1").id, "policy-rule-detail");
+});
+
+
+test("breadcrumbs describe canonical route hierarchy rather than visit history", () => {
+  assert.deepEqual(breadcrumbsForRoute(parseRoute("/resources/r-1")), [
+    { label: "Resources", path: "/resources" },
+    { label: "Resource" },
+  ]);
+  assert.deepEqual(
+    breadcrumbsForRoute(parseRoute("/applications/app-1/components/new")),
+    [
+      { label: "Applications", path: "/applications" },
+      { label: "Application", path: "/applications/app-1" },
+      { label: "Add Component" },
+    ],
+  );
+  assert.deepEqual(
+    breadcrumbsForRoute(parseRoute("/access-requests/request-1/decision")),
+    [
+      { label: "Access requests", path: "/access-requests" },
+      { label: "Access Request" },
+    ],
+  );
 });

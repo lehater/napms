@@ -17,7 +17,9 @@ const application = {
     {
       interactionRef: "interaction-1",
       sourceComponentRef: "component-1",
+      sourceComponentName: "API",
       destinationComponentRef: "component-2",
+      destinationComponentName: "Worker",
       purpose: "Process payment",
       version: 2,
       revisions: [

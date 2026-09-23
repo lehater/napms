@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { ApiError } from "../../app/api";
+import {
+  queryComponentReferenceCandidates,
+  referenceCandidateFailureMessage,
+} from "../../app/referenceCandidates";
 import { navigate } from "../../app/router";
+import { useReferenceCandidates } from "../../app/useReferenceCandidates";
 import { EditorPattern, type EditorState } from "../../presentation";
 import {
   createApplicationInteraction,
@@ -55,6 +60,14 @@ export function InteractionAuthoringScreen({
     interactionRef ? "submitting" : "editing",
   );
   const [statusMessage, setStatusMessage] = useState<string>();
+  const sourceCandidates = useReferenceCandidates(
+    queryComponentReferenceCandidates,
+    !interactionRef,
+  );
+  const destinationCandidates = useReferenceCandidates(
+    queryComponentReferenceCandidates,
+    !interactionRef,
+  );
 
   useEffect(() => {
     if (!interactionRef) return;
@@ -155,17 +168,35 @@ export function InteractionAuthoringScreen({
           : [
               {
                 id: "source-component-ref",
-                label: "Source Component ID",
+                label: "Source Component",
                 value: source,
                 required: true,
                 onChange: setSource,
+                referencePicker: {
+                  options: sourceCandidates.options,
+                  loading: sourceCandidates.loading,
+                  errorMessage: sourceCandidates.error
+                    ? referenceCandidateFailureMessage(sourceCandidates.error)
+                    : undefined,
+                  onSearchChange: sourceCandidates.setSearch,
+                },
               },
               {
                 id: "destination-component-ref",
-                label: "Destination Component ID",
+                label: "Destination Component",
                 value: destination,
                 required: true,
                 onChange: setDestination,
+                referencePicker: {
+                  options: destinationCandidates.options,
+                  loading: destinationCandidates.loading,
+                  errorMessage: destinationCandidates.error
+                    ? referenceCandidateFailureMessage(
+                        destinationCandidates.error,
+                      )
+                    : undefined,
+                  onSearchChange: destinationCandidates.setSearch,
+                },
               },
               {
                 id: "purpose",

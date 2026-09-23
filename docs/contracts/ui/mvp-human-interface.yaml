@@ -18,6 +18,7 @@ principles:
   - State-changing actions expose outcome and refresh authoritative server state.
   - Loading, empty, not-found, rejected, conflict and technical-error states are visibly distinct.
   - Historical/provenance information required to explain current state remains inspectable.
+  - Relationship authoring prefers recognition over identifier recall: accepted human-readable candidate labels are primary while stable identifiers remain submitted reference values.
 
 accessibility:
   - Required information and state distinctions are conveyed by semantic text/structure, not color alone.

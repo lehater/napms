@@ -10,6 +10,7 @@ export type {
   EditorField,
   EditorOption,
   EditorPatternProps,
+  EditorReferencePicker,
   EditorState,
   FilterBarField,
   FilterBarPatternProps,

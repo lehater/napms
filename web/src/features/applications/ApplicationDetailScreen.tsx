@@ -58,14 +58,32 @@ const INTERACTION_COLUMNS: readonly DataTableColumn<
   {
     id: "source",
     label: "Source",
-    emphasis: "technical",
-    render: (row) => row.sourceComponentRef,
+    render: (row) => (
+      <div>
+        <strong>{row.sourceComponentName ?? row.sourceComponentRef}</strong>
+        {row.sourceComponentName ? (
+          <div data-presentation-technical-context>
+            {row.sourceComponentRef}
+          </div>
+        ) : null}
+      </div>
+    ),
   },
   {
     id: "destination",
     label: "Destination",
-    emphasis: "technical",
-    render: (row) => row.destinationComponentRef,
+    render: (row) => (
+      <div>
+        <strong>
+          {row.destinationComponentName ?? row.destinationComponentRef}
+        </strong>
+        {row.destinationComponentName ? (
+          <div data-presentation-technical-context>
+            {row.destinationComponentRef}
+          </div>
+        ) : null}
+      </div>
+    ),
   },
   {
     id: "purpose",
@@ -182,10 +200,14 @@ export function ApplicationDetailScreen({
               label="Components"
               rows={model.components}
               rowKey={(row) => row.componentRef}
-              primary={(row) => (
-                <>
-                  {row.name} · {row.componentRef}
-                </>
+              primary={(row) => row.name}
+              secondary={(row) => (
+                <span
+                  data-component-ref={row.componentRef}
+                  data-presentation-technical-context
+                >
+                  {row.componentRef}
+                </span>
               )}
               emptyMessage="No Components."
             />

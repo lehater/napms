@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
-import type { NavigationItem } from "../app/navigation";
+import type { BreadcrumbItem, NavigationItem } from "../app/navigation";
 
 export type AppShellProps = {
   items: readonly NavigationItem[];
   currentPath: string;
+  breadcrumbs: readonly BreadcrumbItem[];
   onNavigate: (path: string) => void;
   children: ReactNode;
 };
@@ -120,6 +121,14 @@ export type EditorOption = {
   label: string;
 };
 
+export type EditorReferencePicker = {
+  options: readonly EditorOption[];
+  loading?: boolean;
+  errorMessage?: string;
+  noOptionsText?: string;
+  onSearchChange: (value: string) => void;
+};
+
 export type EditorField = {
   id: string;
   label: string;
@@ -128,6 +137,7 @@ export type EditorField = {
   readOnly?: boolean;
   inputType?: "text" | "password";
   options?: readonly EditorOption[];
+  referencePicker?: EditorReferencePicker;
   onChange?: (value: string) => void;
 };
 

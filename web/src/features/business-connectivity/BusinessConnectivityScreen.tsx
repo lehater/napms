@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../../app/api";
+import {
+  queryInteractionParticipantCandidates,
+  queryInteractionReferenceCandidates,
+  type ReferenceCandidate,
+  referenceCandidateFailureMessage,
+} from "../../app/referenceCandidates";
 import { navigate } from "../../app/router";
+import { useReferenceCandidates } from "../../app/useReferenceCandidates";
 import {
   CataloguePattern,
   type CatalogueState,
@@ -355,6 +362,14 @@ function BusinessProcessDetailMode({ processRef }: { processRef: string }) {
   const [interactionRef, setInteractionRef] = useState("");
   const [componentRef, setComponentRef] = useState("");
   const [basis, setBasis] = useState("");
+  const interactionCandidates = useReferenceCandidates(
+    queryInteractionReferenceCandidates,
+  );
+  const [participantCandidates, setParticipantCandidates] = useState<
+    ReferenceCandidate[]
+  >([]);
+  const [participantLoading, setParticipantLoading] = useState(false);
+  const [participantError, setParticipantError] = useState<unknown>();
 
   useEffect(() => {
     let active = true;
@@ -377,6 +392,32 @@ function BusinessProcessDetailMode({ processRef }: { processRef: string }) {
       active = false;
     };
   }, [processRef]);
+
+  useEffect(() => {
+    setComponentRef("");
+    setParticipantCandidates([]);
+    setParticipantError(undefined);
+    if (!interactionRef) {
+      setParticipantLoading(false);
+      return;
+    }
+    let active = true;
+    setParticipantLoading(true);
+    void queryInteractionParticipantCandidates(interactionRef)
+      .then((candidates) => {
+        if (!active) return;
+        setParticipantCandidates(candidates);
+        setParticipantLoading(false);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setParticipantError(error);
+        setParticipantLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [interactionRef]);
 
   async function mutate(
     operation: (
@@ -454,17 +495,39 @@ function BusinessProcessDetailMode({ processRef }: { processRef: string }) {
     fields: [
       {
         id: "interaction-ref",
-        label: "Interaction ID",
+        label: "Interaction",
         value: interactionRef,
         required: true,
-        onChange: setInteractionRef,
+        onChange: (value) => {
+          setInteractionRef(value);
+          setComponentRef("");
+        },
+        referencePicker: {
+          options: interactionCandidates.options,
+          loading: interactionCandidates.loading,
+          errorMessage: interactionCandidates.error
+            ? referenceCandidateFailureMessage(interactionCandidates.error)
+            : undefined,
+          onSearchChange: interactionCandidates.setSearch,
+        },
       },
       {
         id: "participant-component-ref",
-        label: "Participant Component ID",
+        label: "Participant Component",
         value: componentRef,
         required: true,
         onChange: setComponentRef,
+        referencePicker: {
+          options: participantCandidates,
+          loading: participantLoading,
+          errorMessage: participantError
+            ? referenceCandidateFailureMessage(participantError)
+            : undefined,
+          noOptionsText: interactionRef
+            ? "No endpoint Components available"
+            : "Select an Interaction first",
+          onSearchChange: () => undefined,
+        },
       },
       {
         id: "business-basis",

@@ -67,9 +67,23 @@ export function DeploymentDetailScreen({
           summary: (
             <dl>
               <dt>Component</dt>
-              <dd data-presentation-technical-context>{model.componentRef}</dd>
+              <dd>
+                <strong>{model.componentName}</strong>
+                {model.componentName !== model.componentRef ? (
+                  <div data-presentation-technical-context>
+                    {model.componentRef}
+                  </div>
+                ) : null}
+              </dd>
               <dt>Resource</dt>
-              <dd data-presentation-technical-context>{model.resourceRef}</dd>
+              <dd>
+                <strong>{model.resourceDisplayName}</strong>
+                {model.resourceDisplayName !== model.resourceRef ? (
+                  <div data-presentation-technical-context>
+                    {model.resourceRef}
+                  </div>
+                ) : null}
+              </dd>
             </dl>
           ),
         },

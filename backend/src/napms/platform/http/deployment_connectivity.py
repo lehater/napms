@@ -84,11 +84,17 @@ def router(
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT) from exc
 
-    def deployment_view(value) -> dict[str, str]:
+    def deployment_view(value) -> dict[str, object]:
+        try:
+            view = deployments.describe_component_deployment(value)
+        except DeploymentNotFound as exc:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE) from exc
         return {
-            "deploymentRef": str(value.deployment_ref),
-            "componentRef": str(value.component_ref),
-            "resourceRef": str(value.resource_ref),
+            "deploymentRef": str(view.deployment_ref),
+            "componentRef": str(view.component_ref),
+            "componentName": view.component_name,
+            "resourceRef": str(view.resource_ref),
+            "resourceDisplayName": view.resource_display_name,
         }
 
     @api.get("/deployments")
@@ -131,7 +137,7 @@ def router(
     def get_deployment(
         deployment_ref: UUID,
         caller: Principal = Depends(identity),
-    ) -> dict[str, str]:
+    ) -> dict[str, object]:
         permission(caller, "deployment.read")
         try:
             value = deployments.resolve_component_deployment(deployment_ref)
@@ -151,11 +157,7 @@ def router(
             )
         except DeploymentNotFound as exc:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
-        return {
-            "deploymentRef": str(value.deployment_ref),
-            "componentRef": str(value.component_ref),
-            "resourceRef": str(value.resource_ref),
-        }
+        return deployment_view(value)
 
     def process_view(value) -> dict[str, object]:
         return {

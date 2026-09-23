@@ -12,10 +12,18 @@ import {
   serializeBusinessProcessCatalogueQuery,
 } from "./business-process-catalogue-query";
 import {
+  type ComponentCatalogueQuery,
+  serializeComponentCatalogueQuery,
+} from "./component-catalogue-query";
+import {
   type DeploymentCatalogueQuery,
   serializeDeploymentCatalogueQuery,
 } from "./deployment-catalogue-query";
 import { type ApiErrorKind, statusToErrorKind } from "./http-semantics";
+import {
+  type InteractionCatalogueQuery,
+  serializeInteractionCatalogueQuery,
+} from "./interaction-catalogue-query";
 import {
   type PolicyRuleCatalogueQuery,
   serializePolicyRuleCatalogueQuery,
@@ -144,7 +152,13 @@ export type TrafficClauseView = {
 export type InteractionView = {
   interactionRef: string;
   sourceComponentRef: string;
+  sourceComponentName?: string;
+  sourceApplicationRef?: string;
+  sourceApplicationName?: string;
   destinationComponentRef: string;
+  destinationComponentName?: string;
+  destinationApplicationRef?: string;
+  destinationApplicationName?: string;
   purpose: string | null;
   version: number;
   revisions: Array<{
@@ -153,6 +167,26 @@ export type InteractionView = {
     trafficClauses: TrafficClauseView[];
     createdBySubject: string;
   }>;
+};
+
+export type InteractionCandidateView = {
+  interactionRef: string;
+  purpose: string | null;
+  sourceComponentRef: string;
+  sourceComponentName: string;
+  sourceApplicationRef: string;
+  sourceApplicationName: string;
+  destinationComponentRef: string;
+  destinationComponentName: string;
+  destinationApplicationRef: string;
+  destinationApplicationName: string;
+};
+
+export type ComponentCandidateView = {
+  componentRef: string;
+  name: string;
+  applicationRef: string;
+  applicationName: string;
 };
 
 export type ApplicationView = {
@@ -165,7 +199,9 @@ export type ApplicationView = {
 export type DeploymentView = {
   deploymentRef: string;
   componentRef: string;
+  componentName?: string;
   resourceRef: string;
+  resourceDisplayName?: string;
 };
 export type ProcessView = {
   processRef: string;
@@ -261,6 +297,10 @@ export const api = {
     request<CataloguePage<ApplicationView>>(
       `/v1/applications?${serializeApplicationCatalogueQuery(query)}`,
     ),
+  listComponents: (query: ComponentCatalogueQuery) =>
+    request<CataloguePage<ComponentCandidateView>>(
+      `/v1/components?${serializeComponentCatalogueQuery(query)}`,
+    ),
   getApplication: (ref: string) =>
     request<ApplicationView>(`/v1/applications/${ref}`),
   createApplication: (name: string) =>
@@ -276,6 +316,10 @@ export const api = {
         headers: { "If-Match": String(version) },
         body: JSON.stringify({ name }),
       },
+    ),
+  listInteractions: (query: InteractionCatalogueQuery) =>
+    request<CataloguePage<InteractionCandidateView>>(
+      `/v1/interactions?${serializeInteractionCatalogueQuery(query)}`,
     ),
   getInteraction: (ref: string) =>
     request<InteractionView>(`/v1/interactions/${ref}`),

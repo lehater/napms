@@ -13,6 +13,12 @@ from napms.contexts.application_communication_catalogue.application.queries impo
     ApplicationCataloguePage,
     ApplicationCatalogueQuery,
     ApplicationSortField,
+    ComponentCatalogueItem,
+    ComponentCataloguePage,
+    ComponentCatalogueQuery,
+    InteractionCatalogueItem,
+    InteractionCataloguePage,
+    InteractionCatalogueQuery,
     SortDirection,
 )
 from napms.contexts.application_communication_catalogue.domain.model import (
@@ -113,6 +119,91 @@ class PostgresApplicationCommunicationCatalogue:
             page_size=query.page_size,
         )
 
+    def query_components(self, query: ComponentCatalogueQuery) -> ComponentCataloguePage:
+        conditions: list[str] = []
+        parameters: list[object] = []
+        if query.search:
+            search = query.search.strip()
+            if search:
+                conditions.append(
+                    """
+                    (
+                        c.name ILIKE %s
+                        OR CAST(c.component_ref AS text) ILIKE %s
+                        OR a.name ILIKE %s
+                        OR CAST(a.application_ref AS text) ILIKE %s
+                    )
+                    """
+                )
+                pattern = f"%{search}%"
+                parameters.extend((pattern, pattern, pattern, pattern))
+
+        where = "" if not conditions else " WHERE " + " AND ".join(conditions)
+        offset = (query.page - 1) * query.page_size
+        with psycopg.connect(self._dsn) as connection:
+            total_row = connection.execute(
+                f"""
+                SELECT COUNT(*)
+                FROM application_communication_catalogue.component AS c
+                JOIN application_communication_catalogue.application AS a
+                  ON a.application_ref = c.application_ref
+                {where}
+                """,
+                parameters,
+            ).fetchone()
+            total = 0 if total_row is None else total_row[0]
+            rows = connection.execute(
+                f"""
+                SELECT c.component_ref, c.name, a.application_ref, a.name
+                FROM application_communication_catalogue.component AS c
+                JOIN application_communication_catalogue.application AS a
+                  ON a.application_ref = c.application_ref
+                {where}
+                ORDER BY c.name ASC, a.name ASC, c.component_ref ASC
+                LIMIT %s OFFSET %s
+                """,
+                (*parameters, query.page_size, offset),
+            ).fetchall()
+
+        return ComponentCataloguePage(
+            items=tuple(
+                ComponentCatalogueItem(
+                    component_ref=row[0],
+                    name=row[1],
+                    application_ref=row[2],
+                    application_name=row[3],
+                )
+                for row in rows
+            ),
+            total=total,
+            page=query.page,
+            page_size=query.page_size,
+        )
+
+    def resolve_component_context(
+        self,
+        component_ref: UUID,
+    ) -> ComponentCatalogueItem | None:
+        with psycopg.connect(self._dsn) as connection:
+            row = connection.execute(
+                """
+                SELECT c.component_ref, c.name, a.application_ref, a.name
+                FROM application_communication_catalogue.component AS c
+                JOIN application_communication_catalogue.application AS a
+                  ON a.application_ref = c.application_ref
+                WHERE c.component_ref = %s
+                """,
+                (component_ref,),
+            ).fetchone()
+        if row is None:
+            return None
+        return ComponentCatalogueItem(
+            component_ref=row[0],
+            name=row[1],
+            application_ref=row[2],
+            application_name=row[3],
+        )
+
     def get_application(self, application_ref: UUID) -> Application | None:
         with psycopg.connect(self._dsn) as connection:
             row = connection.execute(
@@ -166,6 +257,98 @@ class PostgresApplicationCommunicationCatalogue:
                     """,
                     (component.component_ref, value.application_ref, component.name),
                 )
+
+    def query_interactions(
+        self,
+        query: InteractionCatalogueQuery,
+    ) -> InteractionCataloguePage:
+        conditions: list[str] = []
+        parameters: list[object] = []
+        if query.search:
+            search = query.search.strip()
+            if search:
+                conditions.append(
+                    """
+                    (
+                        CAST(i.interaction_ref AS text) ILIKE %s
+                        OR COALESCE(i.purpose, '') ILIKE %s
+                        OR sc.name ILIKE %s
+                        OR CAST(sc.component_ref AS text) ILIKE %s
+                        OR sa.name ILIKE %s
+                        OR CAST(sa.application_ref AS text) ILIKE %s
+                        OR dc.name ILIKE %s
+                        OR CAST(dc.component_ref AS text) ILIKE %s
+                        OR da.name ILIKE %s
+                        OR CAST(da.application_ref AS text) ILIKE %s
+                    )
+                    """
+                )
+                pattern = f"%{search}%"
+                parameters.extend((pattern,) * 10)
+
+        where = "" if not conditions else " WHERE " + " AND ".join(conditions)
+        offset = (query.page - 1) * query.page_size
+        joins = """
+            FROM application_communication_catalogue.interaction AS i
+            JOIN application_communication_catalogue.component AS sc
+              ON sc.component_ref = i.source_component_ref
+            JOIN application_communication_catalogue.application AS sa
+              ON sa.application_ref = sc.application_ref
+            JOIN application_communication_catalogue.component AS dc
+              ON dc.component_ref = i.destination_component_ref
+            JOIN application_communication_catalogue.application AS da
+              ON da.application_ref = dc.application_ref
+        """
+        with psycopg.connect(self._dsn) as connection:
+            total_row = connection.execute(
+                f"SELECT COUNT(*) {joins} {where}",
+                parameters,
+            ).fetchone()
+            total = 0 if total_row is None else total_row[0]
+            rows = connection.execute(
+                f"""
+                SELECT
+                    i.interaction_ref,
+                    i.purpose,
+                    sc.component_ref,
+                    sc.name,
+                    sa.application_ref,
+                    sa.name,
+                    dc.component_ref,
+                    dc.name,
+                    da.application_ref,
+                    da.name
+                {joins}
+                {where}
+                ORDER BY COALESCE(i.purpose, '') ASC,
+                         sc.name ASC,
+                         dc.name ASC,
+                         i.interaction_ref ASC
+                LIMIT %s OFFSET %s
+                """,
+                (*parameters, query.page_size, offset),
+            ).fetchall()
+
+        return InteractionCataloguePage(
+            items=tuple(
+                InteractionCatalogueItem(
+                    interaction_ref=row[0],
+                    purpose=row[1],
+                    source_component_ref=row[2],
+                    source_component_name=row[3],
+                    source_application_ref=row[4],
+                    source_application_name=row[5],
+                    destination_component_ref=row[6],
+                    destination_component_name=row[7],
+                    destination_application_ref=row[8],
+                    destination_application_name=row[9],
+                )
+                for row in rows
+            ),
+            total=total,
+            page=query.page,
+            page_size=query.page_size,
+        )
 
     def get_interaction(self, interaction_ref: UUID) -> Interaction | None:
         with psycopg.connect(self._dsn) as connection:

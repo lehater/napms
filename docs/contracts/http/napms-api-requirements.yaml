@@ -1,4 +1,4 @@
-version: 3
+version: 6
 kind: http-contract-requirements
 id: NAPMS-MVP-HTTP-CONTRACT-REQUIREMENTS
 status: COMPLETE_CANONICAL_OPENAPI
@@ -18,9 +18,11 @@ operations:
   - PUT /v1/resources/{resourceRef}/site
   - PUT /v1/resources/{resourceRef}/responsibilities/{role}
   - GET /v1/applications
+  - GET /v1/components
   - POST /v1/applications
   - GET /v1/applications/{applicationRef}
   - POST /v1/applications/{applicationRef}/components
+  - GET /v1/interactions
   - POST /v1/interactions
   - GET /v1/interactions/{interactionRef}
   - POST /v1/interactions/{interactionRef}/revisions
@@ -60,6 +62,16 @@ catalogue_query_contract:
     search: [name, applicationRef]
     filters: [componentRef]
     sort_by: [name, applicationRef]
+  component_catalogue:
+    purpose: Searchable Component candidates for cross-Application reference selection.
+    search: [name, componentRef, applicationName, applicationRef]
+    sort_by: [name, applicationName]
+    response_item: [componentRef, name, applicationRef, applicationName]
+  interaction_catalogue:
+    purpose: Searchable Interaction candidates for dependent Connectivity Need authoring.
+    search: [interactionRef, purpose, sourceComponent, destinationComponent, sourceApplication, destinationApplication]
+    sort_by: [purpose, sourceComponent, destinationComponent]
+    response_item: [interactionRef, purpose, source/destination componentRef/name/applicationRef/applicationName]
   deployment_catalogue:
     search: [deploymentRef, componentRef, resourceRef]
     filters: [componentRef, resourceRef]
@@ -82,6 +94,8 @@ rules:
   - access.request is admitted from effective scoped AuthorityGrants for every source/destination Resource AuthorityScopeRef at server-owned admissionAt.
   - policy.export is admitted from effective scoped AuthorityGrants for every selected Resource AuthorityScopeRef at database-owned evaluationAt.
   - Cross-Application Interaction is allowed when referenced Components and traffic semantics are valid.
+  - GET /v1/components supplies paged owner-backed Component candidates for human-readable reference selection; candidate narrowing never replaces command-time reference validation.
+  - GET /v1/interactions supplies paged owner-backed Interaction candidates with endpoint context; after selection, participant choices are derived from the selected Interaction endpoints while declareConnectivityNeed remains authoritative.
   - Idempotent state-creating POST operations require Idempotency-Key; replay returns exact persisted original status/body/Location/ETag before NEW-command If-Match evaluation.
   - Aggregate mutations requiring optimistic concurrency use If-Match and return current ETag.
   - DENIED AccessRequest decision creates no PolicyRule.
@@ -91,9 +105,9 @@ rules:
   - Export response is self-contained with ExportAuthorityEvidence and per-Rule authorization/business provenance.
   - Missing technical realization for a selected non-effective Rule does not make export incomplete.
   - Catalogue GET operations return authoritative read collections required by the accepted frontend catalogue workspaces and use the corresponding read permission.
-  - GET /v1/applications/{applicationRef} returns Application identity/version, Components, and every directed Interaction touching those Components, including revision traffic semantics required by APPLICATION-DETAIL.
-  - GET /v1/interactions/{interactionRef} reconstructs revision-authoring state after navigation or reload, including the authoritative current version and revision traffic semantics.
-  - GET /v1/deployments/{deploymentRef} returns immutable Deployment identity plus ComponentRef and ResourceRef required by DEPLOYMENT-DETAIL.
+  - GET /v1/applications/{applicationRef} returns Application identity/version, Components, and every directed Interaction touching those Components, including revision traffic semantics and owner-resolved source/destination Component names required by APPLICATION-DETAIL.
+  - GET /v1/interactions/{interactionRef} reconstructs revision-authoring state after navigation or reload, including the authoritative current version, revision traffic semantics, and owner-resolved source/destination Component names.
+  - Deployment catalogue/detail/create responses keep ComponentRef and ResourceRef as stable identity and additionally expose current owner-resolved Component name and Resource display name for human-readable relationship presentation.
   - GET /v1/processes applies the accepted Business Process search/filter/sort/paging contract over the authoritative collection before page selection.
   - GET /v1/access-requests applies the accepted Access Request search/filter/sort/paging contract over the authoritative collection before page selection; PENDING remains presentation for a null decisionResult and is not a new decision enum.
   - GET /v1/policy-rules applies the accepted Policy Rule search/filter/sort/paging contract over the authoritative collection before page selection without changing policy materialization selection semantics.
@@ -101,6 +115,7 @@ rules:
   - Access Request catalogue/detail reads expose immutable request subject, current decision outcome and version required by the canonical decision route.
   - Policy Rule catalogue/detail reads expose effective state plus authorization, business-justification and operational-history provenance required by the canonical Policy Rule workspace.
   - GET /v1/resources/{resourceRef} returns the accepted Resource detail read model: immutable AuthorityScopeRef, current endpoint/site/responsibility facts and explanatory address/site/responsibility history.
+  - Human-readable relationship labels are read-side representation aids resolved from owning module contracts; stable refs remain authoritative identity and command payloads.
   - Resource AuthorityScopeRef is never represented as a temporal affiliation.
   - Endpoint address clear, Site replace/clear and OWNER/ADMINISTRATOR replace/clear are public first-MVP Resource curation operations.
 

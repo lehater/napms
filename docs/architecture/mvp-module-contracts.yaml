@@ -1,4 +1,4 @@
-version: 2
+version: 5
 kind: module-contract-design
 id: NAPMS-FIRST-MVP-MODULE-CONTRACTS
 status: CURRENT
@@ -7,8 +7,8 @@ purpose: Define explicit in-process contracts required to realize the corrected 
 
 contracts:
   Resource Catalogue: [RegisterResource, AddEndpoint, SetEndpointAddress, ClearEndpointAddress, SetSite, SetResponsibility, ResolveResource, ReadResourceDetail, ResolveAuthorityScope, CurrentEndpointAddresses]
-  Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, ResolveComponent, ResolveInteraction, ResolveInteractionRevision]
-  Application Deployment: [RegisterComponentDeployment, ResolveComponentDeployment]
+  Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, PageComponents, PageInteractions, ResolveComponent, ResolveComponentContext, ResolveInteraction, ResolveInteractionRevision]
+  Application Deployment: [RegisterComponentDeployment, ResolveComponentDeployment, ReadComponentDeployment]
   Business Connectivity: [RegisterBusinessProcess, SetResponsibleOrganization, SetCriticalityLabel, DeclareNeed, RetireNeed, LockAndResolveCurrentNeed, ResolveNeedCurrentOrHistory]
   Access Policy: [SubmitAccessRequest, RecordPermissionDecision, SetPolicyRuleOperationalState, AttachPolicyRuleJustification, ReadPolicyRule, PageCurrentPolicyRules]
   Authority Management: [RequireScopedAuthority]
@@ -26,7 +26,7 @@ rules:
 
 resource_catalogue_query_contracts:
   ResolveResource:
-    output: [resourceRef, authorityScopeRef, siteRef, current responsibilities, endpointCount]
+    output: [resourceRef, displayName, authorityScopeRef, siteRef, current responsibilities, endpointCount]
   ReadResourceDetail:
     purpose: Supply the complete current-and-history Resource read model required by the accepted Resource workspace without leaking persistence representation.
     output:
@@ -47,6 +47,24 @@ resource_catalogue_query_contracts:
     output: all current addressed Endpoints for one Resource with EndpointRef AddressRealization effectiveFrom changedBySubject
 
 application_communication_query_contracts:
+  PageComponents:
+    input: [search, page, pageSize]
+    output: page of [componentRef, name, applicationRef, applicationName]
+    search_matches: [component name, componentRef, application name, applicationRef]
+    invariant: Candidate labels expose owner truth for recognition while componentRef remains the submitted reference identity.
+  ResolveComponent:
+    input: [ComponentRef]
+    output: [componentRef, name]
+    invariant: Component name remains Application Communication Catalogue owner truth and is exposed read-only for relationship presentation.
+  ResolveComponentContext:
+    input: [ComponentRef]
+    output: [componentRef, name, applicationRef, applicationName]
+    invariant: Application context is owner-read presentation context and never changes ComponentRef identity.
+  PageInteractions:
+    input: [search, page, pageSize]
+    output: page of Interaction candidates with source/destination Component and Application context plus purpose
+    search_matches: [interactionRef, purpose, endpoint component names/refs, endpoint application names/refs]
+    invariant: Candidate narrowing aids recognition only; Connectivity Need endpoint validation remains authoritative in Business Connectivity.
   ResolveInteraction:
     input: [InteractionRef]
     output: [interactionRef, sourceComponentRef, destinationComponentRef, purpose, version]
@@ -54,6 +72,18 @@ application_communication_query_contracts:
   ResolveInteractionRevision:
     input: [InteractionRevisionRef]
     output: immutable InteractionRevision with canonical TrafficClauses and owning Interaction identity.
+
+application_deployment_query_contracts:
+  ReadComponentDeployment:
+    input: [ComponentDeployment]
+    output: [deploymentRef, componentRef, componentName, resourceRef, resourceDisplayName]
+    composition:
+      - deploymentRef/componentRef/resourceRef come from Application Deployment owner truth;
+      - componentName is resolved from Application Communication Catalogue ResolveComponent at read time;
+      - resourceDisplayName is resolved from Resource Catalogue ResolveResource at read time.
+    invariants:
+      - human-readable labels never replace stable cross-owner references;
+      - peer labels are not persisted or treated as Application Deployment domain truth.
 
 authority_contract:
   RequireScopedAuthority:

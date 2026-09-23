@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { serializeComponentCatalogueQuery } from "../src/app/component-catalogue-query.ts";
+import { serializeInteractionCatalogueQuery } from "../src/app/interaction-catalogue-query.ts";
 import { serializeResourceCatalogueQuery } from "../src/app/resource-catalogue-query.ts";
 import {
   defaultResourceCatalogueQuery,
@@ -30,5 +32,27 @@ test("Resource catalogue query omits inactive filters", () => {
       toResourceCatalogueQuery(defaultResourceCatalogueQuery),
     ),
     "sortBy=displayName&sortDirection=asc&page=1&pageSize=25",
+  );
+});
+
+test("Component candidate query serializes server-backed search and paging", () => {
+  assert.equal(
+    serializeComponentCatalogueQuery({
+      search: "payments api",
+      page: 2,
+      pageSize: 20,
+    }),
+    "search=payments+api&page=2&pageSize=20",
+  );
+});
+
+test("Interaction candidate query serializes server-backed search and paging", () => {
+  assert.equal(
+    serializeInteractionCatalogueQuery({
+      search: "identity flow",
+      page: 1,
+      pageSize: 20,
+    }),
+    "search=identity+flow&page=1&pageSize=20",
   );
 });

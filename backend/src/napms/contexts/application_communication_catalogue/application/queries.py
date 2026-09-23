@@ -39,3 +39,67 @@ class ApplicationCataloguePage:
     total: int
     page: int
     page_size: int
+
+
+@dataclass(frozen=True)
+class ComponentCatalogueItem:
+    component_ref: UUID
+    name: str
+    application_ref: UUID
+    application_name: str
+
+
+@dataclass(frozen=True)
+class ComponentCatalogueQuery:
+    search: str | None = None
+    page: int = 1
+    page_size: int = 25
+
+    def __post_init__(self) -> None:
+        if self.page < 1:
+            raise ValueError("page must be >= 1")
+        if not 1 <= self.page_size <= 100:
+            raise ValueError("page_size must be between 1 and 100")
+
+
+@dataclass(frozen=True)
+class ComponentCataloguePage:
+    items: tuple[ComponentCatalogueItem, ...]
+    total: int
+    page: int
+    page_size: int
+
+
+@dataclass(frozen=True)
+class InteractionCatalogueItem:
+    interaction_ref: UUID
+    purpose: str | None
+    source_component_ref: UUID
+    source_component_name: str
+    source_application_ref: UUID
+    source_application_name: str
+    destination_component_ref: UUID
+    destination_component_name: str
+    destination_application_ref: UUID
+    destination_application_name: str
+
+
+@dataclass(frozen=True)
+class InteractionCatalogueQuery:
+    search: str | None = None
+    page: int = 1
+    page_size: int = 25
+
+    def __post_init__(self) -> None:
+        if self.page < 1:
+            raise ValueError("page must be >= 1")
+        if not 1 <= self.page_size <= 100:
+            raise ValueError("page_size must be between 1 and 100")
+
+
+@dataclass(frozen=True)
+class InteractionCataloguePage:
+    items: tuple[InteractionCatalogueItem, ...]
+    total: int
+    page: int
+    page_size: int
