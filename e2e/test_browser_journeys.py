@@ -208,8 +208,12 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.wait_for_url(f"**/applications/{application_ref}")
 
         goto(page, "/interactions/new", "Create interaction")
-        page.get_by_label("Source Component ID").fill(source_ref)
-        page.get_by_label("Destination Component ID").fill(destination_ref)
+        page.get_by_label("Source Component").fill(source_name)
+        page.get_by_role("option", name=f"{source_name} — {application_name}").click()
+        page.get_by_label("Destination Component").fill(destination_name)
+        page.get_by_role(
+            "option", name=f"{destination_name} — {application_name}"
+        ).click()
         page.get_by_label("Purpose").fill("E2E directed business flow")
         page.get_by_role("button", name="Create interaction").click()
         page.wait_for_url("**/interactions/*/revisions/new")
@@ -235,8 +239,10 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         assert interaction_revision_ref
 
         goto(page, "/deployments/new", "Deployments")
-        page.get_by_label("Component ID").fill(source_ref)
-        page.get_by_label("Resource ID").fill(resource_ref)
+        page.get_by_label("Component").fill(source_name)
+        page.get_by_role("option", name=f"{source_name} — {application_name}").click()
+        page.get_by_label("Resource").fill(resource_name)
+        page.get_by_role("option", name=resource_name, exact=True).click()
         page.get_by_role("button", name="Create Deployment", exact=True).click()
         page.wait_for_url(lambda url: "/deployments/" in url and not url.endswith("/deployments/new"))
         deployment_ref = page.url.rsplit("/", 1)[-1]
@@ -265,8 +271,12 @@ def test_browser_semantic_journey_and_shared_ui_evidence() -> None:
         page.wait_for_url(f"**/deployments/{deployment_ref}")
 
         goto(page, "/deployments/new", "Deployments")
-        page.get_by_label("Component ID").fill(destination_ref)
-        page.get_by_label("Resource ID").fill(resource_ref)
+        page.get_by_label("Component").fill(destination_name)
+        page.get_by_role(
+            "option", name=f"{destination_name} — {application_name}"
+        ).click()
+        page.get_by_label("Resource").fill(resource_name)
+        page.get_by_role("option", name=resource_name, exact=True).click()
         page.get_by_role("button", name="Create Deployment", exact=True).click()
         page.wait_for_url(
             lambda url: "/deployments/" in url

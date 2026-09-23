@@ -12,6 +12,10 @@ import {
   serializeBusinessProcessCatalogueQuery,
 } from "./business-process-catalogue-query";
 import {
+  type ComponentCatalogueQuery,
+  serializeComponentCatalogueQuery,
+} from "./component-catalogue-query";
+import {
   type DeploymentCatalogueQuery,
   serializeDeploymentCatalogueQuery,
 } from "./deployment-catalogue-query";
@@ -157,6 +161,13 @@ export type InteractionView = {
   }>;
 };
 
+export type ComponentCandidateView = {
+  componentRef: string;
+  name: string;
+  applicationRef: string;
+  applicationName: string;
+};
+
 export type ApplicationView = {
   applicationRef: string;
   name: string;
@@ -264,6 +275,10 @@ export const api = {
   listApplications: (query: ApplicationCatalogueQuery) =>
     request<CataloguePage<ApplicationView>>(
       `/v1/applications?${serializeApplicationCatalogueQuery(query)}`,
+    ),
+  listComponents: (query: ComponentCatalogueQuery) =>
+    request<CataloguePage<ComponentCandidateView>>(
+      `/v1/components?${serializeComponentCatalogueQuery(query)}`,
     ),
   getApplication: (ref: string) =>
     request<ApplicationView>(`/v1/applications/${ref}`),

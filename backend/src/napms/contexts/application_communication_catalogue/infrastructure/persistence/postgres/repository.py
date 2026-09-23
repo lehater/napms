@@ -13,6 +13,9 @@ from napms.contexts.application_communication_catalogue.application.queries impo
     ApplicationCataloguePage,
     ApplicationCatalogueQuery,
     ApplicationSortField,
+    ComponentCatalogueItem,
+    ComponentCataloguePage,
+    ComponentCatalogueQuery,
     SortDirection,
 )
 from napms.contexts.application_communication_catalogue.domain.model import (
@@ -108,6 +111,67 @@ class PostgresApplicationCommunicationCatalogue:
         items = tuple(value for (ref,) in rows if (value := self.get_application(ref)) is not None)
         return ApplicationCataloguePage(
             items=items,
+            total=total,
+            page=query.page,
+            page_size=query.page_size,
+        )
+
+    def query_components(self, query: ComponentCatalogueQuery) -> ComponentCataloguePage:
+        conditions: list[str] = []
+        parameters: list[object] = []
+        if query.search:
+            search = query.search.strip()
+            if search:
+                conditions.append(
+                    """
+                    (
+                        c.name ILIKE %s
+                        OR CAST(c.component_ref AS text) ILIKE %s
+                        OR a.name ILIKE %s
+                        OR CAST(a.application_ref AS text) ILIKE %s
+                    )
+                    """
+                )
+                pattern = f"%{search}%"
+                parameters.extend((pattern, pattern, pattern, pattern))
+
+        where = "" if not conditions else " WHERE " + " AND ".join(conditions)
+        offset = (query.page - 1) * query.page_size
+        with psycopg.connect(self._dsn) as connection:
+            total_row = connection.execute(
+                f"""
+                SELECT COUNT(*)
+                FROM application_communication_catalogue.component AS c
+                JOIN application_communication_catalogue.application AS a
+                  ON a.application_ref = c.application_ref
+                {where}
+                """,
+                parameters,
+            ).fetchone()
+            total = 0 if total_row is None else total_row[0]
+            rows = connection.execute(
+                f"""
+                SELECT c.component_ref, c.name, a.application_ref, a.name
+                FROM application_communication_catalogue.component AS c
+                JOIN application_communication_catalogue.application AS a
+                  ON a.application_ref = c.application_ref
+                {where}
+                ORDER BY c.name ASC, a.name ASC, c.component_ref ASC
+                LIMIT %s OFFSET %s
+                """,
+                (*parameters, query.page_size, offset),
+            ).fetchall()
+
+        return ComponentCataloguePage(
+            items=tuple(
+                ComponentCatalogueItem(
+                    component_ref=row[0],
+                    name=row[1],
+                    application_ref=row[2],
+                    application_name=row[3],
+                )
+                for row in rows
+            ),
             total=total,
             page=query.page,
             page_size=query.page_size,

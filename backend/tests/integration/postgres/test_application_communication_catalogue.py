@@ -7,6 +7,7 @@ import pytest
 from napms.contexts.application_communication_catalogue.application.queries import (
     ApplicationCatalogueQuery,
     ApplicationSortField,
+    ComponentCatalogueQuery,
     SortDirection,
 )
 from napms.contexts.application_communication_catalogue.domain.model import (
@@ -112,3 +113,24 @@ def test_application_catalogue_query_applies_search_filter_sort_and_paging() -> 
     filtered = repository.query_applications(ApplicationCatalogueQuery(component_ref=UUID(int=201)))
     assert filtered.total == 1
     assert [item.application_ref for item in filtered.items] == [UUID(int=101)]
+
+
+def test_component_catalogue_query_searches_component_and_application_context() -> None:
+    repository = PostgresApplicationCommunicationCatalogue(DSN)
+    payments = Application.create(application_ref=UUID(int=301), name="Payments")
+    identity = Application.create(application_ref=UUID(int=302), name="Identity")
+    repository.add(payments)
+    repository.add(identity)
+    payments = payments.add_component(component_ref=UUID(int=401), name="API")
+    identity = identity.add_component(component_ref=UUID(int=402), name="API")
+    repository.save_application(payments, expected_version=1)
+    repository.save_application(identity, expected_version=1)
+
+    page = repository.query_components(
+        ComponentCatalogueQuery(search="payments", page=1, page_size=10)
+    )
+
+    assert page.total == 1
+    assert page.items[0].component_ref == UUID(int=401)
+    assert page.items[0].name == "API"
+    assert page.items[0].application_name == "Payments"

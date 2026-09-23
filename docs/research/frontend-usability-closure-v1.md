@@ -1,6 +1,6 @@
 # Frontend usability closure research v1
 
-Status: Stage 1 implemented; Stage 2A implementation in progress. This file is non-canonical; accepted semantics remain owned by Product, Interface, Domain, HTTP and Verification artifacts.
+Status: Stages 1 and 2A implemented; Stage 2B implementation in progress. This file is non-canonical; accepted semantics remain owned by Product, Interface, Domain, HTTP and Verification artifacts.
 
 ## Trigger
 
@@ -100,7 +100,13 @@ Prefer authoritative read projections over ad-hoc frontend N+1 joins. The select
 
 ### Stage 2B — simple searchable pickers
 
-Define explicit candidate/query contracts for simple Component, Resource and reference-data selection. Commands continue to submit stable IDs.
+Selected implementation:
+
+- add a global paged `listComponents` read contract because Components may participate across Application boundaries;
+- candidate labels are `Component name — Application name`, while `componentRef` remains the submitted value;
+- reuse `listResources` for Resource candidates because it already provides server-side search/paging and `displayName`;
+- expose a provider-neutral searchable reference-picker field; MUI Autocomplete is only the downstream provider implementation;
+- commands continue to submit stable IDs and backend validation remains authoritative.
 
 ### Stage 2C — dependent/task-oriented pickers
 

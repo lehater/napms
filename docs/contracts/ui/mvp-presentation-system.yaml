@@ -233,7 +233,9 @@ patterns:
     rules:
       - labels remain visible;
       - validation is attached to fields and summarized for rejected submission;
-      - cancel/return does not masquerade as successful save.
+      - cancel/return does not masquerade as successful save;
+      - accepted entity references use a searchable reference picker when a server-backed candidate query exists;
+      - reference-picker labels are human-readable, selected values are stable references, and candidate narrowing is never authoritative validation.
     states: [editing, submitting, validation-rejected, authorization-rejected, conflict, saved, technical-error]
 
   STRUCTURED-LIST:

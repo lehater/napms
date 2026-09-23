@@ -1,4 +1,5 @@
 import {
+  Autocomplete,
   Box,
   Button,
   MenuItem,
@@ -80,25 +81,64 @@ export function MuiEditorPattern({
         sx={{ p: { xs: 2, sm: embedded ? 2 : 3 }, maxWidth: 720 }}
       >
         <Stack spacing={2}>
-          {fields.map((field) => (
-            <TextField
-              key={field.id}
-              label={field.label}
-              value={field.value}
-              required={field.required}
-              type={field.inputType ?? "text"}
-              select={Boolean(field.options?.length)}
-              slotProps={{ htmlInput: { readOnly: field.readOnly } }}
-              onChange={(event) => field.onChange?.(event.target.value)}
-              fullWidth
-            >
-              {field.options?.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          ))}
+          {fields.map((field) => {
+            if (field.referencePicker) {
+              const picker = field.referencePicker;
+              const selected =
+                picker.options.find((option) => option.value === field.value) ??
+                null;
+              return (
+                <Autocomplete
+                  key={field.id}
+                  options={picker.options}
+                  value={selected}
+                  loading={picker.loading}
+                  noOptionsText={picker.noOptionsText ?? "No matching options"}
+                  filterOptions={(options) => options}
+                  getOptionLabel={(option) => option.label}
+                  isOptionEqualToValue={(option, value) =>
+                    option.value === value.value
+                  }
+                  onChange={(_, option) =>
+                    field.onChange?.(option?.value ?? "")
+                  }
+                  onInputChange={(_, value, reason) => {
+                    if (reason === "input" || reason === "clear") {
+                      picker.onSearchChange(value);
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={field.label}
+                      required={field.required}
+                      error={Boolean(picker.errorMessage)}
+                      helperText={picker.errorMessage}
+                    />
+                  )}
+                />
+              );
+            }
+            return (
+              <TextField
+                key={field.id}
+                label={field.label}
+                value={field.value}
+                required={field.required}
+                type={field.inputType ?? "text"}
+                select={Boolean(field.options?.length)}
+                slotProps={{ htmlInput: { readOnly: field.readOnly } }}
+                onChange={(event) => field.onChange?.(event.target.value)}
+                fullWidth
+              >
+                {field.options?.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            );
+          })}
 
           {failure ? <MuiStatus message={statusMessage ?? failure} /> : null}
 

@@ -348,6 +348,10 @@ screens:
         reference_presentation:
           source_component: {primary: sourceComponentName, technical_identity: sourceComponentRef}
           destination_component: {primary: destinationComponentName, technical_identity: destinationComponentRef}
+      interaction-authoring:
+        reference_selection:
+          source_component: {candidate_operation: listComponents, label: [name, applicationName], value: componentRef, search: server-backed}
+          destination_component: {candidate_operation: listComponents, label: [name, applicationName], value: componentRef, search: server-backed}
     action_hierarchy:
       application: edit-application
       components: add-or-edit-component
@@ -395,8 +399,8 @@ screens:
       create-editor:
         pattern: EDITOR
         fields:
-          - {id: component-ref, source: request:createDeployment.componentRef, required: true}
-          - {id: resource-ref, source: request:createDeployment.resourceRef, required: true}
+          - {id: component-ref, source: request:createDeployment.componentRef, required: true, selection: {candidate_operation: listComponents, label: [name, applicationName], value: componentRef, search: server-backed}}
+          - {id: resource-ref, source: request:createDeployment.resourceRef, required: true, selection: {candidate_operation: listResources, label: displayName, value: resourceRef, search: server-backed}}
         submit_action: create-deployment
     primary_action_role: create-deployment
     exits:
@@ -960,7 +964,8 @@ global_rules:
   - responsive transformations preserve semantic labels, distinctions and action availability;
   - screen composition does not create domain or authorization semantics;
   - optional catalogue controls exist only when accepted machine/application semantics support them;
-  - referenced entities with accepted human-readable labels present those labels as primary meaning while stable references remain secondary technical identity.
+  - referenced entities with accepted human-readable labels present those labels as primary meaning while stable references remain secondary technical identity;
+  - reference authoring uses accepted server-backed candidate queries when available and submits stable references without treating candidate narrowing as domain validation.
 
 coverage:
   required_workspaces:

@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../../app/api";
+import {
+  queryComponentReferenceCandidates,
+  queryResourceReferenceCandidates,
+  referenceCandidateFailureMessage,
+} from "../../app/referenceCandidates";
 import { navigate } from "../../app/router";
+import { useReferenceCandidates } from "../../app/useReferenceCandidates";
 import {
   CataloguePattern,
   type CatalogueState,
@@ -245,6 +251,12 @@ function DeploymentCreateMode() {
   const [resourceRef, setResourceRef] = useState("");
   const [state, setState] = useState<EditorState>("editing");
   const [statusMessage, setStatusMessage] = useState<string>();
+  const componentCandidates = useReferenceCandidates(
+    queryComponentReferenceCandidates,
+  );
+  const resourceCandidates = useReferenceCandidates(
+    queryResourceReferenceCandidates,
+  );
 
   async function submit() {
     setState("submitting");
@@ -270,17 +282,33 @@ function DeploymentCreateMode() {
       fields={[
         {
           id: "component-ref",
-          label: "Component ID",
+          label: "Component",
           value: componentRef,
           required: true,
           onChange: setComponentRef,
+          referencePicker: {
+            options: componentCandidates.options,
+            loading: componentCandidates.loading,
+            errorMessage: componentCandidates.error
+              ? referenceCandidateFailureMessage(componentCandidates.error)
+              : undefined,
+            onSearchChange: componentCandidates.setSearch,
+          },
         },
         {
           id: "resource-ref",
-          label: "Resource ID",
+          label: "Resource",
           value: resourceRef,
           required: true,
           onChange: setResourceRef,
+          referencePicker: {
+            options: resourceCandidates.options,
+            loading: resourceCandidates.loading,
+            errorMessage: resourceCandidates.error
+              ? referenceCandidateFailureMessage(resourceCandidates.error)
+              : undefined,
+            onSearchChange: resourceCandidates.setSearch,
+          },
         },
       ]}
       submitLabel="Create Deployment"

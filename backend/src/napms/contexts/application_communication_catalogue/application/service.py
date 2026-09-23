@@ -6,6 +6,8 @@ from uuid import UUID, uuid4
 from napms.contexts.application_communication_catalogue.application.queries import (
     ApplicationCataloguePage,
     ApplicationCatalogueQuery,
+    ComponentCataloguePage,
+    ComponentCatalogueQuery,
 )
 from napms.contexts.application_communication_catalogue.application.ports import (
     ApplicationRepository,
@@ -38,6 +40,9 @@ class ApplicationCommunicationCatalogue:
 
     def list_applications(self, query: ApplicationCatalogueQuery) -> ApplicationCataloguePage:
         return self._applications.query_applications(query)
+
+    def list_components(self, query: ComponentCatalogueQuery) -> ComponentCataloguePage:
+        return self._applications.query_components(query)
 
     def get_application_detail(
         self, application_ref: UUID

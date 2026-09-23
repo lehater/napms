@@ -13,6 +13,7 @@ from napms.contexts.application_communication_catalogue.application.ports import
 from napms.contexts.application_communication_catalogue.application.queries import (
     ApplicationCatalogueQuery,
     ApplicationSortField,
+    ComponentCatalogueQuery,
     SortDirection,
 )
 from napms.contexts.application_communication_catalogue.application.service import (
@@ -165,6 +166,36 @@ def router(
                     ],
                 }
                 for value in result.items
+            ],
+            "total": result.total,
+            "page": result.page,
+            "pageSize": result.page_size,
+        }
+
+    @api.get("/components")
+    def list_components(
+        search: str | None = Query(default=None, max_length=200),
+        page: int = Query(default=1, ge=1),
+        page_size: int = Query(default=25, ge=1, le=100, alias="pageSize"),
+        caller: Principal = Depends(identity),
+    ) -> dict[str, object]:
+        permission(caller, "application.read")
+        result = catalogue.list_components(
+            ComponentCatalogueQuery(
+                search=search.strip() if search and search.strip() else None,
+                page=page,
+                page_size=page_size,
+            )
+        )
+        return {
+            "items": [
+                {
+                    "componentRef": str(item.component_ref),
+                    "name": item.name,
+                    "applicationRef": str(item.application_ref),
+                    "applicationName": item.application_name,
+                }
+                for item in result.items
             ],
             "total": result.total,
             "page": result.page,

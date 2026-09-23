@@ -7,6 +7,8 @@ from uuid import UUID
 from napms.contexts.application_communication_catalogue.application.queries import (
     ApplicationCataloguePage,
     ApplicationCatalogueQuery,
+    ComponentCataloguePage,
+    ComponentCatalogueQuery,
 )
 from napms.contexts.application_communication_catalogue.domain.model import (
     Application,
@@ -27,6 +29,7 @@ class CatalogueVersionConflict(Exception):
 class ApplicationRepository(Protocol):
     def add(self, application: Application) -> None: ...
     def query_applications(self, query: ApplicationCatalogueQuery) -> ApplicationCataloguePage: ...
+    def query_components(self, query: ComponentCatalogueQuery) -> ComponentCataloguePage: ...
     def get_application(self, application_ref: UUID) -> Application | None: ...
     def save_application(self, application: Application, *, expected_version: int) -> None: ...
 

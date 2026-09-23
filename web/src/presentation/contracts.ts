@@ -121,6 +121,14 @@ export type EditorOption = {
   label: string;
 };
 
+export type EditorReferencePicker = {
+  options: readonly EditorOption[];
+  loading?: boolean;
+  errorMessage?: string;
+  noOptionsText?: string;
+  onSearchChange: (value: string) => void;
+};
+
 export type EditorField = {
   id: string;
   label: string;
@@ -129,6 +137,7 @@ export type EditorField = {
   readOnly?: boolean;
   inputType?: "text" | "password";
   options?: readonly EditorOption[];
+  referencePicker?: EditorReferencePicker;
   onChange?: (value: string) => void;
 };
 

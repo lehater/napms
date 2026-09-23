@@ -5,6 +5,9 @@ import pytest
 from napms.contexts.application_communication_catalogue.application.queries import (
     ApplicationCataloguePage,
     ApplicationCatalogueQuery,
+    ComponentCatalogueItem,
+    ComponentCataloguePage,
+    ComponentCatalogueQuery,
 )
 from napms.contexts.application_communication_catalogue.application.service import (
     ApplicationCommunicationCatalogue,
@@ -21,6 +24,7 @@ class Applications:
     def __init__(self) -> None:
         self.values: dict[UUID, Application] = {}
         self.last_query: ApplicationCatalogueQuery | None = None
+        self.last_component_query: ComponentCatalogueQuery | None = None
 
     def add(self, application: Application) -> None:
         self.values[application.application_ref] = application
@@ -33,6 +37,20 @@ class Applications:
             page=query.page,
             page_size=query.page_size,
         )
+
+    def query_components(self, query: ComponentCatalogueQuery) -> ComponentCataloguePage:
+        self.last_component_query = query
+        items = tuple(
+            ComponentCatalogueItem(
+                component_ref=component.component_ref,
+                name=component.name,
+                application_ref=application.application_ref,
+                application_name=application.name,
+            )
+            for application in self.values.values()
+            for component in application.components
+        )
+        return ComponentCataloguePage(items, len(items), query.page, query.page_size)
 
     def get(self, application_ref: UUID) -> Application | None:
         return self.values.get(application_ref)
@@ -144,3 +162,22 @@ def test_application_catalogue_query_is_delegated_to_read_model() -> None:
     assert result.items == (item,)
     assert result.page == 2
     assert result.page_size == 10
+
+
+def test_component_catalogue_query_is_delegated_with_application_context() -> None:
+    applications = Applications()
+    application = Application.create(application_ref=UUID(int=40), name="Payments")
+    application = application.add_component(component_ref=UUID(int=41), name="API")
+    applications.add(application)
+    service = ApplicationCommunicationCatalogue(
+        applications=applications,
+        interactions=Interactions(),
+        components=Components(),
+    )
+    query = ComponentCatalogueQuery(search="pay", page=2, page_size=10)
+
+    result = service.list_components(query)
+
+    assert applications.last_component_query == query
+    assert result.items[0].component_ref == UUID(int=41)
+    assert result.items[0].application_name == "Payments"

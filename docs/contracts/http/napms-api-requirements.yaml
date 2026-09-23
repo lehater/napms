@@ -1,4 +1,4 @@
-version: 4
+version: 5
 kind: http-contract-requirements
 id: NAPMS-MVP-HTTP-CONTRACT-REQUIREMENTS
 status: COMPLETE_CANONICAL_OPENAPI
@@ -18,6 +18,7 @@ operations:
   - PUT /v1/resources/{resourceRef}/site
   - PUT /v1/resources/{resourceRef}/responsibilities/{role}
   - GET /v1/applications
+  - GET /v1/components
   - POST /v1/applications
   - GET /v1/applications/{applicationRef}
   - POST /v1/applications/{applicationRef}/components
@@ -60,6 +61,11 @@ catalogue_query_contract:
     search: [name, applicationRef]
     filters: [componentRef]
     sort_by: [name, applicationRef]
+  component_catalogue:
+    purpose: Searchable Component candidates for cross-Application reference selection.
+    search: [name, componentRef, applicationName, applicationRef]
+    sort_by: [name, applicationName]
+    response_item: [componentRef, name, applicationRef, applicationName]
   deployment_catalogue:
     search: [deploymentRef, componentRef, resourceRef]
     filters: [componentRef, resourceRef]
@@ -82,6 +88,7 @@ rules:
   - access.request is admitted from effective scoped AuthorityGrants for every source/destination Resource AuthorityScopeRef at server-owned admissionAt.
   - policy.export is admitted from effective scoped AuthorityGrants for every selected Resource AuthorityScopeRef at database-owned evaluationAt.
   - Cross-Application Interaction is allowed when referenced Components and traffic semantics are valid.
+  - GET /v1/components supplies paged owner-backed Component candidates for human-readable reference selection; candidate narrowing never replaces command-time reference validation.
   - Idempotent state-creating POST operations require Idempotency-Key; replay returns exact persisted original status/body/Location/ETag before NEW-command If-Match evaluation.
   - Aggregate mutations requiring optimistic concurrency use If-Match and return current ETag.
   - DENIED AccessRequest decision creates no PolicyRule.
