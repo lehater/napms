@@ -275,3 +275,45 @@ sufficiency_review:
 The next semantic step is human disposition of these questions. Only after that
 should the three `user-needs` capabilities be registered and Task Model work become
 real rather than simulated.
+
+
+## Elicitation pass 2 — move unresolved semantics to the correct layer
+
+The first candidate pass classified all unresolved questions as if they blocked User
+Needs acceptance. That was too strong.
+
+A second upstream-only evidence pass used the revalidated target requirement
+`docs-legacy/requirements/first-mvp-vendor-neutral-policy-export.md`. Its Purpose
+states that the first application goal is to establish current effective policy,
+inspect one complete vendor-neutral technical policy view and download the same
+semantic result for downstream access-list processing.
+
+This resolves the earlier question about the first-MVP human outcome of Policy
+Export without reading current UI/navigation.
+
+The remaining questions are all about **how work is performed**, not **why the user
+needs the capability**:
+
+- recognize/reuse an existing Application/Component semantic object;
+- information required together during Application/Component authoring;
+- information inspected before Access Request submission;
+- recovery after authority rejection versus NotAllowed;
+- recovery after an UNRESOLVED export.
+
+Those are Task Model inputs. They no longer block the User Needs candidate.
+
+The candidate state is therefore now:
+
+```yaml
+sufficiency_review:
+  status: READY_FOR_HUMAN_ACCEPTANCE
+  acceptance_required: explicit human review
+task_model_questions: 5
+```
+
+This is an important layer correction: accepting User Needs must not require
+prematurely deciding task decomposition, interaction grouping or recovery UI.
+
+The candidate is still not registered in Harness. The next action remains a human
+semantic review of the three actor/goal pairs and five User Needs. Only after that
+acceptance should the Task Model capability become a real CREATE frontier.

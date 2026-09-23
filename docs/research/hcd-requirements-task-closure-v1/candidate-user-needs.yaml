@@ -81,14 +81,16 @@ goals:
   - id: GOAL-POLICY-EXPORT
     subject: policy-export
     statement: >-
-      Obtain a complete explainable vendor-neutral projection of selected current
-      effective policy, or an explicit unresolved result when completeness cannot
+      Inspect current effective policy as one complete explainable vendor-neutral
+      technical view and hand the same semantic result to downstream access-list
+      processing, or receive an explicit unresolved result when completeness cannot
       be established.
     evidence_refs:
       - docs/horizontal/s0/user-journeys.md#j9--materialize-and-export-required-policy
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-001
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-004
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-005
+      - docs-legacy/requirements/first-mvp-vendor-neutral-policy-export.md#purpose
 
 user_needs:
   - id: NEED-APP-01
@@ -151,10 +153,24 @@ user_needs:
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-005
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-PROV-001
 
-questions:
+resolved_user_need_questions:
+  - id: Q-EXPORT-01
+    subject: policy-export
+    original_question: >-
+      Which concrete human outcome does the first-MVP vendor-neutral export support?
+    resolution: >-
+      Revalidated target evidence states that the result is inspected as one complete
+      vendor-neutral technical policy view and exported in a form suitable for
+      downstream access-list processing.
+    evidence_refs:
+      - docs-legacy/requirements/first-mvp-vendor-neutral-policy-export.md#purpose
+      - docs-legacy/requirements/first-mvp-vendor-neutral-policy-export.md#product-journey
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-004
+
+task_model_questions:
   - id: Q-APP-01
     subject: application-components
-    blocking: true
+    blocking_task_model: true
     question: >-
       How does the user recognize that an existing Application/Component description
       is the correct semantic object to reuse rather than creating another one?
@@ -162,7 +178,7 @@ questions:
 
   - id: Q-APP-02
     subject: application-components
-    blocking: true
+    blocking_task_model: true
     question: >-
       Which information must be simultaneously available while defining or changing
       Components and communication intent?
@@ -170,7 +186,7 @@ questions:
 
   - id: Q-REQUEST-01
     subject: access-request
-    blocking: true
+    blocking_task_model: true
     question: >-
       What minimum information must the requester inspect or compare to judge that
       the concrete request subject is the intended one before submission?
@@ -178,33 +194,26 @@ questions:
 
   - id: Q-REQUEST-02
     subject: access-request
-    blocking: true
+    blocking_task_model: true
     question: >-
       What human work should follow authority rejection versus a later NotAllowed
       permission decision?
     reason: Required to distinguish recovery/alternate tasks rather than only error states.
 
-  - id: Q-EXPORT-01
-    subject: policy-export
-    blocking: true
-    question: >-
-      Which concrete human decision or downstream action is the vendor-neutral
-      export intended to support in the first MVP?
-    reason: Current requirements define export correctness strongly but leave the consuming human outcome underspecified.
-
   - id: Q-EXPORT-02
     subject: policy-export
-    blocking: true
+    blocking_task_model: true
     question: >-
       What should the user do after an UNRESOLVED/incomplete export, and which
       diagnostics are necessary to perform that recovery work?
     reason: Required to derive recovery tasks without treating current diagnostics UI as upstream truth.
 
 sufficiency_review:
-  status: UNRESOLVED
+  status: READY_FOR_HUMAN_ACCEPTANCE
   conclusion: >-
-    The candidate identifies evidence-supported goals and five solution-independent
-    User Needs, but the six blocking questions materially affect intended human
-    tasks and information requirements. Do not register these candidates as accepted
-    user-needs capabilities yet.
-  acceptance_required: explicit human review of actors, goals, needs and blocking-question dispositions
+    All three pilot goals have source-bounded candidate User Need coverage. The
+    remaining five unresolved questions belong to Task Model decomposition,
+    information requirements or recovery behavior rather than to User Need
+    sufficiency. The candidate is ready for human semantic acceptance but must not
+    be registered as accepted user-needs capabilities before that review.
+  acceptance_required: explicit human review of actors, goals and five candidate User Needs

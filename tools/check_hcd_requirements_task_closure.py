@@ -127,17 +127,21 @@ def validate_candidates() -> None:
         ):
             raise AssertionError(("need lacks current canonical corroboration", need))
 
-    questions = USER_NEEDS_CANDIDATE.get("questions", [])
+    task_questions = USER_NEEDS_CANDIDATE.get("task_model_questions", [])
     blocking_subjects = {
         item.get("subject")
-        for item in questions
-        if item.get("blocking") is True
+        for item in task_questions
+        if item.get("blocking_task_model") is True
     }
     if blocking_subjects != expected_subjects:
-        raise AssertionError((blocking_subjects, questions))
+        raise AssertionError((blocking_subjects, task_questions))
+
+    resolved = USER_NEEDS_CANDIDATE.get("resolved_user_need_questions", [])
+    if {item.get("id") for item in resolved} != {"Q-EXPORT-01"}:
+        raise AssertionError(resolved)
 
     sufficiency = USER_NEEDS_CANDIDATE.get("sufficiency_review", {})
-    if sufficiency.get("status") != "UNRESOLVED":
+    if sufficiency.get("status") != "READY_FOR_HUMAN_ACCEPTANCE":
         raise AssertionError(sufficiency)
 
     current_provides = {
@@ -263,8 +267,8 @@ def main() -> int:
     print(
         "candidate user-needs:",
         len(USER_NEEDS_CANDIDATE["user_needs"]),
-        "blocking questions:",
-        len(USER_NEEDS_CANDIDATE["questions"]),
+        "task-model questions:",
+        len(USER_NEEDS_CANDIDATE["task_model_questions"]),
         "status:",
         USER_NEEDS_CANDIDATE["sufficiency_review"]["status"],
     )
