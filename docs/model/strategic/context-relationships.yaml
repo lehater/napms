@@ -1,36 +1,59 @@
-version: 2
+version: 3
 kind: strategic-context-relationship-model
 id: NAPMS-STRATEGIC-CONTEXT-RELATIONSHIPS
 
 whole_domain_relationships:
-  - {from: Resource Catalogue, to: Authority Management, semantics: Resource supplies immutable AuthorityScopeRef affiliation; it does not grant actor authority.}
-  - {from: Authority Management, to: Access Policy, semantics: AccessRequest submission consumes effective access.request authority for the source Resource scope at admission time; destination request authority is not required merely to submit.}
-  - {from: Authority Management, to: Required Policy Materialization, semantics: Export consumes effective policy.export authority for all selected Resource scopes at evaluation time.}
+  - {from: Organization Structure, to: Resource Catalogue, semantics: Organization Structure supplies stable Organization/OrganizationalUnit identities and hierarchy; Resource Catalogue owns each Resource's current OrganizationalUnit affiliation and ownership history.}
+  - {from: Organization Structure, to: Authority Management, semantics: Organization Structure supplies Organization/OrganizationalUnit identity and hierarchy; hierarchy alone grants no authority.}
+  - {from: Resource Catalogue, to: Authority Management, semantics: Resource Catalogue supplies the Resource's current OrganizationalUnit affiliation; Authority Management resolves current scope inheritance without owning Resource facts.}
+  - {from: Authority Management, to: Access Policy, semantics: AccessRequest protected actions consume current effective authority derived from Principal RoleAssignments and System/Organization/OrganizationalUnit scope semantics; request admission remains distinct from permission outcome.}
+  - {from: Authority Management, to: Required Policy Materialization, semantics: Export consumes current effective policy.export authority for the organizational scopes covering all selected Resources at evaluation time.}
   - {from: Application Communication Catalogue, to: Application Deployment, semantics: Deployment references Component identity while ACC retains communication ownership.}
-  - {from: Resource Catalogue, to: Application Deployment, semantics: Deployment references Resource identity while RC retains realization and scope ownership.}
+  - {from: Resource Catalogue, to: Application Deployment, semantics: Deployment references Resource identity while RC retains realization and organizational-ownership truth.}
   - {from: Application Communication Catalogue, to: Business Connectivity, semantics: Need references reusable Interaction plus one participant Component.}
   - {from: Business Connectivity, to: Access Policy, semantics: Current Need supplies business justification but never permission.}
   - {from: Application Deployment, to: Access Policy, semantics: AccessSubject references concrete source and destination deployments.}
   - {from: Application Communication Catalogue, to: Access Policy, semantics: AccessSubject references exact immutable InteractionRevision.}
-  - {from: Access Policy, to: Required Policy Materialization, semantics: Selected PolicyRules supply authoritative desired access.}
+  - {from: Access Policy, to: Required Policy Materialization, semantics: Current effective access plus preserved permission evidence supplies authoritative desired access; revoked historical authorization does not silently become current again.}
   - {from: Business Connectivity, to: Required Policy Materialization, semantics: Need currentness supplies reconciliation status without automatic revocation.}
   - {from: Application Communication Catalogue, to: Required Policy Materialization, semantics: Exact InteractionRevision supplies traffic semantics.}
   - {from: Application Deployment, to: Required Policy Materialization, semantics: Deployments identify participating Resources.}
-  - {from: Resource Catalogue, to: Required Policy Materialization, semantics: Current addressed Endpoints supply technical realization and AuthorityScopeRefs.}
+  - {from: Resource Catalogue, to: Required Policy Materialization, semantics: Current addressed Endpoints and current Resource organizational ownership supply technical realization and authority-scope resolution inputs.}
 
 context_mapping_relationships:
-  - relationship_id: REL-AM-RC-SCOPE
+  - relationship_id: REL-OS-RC-OWNERSHIP
+    from: Organization Structure
+    to: Resource Catalogue
+    direction: upstream-downstream
+    patterns: []
+    semantics: Organization Structure owns Organization/OrganizationalUnit hierarchy; Resource Catalogue owns current Resource-to-OrganizationalUnit affiliation and its history.
+  - relationship_id: REL-OS-AM-HIERARCHY
+    from: Organization Structure
+    to: Authority Management
+    direction: upstream-downstream
+    patterns: []
+    semantics: Organization and OrganizationalUnit hierarchy is an authority-scope input; Authority Management owns RoleAssignment inheritance/evaluation and Organization Structure never grants authority by itself.
+  - relationship_id: REL-RC-AM-SCOPE-RESOLUTION
     from: Resource Catalogue
     to: Authority Management
     direction: upstream-downstream
     patterns: []
-    semantics: Resource Catalogue publishes AuthorityScopeRef affiliation; Authority Management evaluates actor grants without owning Resource facts.
+    semantics: Resource Catalogue publishes current OrganizationalUnit affiliation; Authority Management evaluates matching Organization/OrganizationalUnit RoleAssignments without owning Resource facts.
 
 strategic_invariants:
   - No Shared Kernel between peer contexts
+  - Organization is the root security boundary for its OrganizationalUnit hierarchy
+  - OrganizationalUnit hierarchy never crosses an Organization boundary
+  - Resource organizational ownership is current mutable truth with preserved history and does not change Resource identity
+  - organizational ownership and descriptive responsibility are not authority
+  - System authority is distinct from Organization and OrganizationalUnit authority
+  - RoleAssignments may target Actor or Group principals
+  - Group membership is external IdP truth; missing or unresolved membership fails closed for current authority without destroying historical evidence
+  - authority inheritance flows parent to descendants inside one Organization
+  - retired Roles confer no current authority while historical evidence remains explainable
   - business justification is not permission
-  - Resource responsibility is not authority
-  - denied permission creates no PolicyRule
+  - denied permission creates no current effective access authorization
+  - revoked access does not become current again without a new request and permission decision
   - technical realization does not define access identity
   - zero current Need does not automatically revoke access
   - missing current address realization is explicit incomplete technical realization and is not silently omitted from exported policy

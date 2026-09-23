@@ -1,31 +1,43 @@
-version: 2
+version: 3
 kind: bounded-context-model
 id: NAPMS-BOUNDED-CONTEXTS
 
 contexts:
+  - context_id: BC-ORGANIZATION-STRUCTURE
+    capability_ref: CAP-ORGANIZATION-STRUCTURE
+    name: Organization Structure
+    purpose: Own administrative organizational identity and hierarchy.
+    responsibility: [Organization identity and lifecycle, OrganizationalUnit identity and lifecycle, parent-child hierarchy inside one Organization, Organization as root security boundary]
+    boundary_basis:
+      cohesion_rationale: Organization and OrganizationalUnit identity, hierarchy and lifecycle form one administrative structure with one root boundary.
+      separation_rationale: Resource ownership, actor/group membership, role assignment, permission decisions and technical realization remain external.
+    model_language_ownership:
+      owned_terms_or_model_scope: [Organization, OrganizationalUnit, organizational hierarchy]
+      explicitly_external_terms: [Resource, ActorRef, GroupRef, RoleAssignment, AccessRequest, PolicyRule]
+
   - context_id: BC-RESOURCE-CATALOGUE
     capability_ref: CAP-RESOURCE-CATALOGUE
     name: Resource Catalogue
     purpose: Own logical Resource identity and access-relevant Resource truth.
-    responsibility: [Resource identity, immutable AuthorityScopeRef affiliation, logical Endpoint membership, current HostAddress-or-Prefix realization, Site, OWNER and ADMINISTRATOR responsibility, basic history]
+    responsibility: [Resource identity, one current OrganizationalUnitRef with ownership history, logical Endpoint membership, current HostAddress-or-Prefix realization, Site, OWNER and ADMINISTRATOR descriptive responsibility, basic history]
     boundary_basis:
-      cohesion_rationale: Resource identity, logical network presence, realization and responsibility change together as Resource catalogue truth.
-      separation_rationale: Application meaning, deployment placement, business need, permission and actor authority remain external.
+      cohesion_rationale: Resource identity, organizational ownership, logical network presence, realization and descriptive responsibility change together as Resource catalogue truth.
+      separation_rationale: Organization hierarchy, application meaning, deployment placement, business need, permission and actor authority remain external.
     model_language_ownership:
-      owned_terms_or_model_scope: [Resource, AuthorityScopeRef, ResourceEndpoint, HostAddress, Prefix, Site, ResponsibilityGroup]
-      explicitly_external_terms: [Application, ComponentDeployment, ConnectivityNeed, PolicyRule, AuthorityGrant]
+      owned_terms_or_model_scope: [Resource, OrganizationalUnitRef, ResourceEndpoint, HostAddress, Prefix, Site, ResponsibilityGroup]
+      explicitly_external_terms: [Organization, OrganizationalUnit, Application, ComponentDeployment, ConnectivityNeed, PolicyRule, RoleAssignment]
 
   - context_id: BC-AUTHORITY-MANAGEMENT
     capability_ref: CAP-AUTHORITY-MANAGEMENT
     name: Authority Management
-    purpose: Own effective actor/action/scope/time evaluation semantics.
-    responsibility: [evaluate authenticated AuthorityGrant sets fail-closed for exact action scope and time]
+    purpose: Own effective principal/action/scope/time authority semantics.
+    responsibility: [ActorRef and GroupRef principals, Role and Action semantics, temporal RoleAssignments, System Organization and OrganizationalUnit scope targets, parent-to-descendant inheritance, Role retirement, fail-closed current effective authority evaluation]
     boundary_basis:
-      cohesion_rationale: Actor, action, scope and effective time form one reusable admission rule.
-      separation_rationale: Resource owns Resource-to-scope affiliation; authentication supplies actor/grants; domain metadata never manufactures authority.
+      cohesion_rationale: Principal, role/action, scope target, inheritance, assignment time and role lifecycle jointly determine reusable current authority.
+      separation_rationale: Organization Structure owns Organization/OrganizationalUnit hierarchy; Resource Catalogue owns current Resource organizational affiliation; authentication and external IdP membership are inputs; domain responsibility metadata never manufactures authority.
     model_language_ownership:
-      owned_terms_or_model_scope: [ActorRef, ActionRef, AuthorityScopeRef, AuthorityGrant, Effective Authority]
-      explicitly_external_terms: [Resource, Site, ResponsibilityGroup, BusinessProcess]
+      owned_terms_or_model_scope: [ActorRef, GroupRef, PrincipalRef, Role, Action, RoleAssignment, System Scope, Organization Scope, OrganizationalUnit Scope, Effective Authority]
+      explicitly_external_terms: [Organization, OrganizationalUnit, Resource, Site, ResponsibilityGroup, BusinessProcess, Group membership]
 
   - context_id: BC-APPLICATION-COMMUNICATION-CATALOGUE
     capability_ref: CAP-APPLICATION-COMMUNICATION-CATALOGUE
@@ -61,19 +73,19 @@ contexts:
       separation_rationale: Business justification is not permission and is independent from concrete deployment/address.
     model_language_ownership:
       owned_terms_or_model_scope: [BusinessProcess, ConnectivityNeed, criticalityLabel, business justification]
-      explicitly_external_terms: [PolicyRule, ComponentDeployment, AuthorityGrant]
+      explicitly_external_terms: [PolicyRule, ComponentDeployment, RoleAssignment]
 
   - context_id: BC-ACCESS-POLICY
     capability_ref: CAP-ACCESS-POLICY
     name: Access Policy
-    purpose: Own deliberate access requests, permission outcomes and authoritative current desired access.
-    responsibility: [AccessRequest, AccessSubject, final ALLOWED or DENIED outcome, one PolicyRule per exact subject, AuthorizationEvidence, justification associations, Active/Inactive state, EffectiveWindow, audit history]
+    purpose: Own deliberate access requests, permission outcomes/history and authoritative current effective access.
+    responsibility: [AccessRequest lifecycle, AccessSubject, approval and permission outcomes, AuthorizationEvidence, justification associations, current effective access authorization, declarative EffectiveWindow, revocation history, audit history]
     boundary_basis:
-      cohesion_rationale: Request subject, permission evidence and resulting authoritative desired-access state form one lifecycle owner.
-      separation_rationale: Need currentness, Resource realization, communication semantics and authority evaluation remain independently owned.
+      cohesion_rationale: Request subject, approval/permission evidence and resulting current-access authorization history form one access-governance lifecycle owner.
+      separation_rationale: Organization hierarchy, Resource ownership, Need currentness, Resource realization, communication semantics and current authority evaluation remain independently owned.
     model_language_ownership:
-      owned_terms_or_model_scope: [AccessRequest, AccessSubject, PolicyRule, AuthorizationEvidence, Active, Inactive, EffectiveWindow]
-      explicitly_external_terms: [ConnectivityNeed, AuthorityGrant, ComponentDeployment, InteractionRevision]
+      owned_terms_or_model_scope: [AccessRequest, AccessSubject, PolicyRule, AuthorizationEvidence, Current Effective Access, Revocation, EffectiveWindow]
+      explicitly_external_terms: [Organization, OrganizationalUnit, ConnectivityNeed, RoleAssignment, ComponentDeployment, InteractionRevision]
 
   - context_id: BC-NETWORK-ENFORCEMENT-PLACEMENT
     capability_ref: CAP-NETWORK-ENFORCEMENT-PLACEMENT
