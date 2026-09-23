@@ -184,9 +184,7 @@ def test_submit_request_uses_one_transaction_and_exact_scoped_authority() -> Non
     refs = iter((UUID(int=100), UUID(int=101), UUID(int=102)))
     principal = Principal(
         subject="subject:alice",
-        authority_grants=(
-            AuthorityGrant(action="access.request", scope="scope:source"),
-        ),
+        authority_grants=(AuthorityGrant(action="access.request", scope="scope:source"),),
     )
     submission = PostgresAccessRequestSubmission(
         dsn=DSN,
@@ -363,9 +361,7 @@ def test_policy_materialization_keeps_policy_row_when_address_is_missing() -> No
     assert row["sourceAddress"] is None
     assert row["destinationAddress"] is None
     assert row["ipProtocol"] == 1
-    assert [issue.reason for issue in result.issues] == [
-        "current address realization incomplete"
-    ]
+    assert [issue.reason for issue in result.issues] == ["current address realization incomplete"]
     assert {item["scopeRef"] for item in result.export_authority_evidence} == {
         "scope:source",
         "scope:destination",

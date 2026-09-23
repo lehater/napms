@@ -171,9 +171,7 @@ def test_submission_requires_source_resource_scope_and_persists_exact_evidence()
     service, requests, source, destination, revision, need = fixture_service()
     principal = Principal(
         subject="subject:alice",
-        authority_grants=(
-            AuthorityGrant(action="access.request", scope="scope:source"),
-        ),
+        authority_grants=(AuthorityGrant(action="access.request", scope="scope:source"),),
     )
 
     request = service.submit(
@@ -195,9 +193,7 @@ def test_submission_rejects_deployment_pair_that_does_not_realize_interaction() 
     service, _, source, destination, revision, need = fixture_service()
     principal = Principal(
         subject="subject:alice",
-        authority_grants=(
-            AuthorityGrant(action="access.request", scope="scope:source"),
-        ),
+        authority_grants=(AuthorityGrant(action="access.request", scope="scope:source"),),
     )
     wrong_source = UUID(int=999)
 

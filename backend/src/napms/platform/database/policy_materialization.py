@@ -61,8 +61,7 @@ class MaterializationResult:
             "nonEffective": list(self.non_effective),
             "rows": list(self.rows),
             "issues": [
-                {"policyRuleRef": str(item.rule_ref), "reason": item.reason}
-                for item in self.issues
+                {"policyRuleRef": str(item.rule_ref), "reason": item.reason} for item in self.issues
             ],
         }
 
@@ -195,9 +194,7 @@ class PostgresPolicyMaterialization:
                                     "destinationResourceRef": str(
                                         destination_resource.resource_ref
                                     ),
-                                    "destinationResourceName": (
-                                        destination_resource.display_name
-                                    ),
+                                    "destinationResourceName": (destination_resource.display_name),
                                     "destinationEndpointRef": (
                                         None
                                         if destination_endpoint_ref is None
