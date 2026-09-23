@@ -24,7 +24,8 @@ workflow_composition:
 
 required_semantics:
   - Resource has immutable AuthorityScopeRef and explicit logical Endpoints whose current address may change independently.
-  - Cross-Application Interaction is valid when Component references and communication semantics are valid.
+  - Application is a reusable network communication profile rather than a concrete software-system inventory identity.
+  - Every Interaction connects Components of the same Application; cross-Application Interaction is invalid.
   - Several independent Interactions may exist for the same directed Component pair.
   - ComponentDeployment binds one Component to one Resource and is independent from current address.
   - Deliberate AccessRequest requires one current participant-attributed Process-backed ConnectivityNeed.

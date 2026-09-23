@@ -81,7 +81,7 @@ rules:
   - Authentication is OIDC Bearer token only; request bodies never contain trusted actor permission or authority fields.
   - access.request is admitted from effective scoped AuthorityGrants for every source/destination Resource AuthorityScopeRef at server-owned admissionAt.
   - policy.export is admitted from effective scoped AuthorityGrants for every selected Resource AuthorityScopeRef at database-owned evaluationAt.
-  - Cross-Application Interaction is allowed when referenced Components and traffic semantics are valid.
+  - Interaction creation resolves both Component owners server-side and rejects source/destination Components that belong to different Applications.
   - Idempotent state-creating POST operations require Idempotency-Key; replay returns exact persisted original status/body/Location/ETag before NEW-command If-Match evaluation.
   - Aggregate mutations requiring optimistic concurrency use If-Match and return current ETag.
   - DENIED AccessRequest decision creates no PolicyRule.

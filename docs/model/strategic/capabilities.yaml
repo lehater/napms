@@ -10,8 +10,8 @@ capabilities:
     language_terms: [Resource, AuthorityScopeRef, ResourceEndpoint, HostAddress, Prefix, Site, ResponsibilityGroup]
   - capability_id: CAP-APPLICATION-COMMUNICATION-CATALOGUE
     name: Application Communication Catalogue
-    business_outcome: Describe reusable applications and independently meaningful directed communication.
-    responsibility: Own Application, Component, Interaction and immutable InteractionRevision semantics.
+    business_outcome: Describe reusable network communication profiles and independently meaningful directed communication.
+    responsibility: Own Application communication-profile, Component-role, intra-Application Interaction and immutable InteractionRevision semantics.
     language_terms: [Application, Component, Interaction, InteractionRevision, TrafficClause]
   - capability_id: CAP-APPLICATION-DEPLOYMENT
     name: Application Deployment

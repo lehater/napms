@@ -16,6 +16,7 @@ def test_component_lifetime_is_owned_by_one_application() -> None:
 
     assert updated.application_ref == application.application_ref
     assert updated.components[0].component_ref == UUID(int=2)
+    assert updated.components[0].application_ref == application.application_ref
     assert updated.version == 2
 
 

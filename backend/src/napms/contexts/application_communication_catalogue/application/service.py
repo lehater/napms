@@ -81,10 +81,14 @@ class ApplicationCommunicationCatalogue:
         destination_component_ref: UUID,
         purpose: str | None,
     ) -> Interaction:
-        if self._components.resolve(source_component_ref) is None:
+        source = self._components.resolve(source_component_ref)
+        if source is None:
             raise CatalogueNotFound(str(source_component_ref))
-        if self._components.resolve(destination_component_ref) is None:
+        destination = self._components.resolve(destination_component_ref)
+        if destination is None:
             raise CatalogueNotFound(str(destination_component_ref))
+        if source.application_ref != destination.application_ref:
+            raise ValueError("interaction components must belong to the same application")
         value = Interaction.create(
             interaction_ref=self._new_ref(),
             source_component_ref=source_component_ref,

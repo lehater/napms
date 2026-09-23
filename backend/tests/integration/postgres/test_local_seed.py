@@ -82,7 +82,7 @@ def test_local_demo_seed_is_connected_and_idempotent() -> None:
         ).fetchall()
 
     assert counts == {
-        "applications": 10,
+        "applications": 1,
         "components": 10,
         "interactions": 10,
         "revisions": 10,

@@ -123,7 +123,7 @@ class RequestSpec:
 NODES = (
     NodeSpec(
         "customer",
-        "Customer Portal",
+        "Demo Network Communication Profile",
         "Customer Web",
         "edge-customer-01",
         "scope:customer",
@@ -133,7 +133,7 @@ NODES = (
     ),
     NodeSpec(
         "identity",
-        "Identity Service",
+        "Demo Network Communication Profile",
         "Identity API",
         "app-identity-01",
         "scope:identity",
@@ -143,7 +143,7 @@ NODES = (
     ),
     NodeSpec(
         "orders",
-        "Order Management",
+        "Demo Network Communication Profile",
         "Order API",
         "app-orders-01",
         "scope:orders",
@@ -153,7 +153,7 @@ NODES = (
     ),
     NodeSpec(
         "payments",
-        "Payment Service",
+        "Demo Network Communication Profile",
         "Payment API",
         "app-payments-01",
         "scope:payments",
@@ -163,7 +163,7 @@ NODES = (
     ),
     NodeSpec(
         "inventory",
-        "Inventory Service",
+        "Demo Network Communication Profile",
         "Inventory API",
         "app-inventory-01",
         "scope:inventory",
@@ -173,7 +173,7 @@ NODES = (
     ),
     NodeSpec(
         "notifications",
-        "Notification Service",
+        "Demo Network Communication Profile",
         "Notification API",
         "app-notifications-01",
         "scope:notifications",
@@ -183,7 +183,7 @@ NODES = (
     ),
     NodeSpec(
         "reporting",
-        "Reporting Platform",
+        "Demo Network Communication Profile",
         "Reporting API",
         "app-reporting-01",
         "scope:reporting",
@@ -193,7 +193,7 @@ NODES = (
     ),
     NodeSpec(
         "crm",
-        "CRM Integration",
+        "Demo Network Communication Profile",
         "CRM Adapter",
         "worker-crm-01",
         "scope:crm",
@@ -203,7 +203,7 @@ NODES = (
     ),
     NodeSpec(
         "admin",
-        "Administration Console",
+        "Demo Network Communication Profile",
         "Admin API",
         "app-admin-01",
         "scope:admin",
@@ -213,7 +213,7 @@ NODES = (
     ),
     NodeSpec(
         "observability",
-        "Observability Platform",
+        "Demo Network Communication Profile",
         "Metrics Collector",
         "obs-collector-01",
         "scope:observability",
@@ -643,7 +643,7 @@ class LocalDemoSeeder:
             self._ensure_deployment(spec)
 
     def _ensure_application(self, spec: NodeSpec) -> None:
-        application_ref = _application_ref(spec.key)
+        application_ref = _application_ref(spec.application_name)
         application = self._catalogue_repository.get_application(application_ref)
         if application is None:
             application = self._catalogue(application_ref).create_application(
@@ -1005,7 +1005,7 @@ def run() -> None:
     allowed = sum(item.decision is PermissionDecision.ALLOWED for item in REQUESTS)
     print(
         "NAPMS demo data ready: "
-        f"applications={len(NODES)}, resources={len(NODES)}, "
+        f"applications={len({item.application_name for item in NODES})}, resources={len(NODES)}, "
         f"interactions={len(INTERACTIONS)}, deployments={len(NODES)}, "
         f"business_processes={len(PROCESSES)}, "
         f"access_requests={len(REQUESTS)}, policy_rules={allowed}"
