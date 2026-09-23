@@ -1,0 +1,29 @@
+authorities: []
+artifacts:
+  - id: FIRST-MVP-REQUIREMENTS
+    path: docs/requirements/first-mvp-product-requirements.yaml
+    authority: PRODUCT-REQUIREMENTS
+    provides:
+      - pilot.application-components.requirements
+      - pilot.access-request.requirements
+      - pilot.policy-export.requirements
+
+  - id: FRONTEND-HUMAN-INTERFACE
+    path: docs/contracts/ui/mvp-human-interface.yaml
+    authority: INTERFACE-DESIGN
+    provides:
+      - pilot.application-components.human-interface
+      - pilot.access-request.human-interface
+      - pilot.policy-export.human-interface
+    depends_on: [FIRST-MVP-REQUIREMENTS]
+
+  - id: FRONTEND-SCREEN-VIEW-DESIGN
+    path: docs/contracts/ui/mvp-screen-view-design.yaml
+    authority: INTERFACE-DESIGN
+    provides:
+      - pilot.application-components.screen-view
+      - pilot.access-request.screen-view
+      - pilot.policy-export.screen-view
+    depends_on: [FRONTEND-HUMAN-INTERFACE]
+
+questions: []

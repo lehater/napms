@@ -1,4 +1,4 @@
-.PHONY: test postgres-test backend-format backend-lint backend-type backend-architecture backend-quality backend-security web-check web-security repository-quality journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-bootstrap harness-pin-check design-sync design-check authority-context human-implementation-package architecture architecture-check check
+.PHONY: test postgres-test backend-format backend-lint backend-type backend-architecture backend-quality backend-security web-check web-security repository-quality journey-e2e docker-build dev-up dev-status dev-down dev-logs dev-reset dev-backup dev-restore harness-bootstrap harness-pin-check design-sync design-check hcd-closure-check authority-context human-implementation-package architecture architecture-check check
 
 STRUCTURIZR_IMAGE ?= structurizr/structurizr:2026.06.28-noble
 STRUCTURIZR_DIR := $(CURDIR)/docs/architecture/structurizr
@@ -97,6 +97,7 @@ design-check: harness-pin-check
 	python $(HARNESS_ROOT)/architecture_driver_closure.py docs/requirements/first-mvp-architecture-driver-closure.yaml
 	python tools/check_canonical_graph.py
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_hcd_requirements_task_closure.py
 	python tools/check_knowledge_completeness.py
 	python tools/check_frontend_design_closure.py
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_frontend_provider_mapping.py
@@ -114,6 +115,9 @@ design-check: harness-pin-check
 	python tools/generate_ap_view.py --check
 	python tools/generate_mvp_journey_view.py --check
 	python tools/generate_persistence_erd.py --check
+
+hcd-closure-check: harness-pin-check
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_hcd_requirements_task_closure.py
 
 authority-context: harness-pin-check
 	@test -n "$(AUTHORITY)" || (echo "Usage: make authority-context AUTHORITY=SYSTEM-ARCHITECTURE CAPABILITY=engineering.architecture.rules" >&2; exit 2)

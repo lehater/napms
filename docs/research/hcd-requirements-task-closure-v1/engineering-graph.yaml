@@ -1,0 +1,125 @@
+version: 1
+kind: harness-engineering-graph
+id: NAPMS-HCD-REQUIREMENTS-TASK-PILOT
+default_subject: NAPMS-HCD-PILOT
+
+authorities:
+  - id: DISCOVERY
+    responsibility: Own pilot problem/context and solution-independent User Needs without deciding normative product behavior or interface structure.
+    boundary:
+      semantic_cohesion: Problem-space evidence, context, goals and User Needs.
+      independent_change: Problem/context knowledge can change before requirements or interface design changes.
+      public_contract: Provides pilot problem evidence and User Needs to normative requirements and task design.
+    produces:
+      - capability: pilot.first-mvp.problem-evidence
+        knowledge_kind: problem-evidence
+        requires: []
+      - capability: pilot.application-components.user-needs
+        knowledge_kind: user-needs
+        requires: [pilot.first-mvp.problem-evidence]
+      - capability: pilot.access-request.user-needs
+        knowledge_kind: user-needs
+        requires: [pilot.first-mvp.problem-evidence]
+      - capability: pilot.policy-export.user-needs
+        knowledge_kind: user-needs
+        requires: [pilot.first-mvp.problem-evidence]
+
+  - id: PRODUCT-REQUIREMENTS
+    responsibility: Own accepted normative product requirements for the three selected pilot subjects.
+    boundary:
+      semantic_cohesion: Observable normative product behavior.
+      independent_change: Requirements can change independently from task/interface realization.
+      public_contract: Provides subject-scoped accepted requirements.
+    produces:
+      - capability: pilot.application-components.requirements
+        knowledge_kind: product-requirements
+        requires: [pilot.application-components.user-needs]
+      - capability: pilot.access-request.requirements
+        knowledge_kind: product-requirements
+        requires: [pilot.access-request.user-needs]
+      - capability: pilot.policy-export.requirements
+        knowledge_kind: product-requirements
+        requires: [pilot.policy-export.user-needs]
+
+  - id: APPLICATION-JOURNEY-DESIGN
+    responsibility: Own intended human task structure and bounded usage scenarios before Interface Design.
+    boundary:
+      semantic_cohesion: Goal-oriented intended work, responsibility allocation and human/application scenarios.
+      independent_change: Task/scenario design can evolve without selecting screens or navigation.
+      public_contract: Provides Task Models and user journeys to Interface Design.
+    produces:
+      - capability: pilot.application-components.task-model
+        knowledge_kind: task-model
+        requires:
+          - pilot.application-components.user-needs
+          - pilot.application-components.requirements
+      - capability: pilot.access-request.task-model
+        knowledge_kind: task-model
+        requires:
+          - pilot.access-request.user-needs
+          - pilot.access-request.requirements
+      - capability: pilot.policy-export.task-model
+        knowledge_kind: task-model
+        requires:
+          - pilot.policy-export.user-needs
+          - pilot.policy-export.requirements
+      - capability: pilot.application-components.user-journey
+        knowledge_kind: user-journey-design
+        requires:
+          - pilot.application-components.task-model
+          - pilot.application-components.requirements
+      - capability: pilot.access-request.user-journey
+        knowledge_kind: user-journey-design
+        requires:
+          - pilot.access-request.task-model
+          - pilot.access-request.requirements
+      - capability: pilot.policy-export.user-journey
+        knowledge_kind: user-journey-design
+        requires:
+          - pilot.policy-export.task-model
+          - pilot.policy-export.requirements
+
+  - id: INTERFACE-DESIGN
+    responsibility: Own human interaction semantics and concrete Screen/View realization for the selected pilot subjects.
+    boundary:
+      semantic_cohesion: User-system interaction, view responsibilities and concrete screen composition.
+      independent_change: Interface structure can change behind stable needs, requirements and tasks.
+      public_contract: Provides human-interface and Screen/View contracts.
+    produces:
+      - capability: pilot.application-components.human-interface
+        knowledge_kind: human-interface-design
+        requires:
+          - pilot.application-components.requirements
+          - pilot.application-components.task-model
+          - pilot.application-components.user-journey
+      - capability: pilot.access-request.human-interface
+        knowledge_kind: human-interface-design
+        requires:
+          - pilot.access-request.requirements
+          - pilot.access-request.task-model
+          - pilot.access-request.user-journey
+      - capability: pilot.policy-export.human-interface
+        knowledge_kind: human-interface-design
+        requires:
+          - pilot.policy-export.requirements
+          - pilot.policy-export.task-model
+          - pilot.policy-export.user-journey
+      - capability: pilot.application-components.screen-view
+        knowledge_kind: screen-view-design
+        requires: [pilot.application-components.human-interface]
+      - capability: pilot.access-request.screen-view
+        knowledge_kind: screen-view-design
+        requires: [pilot.access-request.human-interface]
+      - capability: pilot.policy-export.screen-view
+        knowledge_kind: screen-view-design
+        requires: [pilot.policy-export.human-interface]
+
+consumers:
+  - id: HCD-PILOT
+    purpose: Prove that current NAPMS downstream UI knowledge cannot count as causally complete until problem, User Needs, Task Models and human journeys are materialized.
+    requires:
+      - pilot.application-components.screen-view
+      - pilot.access-request.screen-view
+      - pilot.policy-export.screen-view
+
+terminal_capabilities: []

@@ -1,0 +1,7 @@
+version: 1
+kind: hcd-pilot-fixture
+id: NAPMS-HCD-PILOT-TASK-MODEL
+status: SYNTHETIC_TEST_ONLY
+canonical: false
+subjects: [application-components, access-request, policy-export]
+purpose: Prove graph sequencing only; this fixture does not claim the intended human work has been discovered.

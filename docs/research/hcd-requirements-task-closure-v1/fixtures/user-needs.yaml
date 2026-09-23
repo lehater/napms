@@ -1,0 +1,7 @@
+version: 1
+kind: hcd-pilot-fixture
+id: NAPMS-HCD-PILOT-USER-NEEDS
+status: SYNTHETIC_TEST_ONLY
+canonical: false
+subjects: [application-components, access-request, policy-export]
+purpose: Prove graph sequencing only; no User Need in this fixture is accepted product/discovery truth.

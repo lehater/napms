@@ -1,0 +1,6 @@
+version: 1
+kind: hcd-pilot-fixture
+id: NAPMS-HCD-PILOT-PROBLEM-EVIDENCE
+status: SYNTHETIC_TEST_ONLY
+canonical: false
+purpose: Satisfy the research graph predecessor only; this file is not accepted NAPMS Discovery truth.

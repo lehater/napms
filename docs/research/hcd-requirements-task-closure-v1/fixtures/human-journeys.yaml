@@ -1,0 +1,7 @@
+version: 1
+kind: hcd-pilot-fixture
+id: NAPMS-HCD-PILOT-HUMAN-JOURNEYS
+status: SYNTHETIC_TEST_ONLY
+canonical: false
+subjects: [application-components, access-request, policy-export]
+purpose: Prove graph sequencing only; current FIRST-MVP-JOURNEY is deliberately not used as a human-journey provider.
