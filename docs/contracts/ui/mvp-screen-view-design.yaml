@@ -828,10 +828,10 @@ screens:
       request-editor:
         pattern: EDITOR
         fields:
-          - {id: current-connectivity-need, source: request:submitAccessRequest.needRef, required: true, selection: {contract: current-connectivity-need}}
-          - {id: interaction-revision, source: request:submitAccessRequest.interactionRevisionRef, required: true, selection: {contract: interaction-revision}}
-          - {id: source-deployment, source: request:submitAccessRequest.sourceDeploymentRef, required: true, selection: {contract: source-deployment}}
-          - {id: destination-deployment, source: request:submitAccessRequest.destinationDeploymentRef, required: true, selection: {contract: destination-deployment}}
+          - id: access-request-subject
+            required: true
+            selection: {contract: access-request-subject, candidate_operation: listAccessRequestCandidates, search: server-backed}
+            submits: [needRef, interactionRevisionRef, sourceDeploymentRef, destinationDeploymentRef]
         submit_action: submit-request
       requests:
         pattern: DATA-TABLE
@@ -901,33 +901,17 @@ screens:
           - {id: record-decision, backed_by: command:record-decision}
         excluded: [bulk-operation, inline-edit-request-subject, rewrite-final-decision]
       references:
-        - id: current-connectivity-need
+        - id: access-request-subject
           use: selection
-          identity: needRef
-          display: {primary: [businessProcessName, businessBasis], technical_identity: needRef}
-          candidates: {mode: independent, search: server-backed}
-          submitted_value: needRef
-          submits_to: command:submit-request
-        - id: interaction-revision
-          use: selection
-          identity: interactionRevisionRef
-          display: {primary: [interactionPurpose, revisionNo], technical_identity: interactionRevisionRef}
-          candidates: {mode: dependent, search: bounded-by-current-need, depends_on: [current-connectivity-need]}
-          submitted_value: interactionRevisionRef
-          submits_to: command:submit-request
-        - id: source-deployment
-          use: selection
-          identity: deploymentRef
-          display: {primary: [componentName, resourceDisplayName], technical_identity: deploymentRef}
-          candidates: {mode: dependent, search: bounded-by-revision-source-component, depends_on: [interaction-revision]}
-          submitted_value: sourceDeploymentRef
-          submits_to: command:submit-request
-        - id: destination-deployment
-          use: selection
-          identity: deploymentRef
-          display: {primary: [componentName, resourceDisplayName], technical_identity: deploymentRef}
-          candidates: {mode: dependent, search: bounded-by-revision-destination-component, depends_on: [interaction-revision]}
-          submitted_value: destinationDeploymentRef
+          identity: [needRef, interactionRevisionRef, sourceDeploymentRef, destinationDeploymentRef]
+          display:
+            primary: [businessProcessName, businessBasis, interactionPurpose, revisionNo, sourceComponentName, sourceResourceDisplayName, destinationComponentName, destinationResourceDisplayName]
+            technical_identity: [needRef, interactionRevisionRef, sourceDeploymentRef, destinationDeploymentRef]
+          candidates:
+            operation_id: listAccessRequestCandidates
+            mode: independent
+            search: server-backed
+          submitted_value: [needRef, interactionRevisionRef, sourceDeploymentRef, destinationDeploymentRef]
           submits_to: command:submit-request
       pattern_mapping:
         - {pattern: CATALOGUE, feature_bindings: {open-item: open-access-request, create-item: submit-request}}
@@ -1069,7 +1053,7 @@ screens:
           use: selection
           identity: needRef
           display: {primary: [businessProcessName, businessBasis], technical_identity: needRef}
-          candidates: {mode: independent, search: server-backed}
+          candidates: {operation_id: listPolicyRuleJustificationCandidates, mode: independent, search: server-backed}
           submitted_value: needRef
           submits_to: command:attach-business-justification
       pattern_mapping:

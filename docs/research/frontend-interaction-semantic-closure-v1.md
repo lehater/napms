@@ -42,28 +42,33 @@ The project now records:
 | Create Interaction | source/destination Component candidate operations and stable submitted refs | closed |
 | Create Deployment | Component/Resource display-selection contracts via listComponents/listResources | closed |
 | Declare Connectivity Need | Interaction candidates plus participant derived from selected Interaction endpoints | closed |
-| Submit Access Request | Need → Interaction Revision → source/destination Deployment dependency graph | blocked: no authoritative candidate source/query for the admissible chain |
-| Attach Policy Rule justification | Connectivity Need reference contract | blocked: no authoritative candidate source/query for matching/current Needs |
+| Submit Access Request | one task-oriented composite candidate carrying current Need + exact Interaction Revision + source/destination Deployment tuple | blocked: `listAccessRequestCandidates` is not yet an accepted machine operation |
+| Attach Policy Rule justification | matching current Connectivity Need reference contract | blocked: `listPolicyRuleJustificationCandidates` is not yet an accepted machine operation |
 | Edit/Rename Application | visible edit intent exists | blocked: no accepted mutation operation |
 | Edit/Rename Component | visible edit intent exists | blocked: no accepted mutation operation |
 | Direct detail navigation | parent + direct-link semantics | closed |
 
 ## Access Request dependency proof
 
-The authoring contract explicitly models:
+The domain/application semantics form the dependency:
 
 ```text
 Current Connectivity Need
-  → Interaction Revision
-    → Source Deployment
-    → Destination Deployment
+  → owning Interaction
+  → selected immutable Interaction Revision
+  → source/destination Components
+  → matching source/destination Component Deployments
 ```
 
-Source and Destination Deployment are constrained by the selected revision's endpoint Components. The backend remains authoritative for AP-01/AP-02 admission.
+The user task does not require four independent choices. The Screen/View contract therefore models one composite `access-request-subject` candidate whose stable identity is:
 
-The current machine interface can validate submitted IDs but does not expose an authoritative candidate query that lets the UI construct this admissible chain without inventing cross-aggregate joins. Therefore the Screen/View contract deliberately omits candidate sources and strict closure remains REJECTED.
+```text
+[needRef, interactionRevisionRef, sourceDeploymentRef, destinationDeploymentRef]
+```
 
-Four independent UUID text inputs cannot satisfy this contract.
+The proposed application query `listAccessRequestCandidates` owns construction of admissible tuples and their human-readable labels. `submitAccessRequest` still receives the stable IDs and independently revalidates current Need, revision ownership, deployment endpoint compatibility and scoped authority.
+
+This is simpler than a four-picker dependency graph and proves that four independent UUID text inputs are not an acceptable realization. Until the candidate query exists, strict closure remains REJECTED.
 
 ## Policy Rule justification
 
@@ -78,13 +83,14 @@ The Screen/View contract does not invent those mutations. The action findings re
 ## Next design work
 
 P0:
-1. define authoritative Access Request candidate/read capability that returns admissible Need + exact revision + source/destination Deployment candidates;
-2. define authoritative Policy Rule justification Need candidate capability;
-3. resolve Application/Component edit intent against accepted mutation semantics.
+1. define `listAccessRequestCandidates` as a task-oriented application query returning admissible Need + exact revision + source/destination Deployment tuples;
+2. define `listPolicyRuleJustificationCandidates` for current Needs matching a selected PolicyRule subject;
+3. enforce matching-Need semantics in the justification mutation path, not only currentness;
+4. resolve Application/Component edit intent against accepted mutation semantics.
 
 P1:
-4. expose human-readable display projection for Access Request and Policy Rule subject references in machine reads, not only opaque IDs;
-5. add project-specific acceptance cases for stale/dependent candidate invalidation.
+5. expose human-readable display projection for Access Request and Policy Rule subject references in machine reads, not only opaque IDs;
+6. add project-specific acceptance cases for stale/dependent candidate invalidation.
 
 P2:
-6. generate User Task Map, Workspace Map, Action Matrix, Reference Dependency Map and State Transition Map from the canonical contracts.
+7. generate User Task Map, Workspace Map, Action Matrix, Reference Dependency Map and State Transition Map from the canonical contracts.
