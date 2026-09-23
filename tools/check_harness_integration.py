@@ -33,13 +33,19 @@ def main() -> int:
     projection = load("docs/harness-projection.yaml")
     graph = load("docs/harness-engineering-graph.yaml")
 
-    aligned = validate_project_alignment(
+    backend_alignment = validate_project_alignment(
         source,
         projection,
         graph,
         target_consumer="BACKEND-IMPLEMENTATION",
     )
-    model = aligned["model"]
+    frontend_alignment = validate_project_alignment(
+        source,
+        projection,
+        graph,
+        target_consumer="FRONTEND-IMPLEMENTATION",
+    )
+    model = frontend_alignment["model"]
 
     backend = evaluate_engineering_target(
         graph, "BACKEND-IMPLEMENTATION", model
@@ -53,15 +59,21 @@ def main() -> int:
         graph, "FRONTEND-IMPLEMENTATION", model
     )
     actual_frontier = {item["capability"] for item in frontend["create"]}
-    if frontend["status"] != "COMPLETE" or actual_frontier:
+    expected_frontier = {
+        "engineering.hcd.application-components.task-model",
+        "engineering.hcd.access-request.task-model",
+        "engineering.hcd.policy-export.task-model",
+    }
+    if frontend["status"] != "READY" or actual_frontier != expected_frontier:
         raise SystemExit(
-            "FRONTEND-IMPLEMENTATION target mismatch: "
+            "FRONTEND-IMPLEMENTATION causal frontier mismatch: "
             f"status={frontend['status']} create={sorted(actual_frontier)}"
         )
 
     print("NAPMS pinned Harness integration PASS")
     print("BACKEND-IMPLEMENTATION: COMPLETE")
-    print("FRONTEND-IMPLEMENTATION: COMPLETE")
+    print("FRONTEND-IMPLEMENTATION: READY")
+    print("HCD frontier: task-model[application-components, access-request, policy-export]")
     return 0
 
 

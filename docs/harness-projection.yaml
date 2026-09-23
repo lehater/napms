@@ -25,7 +25,9 @@ authorities:
   - {id: TEST-DESIGN}
 
 bindings:
-  - {artifact: FIRST-MVP-REQUIREMENTS, authority: PRODUCT-REQUIREMENTS, provides: [engineering.requirements.product-intent, engineering.requirements.acceptance]}
+  - {artifact: FIRST-MVP-HCD-PROBLEM-EVIDENCE, authority: DISCOVERY, provides: [engineering.hcd.first-mvp.problem-evidence]}
+  - {artifact: FIRST-MVP-HCD-USER-NEEDS, authority: DISCOVERY, provides: [engineering.hcd.application-components.user-needs, engineering.hcd.access-request.user-needs, engineering.hcd.policy-export.user-needs]}
+  - {artifact: FIRST-MVP-REQUIREMENTS, authority: PRODUCT-REQUIREMENTS, provides: [engineering.requirements.product-intent, engineering.requirements.acceptance, engineering.hcd.application-components.requirements, engineering.hcd.access-request.requirements, engineering.hcd.policy-export.requirements]}
   - {artifact: RC-DISCOVERY, authority: DISCOVERY, provides: [engineering.discovery.problem-evidence]}
 
   - {artifact: STRATEGIC-CAPABILITIES, authority: STRATEGIC-DOMAIN-DESIGN, provides: []}
@@ -66,10 +68,10 @@ bindings:
   - {artifact: BACKEND-COMPONENT-DESIGN, authority: COMPONENT-DESIGN, provides: [engineering.backend.component-design]}
   - {artifact: MVP-IMPLEMENTATION-READINESS, authority: IMPLEMENTATION-DESIGN, provides: [engineering.implementation.plan, engineering.implementation.completion-criteria]}
   - {artifact: MVP-TEST-INTENT, authority: VERIFICATION-DESIGN, provides: [engineering.verification.strategy, engineering.verification.acceptance-scenarios]}
-  - {artifact: FRONTEND-HUMAN-INTERFACE, authority: INTERFACE-DESIGN, provides: [engineering.frontend.human-interface]}
+  - {artifact: FRONTEND-HUMAN-INTERFACE, authority: INTERFACE-DESIGN, provides: [engineering.frontend.human-interface, engineering.hcd.application-components.human-interface, engineering.hcd.access-request.human-interface, engineering.hcd.policy-export.human-interface]}
   - {artifact: FRONTEND-DESIGN-TOKENS, authority: INTERFACE-DESIGN, provides: []}
   - {artifact: FRONTEND-PRESENTATION-SYSTEM, authority: INTERFACE-DESIGN, provides: [engineering.frontend.presentation-system]}
-  - {artifact: FRONTEND-SCREEN-VIEW-DESIGN, authority: INTERFACE-DESIGN, provides: [engineering.frontend.screen-view-design]}
+  - {artifact: FRONTEND-SCREEN-VIEW-DESIGN, authority: INTERFACE-DESIGN, provides: [engineering.frontend.screen-view-design, engineering.hcd.application-components.screen-view, engineering.hcd.access-request.screen-view, engineering.hcd.policy-export.screen-view]}
   - {artifact: FRONTEND-ARCHITECTURE, authority: SYSTEM-ARCHITECTURE, provides: [engineering.frontend.architecture]}
   - {artifact: FRONTEND-COMPONENT-DESIGN, authority: COMPONENT-DESIGN, provides: [engineering.frontend.component-design]}
   - {artifact: FRONTEND-VERIFICATION, authority: VERIFICATION-DESIGN, provides: [engineering.frontend.verification, engineering.frontend.presentation-verification]}

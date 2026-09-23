@@ -14,6 +14,21 @@ authorities:
       - capability: engineering.discovery.problem-evidence
         knowledge_kind: problem-evidence
         requires: []
+      - capability: engineering.hcd.first-mvp.problem-evidence
+        knowledge_kind: problem-evidence
+        requires: []
+      - capability: engineering.hcd.application-components.user-needs
+        knowledge_kind: user-needs
+        requires:
+          - engineering.hcd.first-mvp.problem-evidence
+      - capability: engineering.hcd.access-request.user-needs
+        knowledge_kind: user-needs
+        requires:
+          - engineering.hcd.first-mvp.problem-evidence
+      - capability: engineering.hcd.policy-export.user-needs
+        knowledge_kind: user-needs
+        requires:
+          - engineering.hcd.first-mvp.problem-evidence
 
   - id: PRODUCT-REQUIREMENTS
     responsibility: Own accepted product intent, scope, externally observable behavior and acceptance expectations.
@@ -28,6 +43,18 @@ authorities:
       - capability: engineering.requirements.acceptance
         knowledge_kind: product-requirements
         requires: []
+      - capability: engineering.hcd.application-components.requirements
+        knowledge_kind: product-requirements
+        requires:
+          - engineering.hcd.application-components.user-needs
+      - capability: engineering.hcd.access-request.requirements
+        knowledge_kind: product-requirements
+        requires:
+          - engineering.hcd.access-request.user-needs
+      - capability: engineering.hcd.policy-export.requirements
+        knowledge_kind: product-requirements
+        requires:
+          - engineering.hcd.policy-export.user-needs
 
   - id: STRATEGIC-DOMAIN-DESIGN
     responsibility: Own strategic DDD engineering knowledge including capability model, Bounded Context decomposition and context relationships.
@@ -74,7 +101,7 @@ authorities:
       public_contract: Provides cross-context journey and materialization semantics.
     produces:
       - capability: engineering.application.journey
-        knowledge_kind: user-journey-design
+        knowledge_kind: application-design
         requires:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
@@ -84,6 +111,42 @@ authorities:
         requires:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
+          - engineering.domain.tactical-model
+      - capability: engineering.hcd.application-components.task-model
+        knowledge_kind: task-model
+        requires:
+          - engineering.hcd.application-components.user-needs
+          - engineering.hcd.application-components.requirements
+          - engineering.domain.tactical-model
+      - capability: engineering.hcd.access-request.task-model
+        knowledge_kind: task-model
+        requires:
+          - engineering.hcd.access-request.user-needs
+          - engineering.hcd.access-request.requirements
+          - engineering.domain.tactical-model
+      - capability: engineering.hcd.policy-export.task-model
+        knowledge_kind: task-model
+        requires:
+          - engineering.hcd.policy-export.user-needs
+          - engineering.hcd.policy-export.requirements
+          - engineering.domain.tactical-model
+      - capability: engineering.hcd.application-components.user-journey
+        knowledge_kind: user-journey-design
+        requires:
+          - engineering.hcd.application-components.task-model
+          - engineering.hcd.application-components.requirements
+          - engineering.domain.tactical-model
+      - capability: engineering.hcd.access-request.user-journey
+        knowledge_kind: user-journey-design
+        requires:
+          - engineering.hcd.access-request.task-model
+          - engineering.hcd.access-request.requirements
+          - engineering.domain.tactical-model
+      - capability: engineering.hcd.policy-export.user-journey
+        knowledge_kind: user-journey-design
+        requires:
+          - engineering.hcd.policy-export.task-model
+          - engineering.hcd.policy-export.requirements
           - engineering.domain.tactical-model
 
   - id: SYSTEM-ARCHITECTURE
@@ -204,6 +267,27 @@ authorities:
           - engineering.architecture.security
           - engineering.security.browser-credential-lifecycle
           - engineering.interface.http-contract
+      - capability: engineering.hcd.application-components.human-interface
+        knowledge_kind: human-interface-design
+        requires:
+          - engineering.hcd.application-components.requirements
+          - engineering.hcd.application-components.task-model
+          - engineering.hcd.application-components.user-journey
+          - engineering.architecture.security
+      - capability: engineering.hcd.access-request.human-interface
+        knowledge_kind: human-interface-design
+        requires:
+          - engineering.hcd.access-request.requirements
+          - engineering.hcd.access-request.task-model
+          - engineering.hcd.access-request.user-journey
+          - engineering.architecture.security
+      - capability: engineering.hcd.policy-export.human-interface
+        knowledge_kind: human-interface-design
+        requires:
+          - engineering.hcd.policy-export.requirements
+          - engineering.hcd.policy-export.task-model
+          - engineering.hcd.policy-export.user-journey
+          - engineering.architecture.security
       - capability: engineering.frontend.presentation-system
         knowledge_kind: presentation-system-design
         requires:
@@ -220,6 +304,18 @@ authorities:
           - engineering.interface.ui-navigation
           - engineering.interface.resource-detail-ui
           - engineering.interface.http-contract
+      - capability: engineering.hcd.application-components.screen-view
+        knowledge_kind: screen-view-design
+        requires:
+          - engineering.hcd.application-components.human-interface
+      - capability: engineering.hcd.access-request.screen-view
+        knowledge_kind: screen-view-design
+        requires:
+          - engineering.hcd.access-request.human-interface
+      - capability: engineering.hcd.policy-export.screen-view
+        knowledge_kind: screen-view-design
+        requires:
+          - engineering.hcd.policy-export.human-interface
 
   - id: DATA-DESIGN
     responsibility: Own physical persistence engineering knowledge.
@@ -462,5 +558,8 @@ consumers:
     purpose: Realize the browser frontend without inventing user-visible, security, architecture, component or test decisions.
     requires:
       - engineering.frontend.implementation-design
+      - engineering.hcd.application-components.screen-view
+      - engineering.hcd.access-request.screen-view
+      - engineering.hcd.policy-export.screen-view
 
 terminal_capabilities: []
