@@ -1,4 +1,4 @@
-version: 4
+version: 5
 kind: test-intent
 id: NAPMS-FIRST-MVP-TEST-INTENT
 status: CURRENT
@@ -30,26 +30,32 @@ levels:
 
 required_scenarios:
   - id: MVP-REQ-RESOURCE
-    verifies: [REQ-RES-001, REQ-RES-002, REQ-RES-003, REQ-RES-004, REQ-RES-005, REQ-RES-006]
-    expect: Resource identity and Endpoint identity survive realization changes; AuthorityScopeRef remains independent; no automatic endpoint grouping; Site/responsibility history remains explainable.
+    verifies: [REQ-RES-001, REQ-RES-002, REQ-RES-003, REQ-RES-004, REQ-RES-005, REQ-RES-006, REQ-ORG-001]
+    expect: Resource identity survives address and organizational-ownership changes; missing/current network realization remains explicit; Site/ownership/responsibility history remains explainable; ownership/responsibility alone grants no protected-action authority.
+  - id: MVP-REQ-ORGANIZATION-VISIBILITY
+    verifies: [REQ-ORG-002]
+    expect: An authenticated user associated with the organization can discover its Resources without receiving management authority merely from visibility.
   - id: MVP-REQ-APPLICATION
     verifies: [REQ-APP-001, REQ-APP-002, REQ-INT-001, REQ-INT-002, REQ-INT-003]
     expect: Application is a reusable network communication profile; Cross-Application Interaction is rejected; multiple independent Interactions for the same intra-Application pair are accepted; revision traffic semantics are immutable and canonical.
   - id: MVP-REQ-DEPLOYMENT
     verifies: [REQ-DEP-001, REQ-DEP-002]
-    expect: Deployment identity is independent from IP and materialization uses all current addressed Endpoints of each participating Resource.
+    expect: Concrete deployment identity is independent from current Resource address and technical policy uses the current applicable Resource realization without changing the underlying connectivity permission.
   - id: MVP-REQ-BUSINESS
     verifies: [REQ-BUS-001, REQ-BUS-002, REQ-BUS-003, REQ-BUS-004, REQ-BUS-005, REQ-BUS-006, REQ-BUS-007, REQ-BUS-008, REQ-BUS-009]
     expect: Participant-side Needs remain independent business justification; additional Needs do not duplicate Rule; retirement preserves history; zero current Needs does not revoke; criticalityLabel is opaque metadata.
   - id: MVP-REQ-REQUEST-AUTHORITY
     verifies: [REQ-AUTH-001, REQ-PERM-001]
-    expect: AccessRequest succeeds with effective access.request authority for the source Resource scope at server-owned admissionAt; destination request authority is not required; exact source authority evidence is stored and request admission remains distinct from later permission decision.
-  - id: MVP-REQ-PERMISSION
-    verifies: [REQ-PERM-002, REQ-PERM-003, REQ-RULE-001, REQ-RULE-002]
-    expect: DENIED creates no Rule; ALLOWED creates or resolves exactly one Rule for exact Deployment pair plus immutable InteractionRevision and repeated allowed requests converge.
-  - id: MVP-REQ-RULE-OPERATIONS
-    verifies: [REQ-RULE-003, REQ-RULE-004, REQ-RULE-005]
-    expect: ACTIVE to INACTIVE to ACTIVE and EffectiveWindow preserve Rule identity and permission evidence; technical realization changes do not redefine access.
+    expect: Submission succeeds only when the actor is authorized to initiate connectivity for the source side; destination-side request authority is not required merely to submit, and request admission remains distinct from the later permission outcome.
+  - id: MVP-REQ-PERMISSION-SUBJECT
+    verifies: [REQ-PERM-002, REQ-PERM-003, REQ-RULE-002, REQ-RULE-006]
+    expect: DENIED creates no current effective access; ALLOWED makes the exact decided connectivity current effective access; at most one current effective authorization exists for that exact meaning while earlier authorization episodes remain historical.
+  - id: MVP-REQ-APPROVAL
+    verifies: [REQ-PERM-004, REQ-PERM-005, REQ-PERM-006, REQ-PERM-007, REQ-PERM-008, REQ-PERM-009, REQ-PERM-010]
+    expect: Distinct source/destination administrative sides require their accepted approvals; one denial denies and all required approvals are necessary for Allowed; pending requests can cancel/expire, material semantic loss invalidates before grant, submission-time approval basis remains explainable while decision authority is current, duplicate pending submission does not create a second request, and configured self-approval policy is enforced.
+  - id: MVP-REQ-RULE-LIFECYCLE
+    verifies: [REQ-RULE-004, REQ-RULE-005, REQ-RULE-007, REQ-RULE-008]
+    expect: Effective conditions and technical realization changes do not rewrite historical permission meaning; revocation ends current effective access without rewriting the Allowed history, and restoring the same connectivity requires a new request and permission decision.
   - id: MVP-REQ-EXPORT-AUTHORITY
     verifies: [REQ-AUTH-002, REQ-EXP-001]
     expect: ALL or explicit subset materialization fails before result exposure unless policy.export is effective for every selected Resource scope at evaluationAt.
