@@ -88,6 +88,7 @@ screens:
       - select Resource -> RESOURCE-DETAIL
     states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, technical-error]
     semantic_contract:
+      task_refs: [RESOURCE-MANAGEMENT]
       reads:
         - id: catalogue
           operation_id: listResources
@@ -180,6 +181,7 @@ screens:
         - {reference_feature: legacy-mutation-shapes, reason: modern HTTP/current-state operations remain semantic authority}
     states: [loading, loaded, empty-current, not-found, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
     semantic_contract:
+      task_refs: [RESOURCE-MANAGEMENT]
       reads:
         - {id: detail, operation_id: getResource, projection: ResourceView}
       commands:
@@ -269,6 +271,7 @@ screens:
       - select Application -> APPLICATION-DETAIL
     states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
     semantic_contract:
+      task_refs: [APPLICATION-MANAGEMENT]
       reads:
         - id: catalogue
           operation_id: listApplications
@@ -346,17 +349,81 @@ screens:
       interactions:
         pattern: DATA-TABLE
         reference_presentation:
-          source_component: {primary: sourceComponentName, technical_identity: sourceComponentRef}
-          destination_component: {primary: destinationComponentName, technical_identity: destinationComponentRef}
+          source_component: {primary: sourceComponentName, technical_identity: sourceComponentRef, reference_contract: source-component}
+          destination_component: {primary: destinationComponentName, technical_identity: destinationComponentRef, reference_contract: destination-component}
       interaction-authoring:
         reference_selection:
-          source_component: {candidate_operation: listComponents, label: [name, applicationName], value: componentRef, search: server-backed}
-          destination_component: {candidate_operation: listComponents, label: [name, applicationName], value: componentRef, search: server-backed}
+          source_component: {contract: source-component, candidate_operation: listComponents, label: [name, applicationName], value: componentRef, search: server-backed}
+          destination_component: {contract: destination-component, candidate_operation: listComponents, label: [name, applicationName], value: componentRef, search: server-backed}
     action_hierarchy:
       application: edit-application
       components: add-or-edit-component
       interactions: add-or-edit-interaction
     states: [loading, loaded, empty-components, empty-interactions, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    semantic_contract:
+      task_refs: [APPLICATION-MANAGEMENT, COMPONENT-MANAGEMENT, INTERACTION-MANAGEMENT]
+      reads:
+        - {id: detail, operation_id: getApplication, projection: ApplicationDetailView}
+      commands:
+        - {id: add-component, operation_id: addComponent}
+        - {id: create-interaction, operation_id: createInteraction}
+        - {id: publish-revision, operation_id: publishInteractionRevision}
+      view_model:
+        id: ApplicationDetailScreenModel
+        fields:
+          - {id: application_ref, source: read:detail.applicationRef}
+          - {id: name, source: read:detail.name}
+          - {id: components, source: read:detail.components}
+          - {id: interactions, source: read:detail.interactions}
+          - {id: version, source: read:detail.version}
+      capabilities:
+        allowed:
+          - {id: inspect-application, backed_by: read:detail}
+          - {id: add-component, backed_by: command:add-component}
+          - {id: create-interaction, backed_by: command:create-interaction}
+          - {id: publish-revision, backed_by: command:publish-revision}
+        excluded: [delete-application, delete-component]
+      references:
+        - id: source-component
+          use: display-selection
+          identity: componentRef
+          display: {primary: [name, applicationName], technical_identity: componentRef}
+          candidates: {operation_id: listComponents, mode: independent, search: server-backed}
+          submitted_value: sourceComponentRef
+          submits_to: command:create-interaction
+        - id: destination-component
+          use: display-selection
+          identity: componentRef
+          display: {primary: [name, applicationName], technical_identity: componentRef}
+          candidates: {operation_id: listComponents, mode: independent, search: server-backed}
+          submitted_value: destinationComponentRef
+          submits_to: command:create-interaction
+      pattern_mapping:
+        - {pattern: DETAIL, feature_bindings: {show-primary: inspect-application}}
+        - {pattern: EDITOR, feature_bindings: {}}
+        - {pattern: STRUCTURED-LIST, feature_bindings: {}}
+        - {pattern: DATA-TABLE, feature_bindings: {}}
+        - {pattern: TASK-ACTIONS, feature_bindings: {}}
+        - {pattern: STATUS, feature_bindings: {}}
+      state_mapping:
+        loading: read:detail.pending
+        loaded: read:detail.200
+        empty-components: read:detail.200
+        empty-interactions: read:detail.200
+        submitting: [command:add-component.pending, command:create-interaction.pending, command:publish-revision.pending]
+        validation-rejected: [command:create-interaction.422, command:publish-revision.422]
+        authorization-rejected: [read:detail.401, read:detail.403, command:add-component.401, command:add-component.403, command:create-interaction.401, command:create-interaction.403, command:publish-revision.401, command:publish-revision.403]
+        conflict: [command:add-component.409, command:create-interaction.409, command:publish-revision.409]
+        not-found: read:detail.404
+        technical-error: [read:detail.failure, command:add-component.failure, command:create-interaction.failure, command:publish-revision.failure]
+      outcome_mapping:
+        command:add-component.201: navigation:application-detail
+        command:create-interaction.201: navigation:application-detail
+        command:publish-revision.201: navigation:application-detail
+      verification:
+        contract: [operation:getApplication, operation:addComponent, operation:createInteraction, operation:publishInteractionRevision]
+        semantic: [application-detail-action-reference-and-state-closure]
+        rendered: [application-detail-component-interaction-conformance]
     responsive:
       - application context remains first
       - components precede interactions in reading order
@@ -408,6 +475,7 @@ screens:
       - create Deployment -> DEPLOYMENT-DETAIL
     states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, technical-error]
     semantic_contract:
+      task_refs: [DEPLOYMENT-MANAGEMENT]
       reads:
         - id: catalogue
           operation_id: listDeployments
@@ -484,6 +552,7 @@ screens:
         resource: {primary: resourceDisplayName, technical_identity: resourceRef}
     states: [loading, loaded, not-found, authorization-rejected, technical-error]
     semantic_contract:
+      task_refs: [DEPLOYMENT-MANAGEMENT]
       reads:
         - {id: detail, operation_id: getDeployment, projection: DeploymentView}
       commands: []
@@ -574,6 +643,7 @@ screens:
       - create Business Process -> BUSINESS-CONNECTIVITY detail route
     states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
     semantic_contract:
+      task_refs: [BUSINESS-CONNECTIVITY]
       reads:
         - id: catalogue
           operation_id: listBusinessProcesses
@@ -706,6 +776,7 @@ screens:
       - allowed decision may navigate to the resulting POLICY-RULES detail
     states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
     semantic_contract:
+      task_refs: [ACCESS-REQUEST]
       reads:
         - id: catalogue
           operation_id: listAccessRequests
@@ -831,6 +902,7 @@ screens:
       - export effective policy -> POLICY-EXPORT
     states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
     semantic_contract:
+      task_refs: [POLICY-RULE]
       reads:
         - id: catalogue
           operation_id: listPolicyRules
@@ -928,6 +1000,7 @@ screens:
     authority_rule: Visible/enabled controls never establish export authority; backend admission is authoritative.
     states: [editing, submitting, complete-success, unresolved-or-degraded, validation-rejected, authorization-rejected, technical-error]
     semantic_contract:
+      task_refs: [POLICY-EXPORT]
       reads: []
       commands:
         - {id: materialize-policy, operation_id: materializeCurrentPolicy, projection: PolicyMaterializationResult}
@@ -989,5 +1062,5 @@ coverage:
     - ACCESS-REQUESTS
     - POLICY-RULES
     - POLICY-EXPORT
-  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, DEPLOYMENTS, DEPLOYMENT-DETAIL, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES, POLICY-EXPORT]
-  rule: FRONTEND-IMPLEMENTATION is not presentation-complete unless every required workspace has explicit composition and inherits the shared Presentation System; pilot screens additionally require machine-checked semantic closure.
+  semantic_contract_scope: all-required-workspaces
+  rule: FRONTEND-IMPLEMENTATION is blocked unless every required workspace passes machine-checked semantic and interaction closure.

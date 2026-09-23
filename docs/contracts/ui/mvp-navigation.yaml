@@ -18,28 +18,27 @@ workspaces:
   - {id: POLICY-EXPORT, responsibility: Select effective policy scope, execute normalized export and inspect completeness diagnostics.}
 
 routes:
-  - {path: /resources, workspace: RESOURCE-CATALOGUE}
-  - {path: /resources/new, workspace: RESOURCE-CATALOGUE, mode: create}
-  - {path: /resources/:resourceRef, workspace: RESOURCE-DETAIL, identity: ResourceId}
-  - {path: /applications, workspace: APPLICATION-CATALOGUE}
-  - {path: /applications/new, workspace: APPLICATION-CATALOGUE, mode: create}
-  - {path: /applications/:applicationRef, workspace: APPLICATION-DETAIL, identity: ApplicationId}
-  - {path: /applications/:applicationRef/components/new, workspace: APPLICATION-DETAIL, identity: ApplicationId, mode: create-component}
-  - {path: /interactions/new, workspace: APPLICATION-DETAIL, mode: create-interaction}
-  - {path: /interactions/:interactionRef/revisions/new, workspace: APPLICATION-DETAIL, identity: InteractionId, mode: publish-revision}
-  - {path: /deployments, workspace: DEPLOYMENTS}
-  - {path: /deployments/new, workspace: DEPLOYMENTS, mode: create}
-  - {path: /deployments/:deploymentRef, workspace: DEPLOYMENT-DETAIL, identity: ComponentDeploymentId}
-  - {path: /business-processes, workspace: BUSINESS-CONNECTIVITY}
-  - {path: /business-processes/new, workspace: BUSINESS-CONNECTIVITY, mode: create-process}
-  - {path: /business-processes/:processRef, workspace: BUSINESS-CONNECTIVITY, identity: BusinessProcessId}
-  - {path: /access-requests, workspace: ACCESS-REQUESTS}
-  - {path: /access-requests/new, workspace: ACCESS-REQUESTS, mode: create}
-  - {path: /access-requests/:requestRef/decision, workspace: ACCESS-REQUESTS, identity: AccessRequestId, mode: decision}
-  - {path: /policy-rules, workspace: POLICY-RULES}
-  - {path: /policy-rules/:policyRuleRef, workspace: POLICY-RULES, identity: PolicyRuleId}
-  - {path: /policy-materializations/new, workspace: POLICY-EXPORT}
-
+  - {path: /resources, workspace: RESOURCE-CATALOGUE, parent: {state: not-applicable, rationale: top-level-resource-workspace}, direct_link: canonical}
+  - {path: /resources/new, workspace: RESOURCE-CATALOGUE, mode: create, parent: navigation:resource-catalogue, direct_link: canonical, success: navigation:resource-detail, cancel: navigation:resource-catalogue}
+  - {path: /resources/:resourceRef, workspace: RESOURCE-DETAIL, identity: ResourceId, parent: navigation:resource-catalogue, direct_link: canonical}
+  - {path: /applications, workspace: APPLICATION-CATALOGUE, parent: {state: not-applicable, rationale: top-level-application-workspace}, direct_link: canonical}
+  - {path: /applications/new, workspace: APPLICATION-CATALOGUE, mode: create, parent: navigation:application-catalogue, direct_link: canonical, success: navigation:application-detail, cancel: navigation:application-catalogue}
+  - {path: /applications/:applicationRef, workspace: APPLICATION-DETAIL, identity: ApplicationId, parent: navigation:application-catalogue, direct_link: canonical}
+  - {path: /applications/:applicationRef/components/new, workspace: APPLICATION-DETAIL, identity: ApplicationId, mode: create-component, parent: navigation:application-detail, direct_link: canonical, success: navigation:application-detail, cancel: navigation:application-detail}
+  - {path: /interactions/new, workspace: APPLICATION-DETAIL, mode: create-interaction, parent: navigation:application-catalogue, direct_link: canonical, success: navigation:application-detail, cancel: navigation:application-catalogue}
+  - {path: /interactions/:interactionRef/revisions/new, workspace: APPLICATION-DETAIL, identity: InteractionId, mode: publish-revision, parent: navigation:application-detail, direct_link: canonical, success: navigation:application-detail, cancel: navigation:application-detail}
+  - {path: /deployments, workspace: DEPLOYMENTS, parent: {state: not-applicable, rationale: top-level-deployment-workspace}, direct_link: canonical}
+  - {path: /deployments/new, workspace: DEPLOYMENTS, mode: create, parent: navigation:deployments, direct_link: canonical, success: navigation:deployment-detail, cancel: navigation:deployments}
+  - {path: /deployments/:deploymentRef, workspace: DEPLOYMENT-DETAIL, identity: ComponentDeploymentId, parent: navigation:deployments, direct_link: canonical}
+  - {path: /business-processes, workspace: BUSINESS-CONNECTIVITY, parent: {state: not-applicable, rationale: top-level-business-connectivity-workspace}, direct_link: canonical}
+  - {path: /business-processes/new, workspace: BUSINESS-CONNECTIVITY, mode: create-process, parent: navigation:business-connectivity, direct_link: canonical, success: navigation:business-process-detail, cancel: navigation:business-connectivity}
+  - {path: /business-processes/:processRef, workspace: BUSINESS-CONNECTIVITY, identity: BusinessProcessId, parent: navigation:business-connectivity, direct_link: canonical}
+  - {path: /access-requests, workspace: ACCESS-REQUESTS, parent: {state: not-applicable, rationale: top-level-access-request-workspace}, direct_link: canonical}
+  - {path: /access-requests/new, workspace: ACCESS-REQUESTS, mode: create, parent: navigation:access-requests, direct_link: canonical, success: navigation:access-request-detail, cancel: navigation:access-requests}
+  - {path: /access-requests/:requestRef/decision, workspace: ACCESS-REQUESTS, identity: AccessRequestId, mode: decision, parent: navigation:access-requests, direct_link: canonical, success: navigation:access-request-detail, cancel: navigation:access-requests}
+  - {path: /policy-rules, workspace: POLICY-RULES, parent: {state: not-applicable, rationale: top-level-policy-rule-workspace}, direct_link: canonical}
+  - {path: /policy-rules/:policyRuleRef, workspace: POLICY-RULES, identity: PolicyRuleId, parent: navigation:policy-rules, direct_link: canonical}
+  - {path: /policy-materializations/new, workspace: POLICY-EXPORT, mode: export, parent: navigation:policy-rules, direct_link: canonical, success: navigation:policy-export-result, cancel: navigation:policy-rules}
 transitions:
   - {from: RESOURCE-CATALOGUE, action: select-resource, to: RESOURCE-DETAIL, identity: ResourceId}
   - {from: APPLICATION-CATALOGUE, action: select-application, to: APPLICATION-DETAIL, identity: ApplicationId}

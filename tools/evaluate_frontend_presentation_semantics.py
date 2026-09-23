@@ -20,6 +20,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 PRESENTATION = ROOT / "docs/contracts/ui/mvp-presentation-system.yaml"
 SCREENS = ROOT / "docs/contracts/ui/mvp-screen-view-design.yaml"
+NAVIGATION = ROOT / "docs/contracts/ui/mvp-navigation.yaml"
 VERIFICATION = ROOT / "docs/plans/mvp-frontend-verification.yaml"
 TOKENS = ROOT / "docs/contracts/ui/mvp-design-tokens.json"
 OPENAPI = ROOT / "docs/contracts/http/napms.openapi.yaml"
@@ -163,6 +164,7 @@ def evaluate_screens(
     screens: dict[str, Any],
     presentation: dict[str, Any],
     openapi: dict[str, Any],
+    navigation: dict[str, Any],
 ) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     rows = screens.get("screens", []) or []
@@ -265,13 +267,15 @@ def evaluate_screens(
     if not detail.get("reference_adaptation"):
         findings.append(finding("RESOURCE_DETAIL_REFERENCE_ADAPTATION", "Resource Detail must state how historical visual evidence is adopted without importing legacy semantics."))
 
-    pilot = set(screens.get("coverage", {}).get("semantic_contract_pilot", []) or [])
-    if pilot:
+    required_screens = set(screens.get("coverage", {}).get("required_workspaces", []) or [])
+    if required_screens:
         result = evaluate_frontend_screen_contracts(
             presentation,
             screens,
             openapi,
-            screen_ids=pilot,
+            screen_ids=required_screens,
+            navigation_contract=navigation,
+            require_interaction_closure=True,
         )
         for item in result["findings"]:
             details = {key: value for key, value in item.items() if key not in {"code", "detail"}}
@@ -340,6 +344,7 @@ def semantic_evaluation(
 def evaluate() -> dict[str, Any]:
     presentation = load_yaml(PRESENTATION)
     screens = load_yaml(SCREENS)
+    navigation = load_yaml(NAVIGATION)
     verification = load_yaml(VERIFICATION)
     tokens = load_json(TOKENS)
     openapi = load_yaml(OPENAPI)
@@ -358,7 +363,7 @@ def evaluate() -> dict[str, Any]:
                 artifact="FRONTEND-SCREEN-VIEW-DESIGN",
                 capability="engineering.frontend.screen-view-design",
                 claim="engineering.interface.human.screen-composition",
-                findings=evaluate_screens(screens, presentation, openapi),
+                findings=evaluate_screens(screens, presentation, openapi, navigation),
             ),
             semantic_evaluation(
                 artifact="FRONTEND-VERIFICATION",
