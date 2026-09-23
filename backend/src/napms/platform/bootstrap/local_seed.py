@@ -884,16 +884,13 @@ class LocalDemoSeeder:
             interaction = self._interactions[spec.interaction_key]
             if request is None:
                 source_scope = self._nodes[interaction.source_key].authority_scope
-                destination_scope = self._nodes[interaction.destination_key].authority_scope
-                scopes = sorted({source_scope, destination_scope})
                 refs = [
                     demo_ref(
                         "request-authority-evidence",
-                        f"{spec.key}:{scope}",
-                    )
-                    for scope in scopes
+                        f"{spec.key}:{source_scope}",
+                    ),
+                    request_ref,
                 ]
-                refs.append(request_ref)
                 request = PostgresAccessRequestSubmission(
                     dsn=self._dsn,
                     authority=RequireScopedAuthority(),
