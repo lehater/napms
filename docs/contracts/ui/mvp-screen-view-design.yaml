@@ -587,13 +587,7 @@ screens:
             page: {source: local:query.page, minimum: 1}
             pageSize: {source: local:query.page-size, default: 25, maximum: 100}
         - {id: detail, operation_id: getBusinessProcess, projection: BusinessProcessView}
-        - id: interaction-candidates
-          operation_id: listInteractions
-          projection: InteractionCataloguePage
-          query:
-            search: {source: local:connectivity-need.interaction-search, semantics: accepted-text-search}
-            page: {source: constant:1, minimum: 1}
-            pageSize: {source: constant:20, maximum: 100}
+        - {id: interaction-candidates, operation_id: listInteractions, projection: InteractionCataloguePage}
         - {id: selected-interaction, operation_id: getInteraction, projection: InteractionView}
       commands:
         - {id: create-business-process, operation_id: createBusinessProcess}

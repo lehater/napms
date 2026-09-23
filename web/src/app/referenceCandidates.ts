@@ -48,14 +48,16 @@ export async function queryInteractionParticipantCandidates(
       label: interaction.sourceApplicationName
         ? `${interaction.sourceComponentName ?? interaction.sourceComponentRef} — ` +
           interaction.sourceApplicationName
-        : (interaction.sourceComponentName ?? interaction.sourceComponentRef),
+        : (interaction.sourceComponentName ??
+          interaction.sourceComponentRef),
     },
     {
       value: interaction.destinationComponentRef,
       label: interaction.destinationApplicationName
         ? `${interaction.destinationComponentName ?? interaction.destinationComponentRef} — ` +
           interaction.destinationApplicationName
-        : (interaction.destinationComponentName ?? interaction.destinationComponentRef),
+        : (interaction.destinationComponentName ??
+          interaction.destinationComponentRef),
     },
   ];
   return values.filter(

@@ -3,8 +3,8 @@ import { ApiError } from "../../app/api";
 import {
   queryInteractionParticipantCandidates,
   queryInteractionReferenceCandidates,
-  referenceCandidateFailureMessage,
   type ReferenceCandidate,
+  referenceCandidateFailureMessage,
 } from "../../app/referenceCandidates";
 import { navigate } from "../../app/router";
 import { useReferenceCandidates } from "../../app/useReferenceCandidates";

@@ -52,9 +52,7 @@ class Catalogue:
         query: InteractionCatalogueQuery,
     ) -> InteractionCataloguePage:
         source = self.resolve_component_context(self.interaction.source_component_ref)
-        destination = self.resolve_component_context(
-            self.interaction.destination_component_ref
-        )
+        destination = self.resolve_component_context(self.interaction.destination_component_ref)
         assert source is not None and destination is not None
         return InteractionCataloguePage(
             items=(
