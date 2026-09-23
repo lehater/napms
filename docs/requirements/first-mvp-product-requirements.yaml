@@ -24,32 +24,31 @@ content:
 
     - id: REQ-AUTH-001
       statement: >-
-        Connectivity request submission shall require effective access.request
-        authority for the source Resource from which the actor requests access at
-        the server-owned admission time. Request authority over the destination
-        Resource is not required merely to ask for access to it.
+        Connectivity request submission shall be accepted only from an actor
+        authorized to initiate connectivity on behalf of the source side at the
+        time of submission. Authorization to act for the destination side is not
+        required merely to submit the request.
       status: ACCEPTED
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-001
         - c403ceed:docs/requirements/wave1-acceptance-examples.md#E1
         - current-stakeholder-input:2026-09-23
-      rationale: A requester asks from a Resource under their authority to another Resource; destination permission is decided later and is distinct from request authority.
+      rationale: Preserve the observable distinction between authority to initiate from the source side and the later decision on whether the requested connectivity is allowed.
 
     - id: REQ-AUTH-002
       statement: >-
-        Policy export shall require effective read/export authority covering the
-        selected domain-policy scope.
+        Policy export shall be available only to an actor authorized to view and
+        export the selected policy scope.
       status: ACCEPTED
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-008
 
     - id: REQ-APP-001
       statement: >-
-        An Application shall represent a reusable application communication profile:
-        a template of network communication roles and requirements, not an inventory
-        identity for one concrete software product or system. The profile shall be
-        reusable across multiple concrete deployments and independent from current
-        network realization.
+        Users shall be able to define and reuse an application communication profile
+        describing network communication roles and requirements independently from
+        one concrete software-system inventory identity, deployment placement or
+        current network realization.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:application-communication
@@ -58,17 +57,18 @@ content:
 
     - id: REQ-APP-002
       statement: >-
-        A Component shall represent a participant/role in application network data exchange
-        rather than a network device.
+        Within an application communication profile, users shall be able to describe
+        participant roles in network data exchange without treating those roles as
+        network devices.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:application-communication
 
     - id: REQ-INT-001
       statement: >-
-        A described directed Interaction shall connect source and destination Components
-        belonging to the same Application communication profile. Components belonging
-        to different Applications shall not be connected by one Interaction.
+        The product shall accept a directed communication definition only between
+        participant roles of the same reusable application communication profile and
+        shall reject a definition that crosses profile boundaries.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:application-communication
@@ -94,65 +94,70 @@ content:
 
     - id: REQ-DEP-001
       statement: >-
-        A concrete Component deployment shall identify deployment of a concrete
-        Component on a Resource independently from the Resource's current IP address.
+        Users shall be able to identify a concrete deployment of an application
+        communication participant on a Resource independently from that Resource's
+        current network address.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:application-communication
 
     - id: REQ-DEP-002
       statement: >-
-        For the first MVP, technical realization of an authorized Interaction shall consider
-        all current logical endpoints of the Resource associated with each participating
-        Component deployment.
+        For the first MVP, technical policy derived from authorized connectivity shall
+        use the current applicable network realization of each participating Resource
+        without treating realization changes as a new connectivity permission.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:application-communication
 
     - id: REQ-RES-001
       statement: >-
-        Resource identity shall be independent from its current network address.
+        Changing or removing a Resource's current network address shall not by itself
+        create a different Resource identity.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:resource-evidence
 
     - id: REQ-RES-002
       statement: >-
-        A logical Resource endpoint/presence shall retain its identity when its current
-        address changes and may exist before any address is known.
+        A Resource network presence shall remain representable when its current address
+        changes or is not yet known, with that missing realization remaining explicit.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:resource-evidence
 
     - id: REQ-RES-003
       statement: >-
-        For the first MVP, each logical Resource endpoint shall have at most one current
-        address realization, represented as either one host address or one network prefix.
+        For the first MVP, each represented Resource network presence shall have at most
+        one current address realization at a time, expressed as either one host address
+        or one network prefix.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:resource-evidence
 
     - id: REQ-RES-004
       statement: >-
-        A Resource may have several logical endpoints only while they remain one logical
-        access-management unit sharing significant Resource-level meaning.
+        The product may represent several logical network presences under one Resource
+        only when they are intended to remain one access-management identity; otherwise
+        they shall remain distinguishable Resources.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:resource-evidence
 
     - id: REQ-RES-005
       statement: >-
-        The first MVP shall represent reusable Site, owning organizational group and
-        administering organizational group for a Resource, and ownership/administration
-        shall not itself grant security authority.
+        The first MVP shall allow a Resource to be associated with a Site, an
+        organizational owner and descriptive operational responsibilities. Those
+        associations shall not by themselves grant authority to perform protected actions.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:resource-evidence
 
     - id: REQ-RES-006
       statement: >-
-        Changes to Resource network realization, Site and responsibility facts required
-        by the first MVP shall preserve basic history sufficient to explain prior states.
+        Changes to Resource network realization, Site, organizational ownership and
+        responsibility facts required by the first MVP shall preserve Resource identity
+        and basic history sufficient to explain prior states.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:resource-evidence
@@ -219,9 +224,9 @@ content:
 
     - id: REQ-BUS-008
       statement: >-
-        The product shall be able to identify and describe a Business Process and associate
-        organizational responsibility with it without treating that organization as an
-        authorization scope.
+        The product shall be able to identify and describe a Business Process and
+        associate organizational responsibility with it, while that association shall
+        not by itself grant authority or determine an authorization decision.
       status: ACCEPTED
       source_refs:
         - stakeholder-business-connectivity:SRC-BC-002
@@ -245,9 +250,9 @@ content:
 
     - id: REQ-PERM-002
       statement: >-
-        A permission decision shall remain correlated to the exact immutable semantic
-        access subject that was proposed, and an identity-defining semantic change shall
-        require another decision subject rather than silently inheriting the old decision.
+        A permission decision shall remain correlated to the exact submitted connectivity
+        meaning it decided. A material change to that meaning shall require a new
+        permission decision rather than silently inheriting the earlier outcome.
       status: ACCEPTED
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-002
@@ -266,15 +271,16 @@ content:
         For one accepted semantic access identity, the product shall maintain one stable
         authoritative current-access identity; repeated processing of the same Allowed
         semantic access shall not create a duplicate solely because it was processed again.
-      status: ACCEPTED
+      status: RETIRED
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-004
         - c403ceed:docs/requirements/wave1-acceptance-examples.md#E3-E4
+      rationale: Superseded by REQ-RULE-006 because current effective access is now one authorization episode at a time rather than one permanently reusable access identity.
 
     - id: REQ-RULE-002
       statement: >-
-        First successful materialization of Allowed access shall make the resulting
-        authoritative current access operationally Active.
+        When a submitted connectivity request reaches an Allowed outcome, the resulting
+        access shall become current effective access for the exact decided connectivity.
       status: ACCEPTED
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-004
@@ -286,16 +292,17 @@ content:
         Active to Inactive and back without a new connectivity permission decision;
         identity, history and prior decision provenance shall be preserved and the
         transition shall be auditable.
-      status: ACCEPTED
+      status: RETIRED
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-005
         - c403ceed:docs/requirements/wave1-acceptance-examples.md#E7
+      rationale: Superseded by REQ-RULE-007 and REQ-RULE-008; revocation is terminal for the current authorization episode and regrant requires a new permission decision.
 
     - id: REQ-RULE-004
       statement: >-
-        Allowed access may carry supported declarative effective conditions that
-        determine contribution at evaluation time without redefining access identity
-        or periodically rewriting stored Active/Inactive state.
+        Current effective access may carry supported declarative effective conditions
+        that determine whether it contributes at evaluation time without redefining the
+        decided connectivity meaning or rewriting historical permission outcomes.
       status: ACCEPTED
       source_refs:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-006
@@ -311,6 +318,122 @@ content:
         - c403ceed:docs/requirements/wave1-product-requirements.md#REQ-W1-007
         - c403ceed:docs/requirements/wave1-acceptance-examples.md#E6
 
+    - id: REQ-ORG-001
+      statement: >-
+        The product shall support an organizational structure used to express
+        administrative ownership of Resources, and changing a Resource's current
+        organizational owner shall preserve the Resource identity and history.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+      rationale: State the observable organizational-management need without prescribing the tactical ownership entity or authority-evaluation representation.
+
+    - id: REQ-ORG-002
+      statement: >-
+        An authenticated user associated with an organization shall be able to discover
+        Resources belonging to that organization even when the user lacks management
+        authority over those Resources; visibility shall not itself grant protected-action
+        authority.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+
+    - id: REQ-PERM-004
+      statement: >-
+        A submitted connectivity request shall require the accepted administrative
+        approval for both source and destination sides when those sides are distinct;
+        when both sides are the same administrative side, one approval may satisfy both.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+
+    - id: REQ-PERM-005
+      statement: >-
+        Any actor currently authorized to decide for a required approval side may
+        approve or deny that side. Any required denial shall make the request Denied;
+        all required approvals shall be necessary before the request may become Allowed.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+
+    - id: REQ-PERM-006
+      statement: >-
+        While a connectivity request is pending, the requester shall be able to cancel it
+        and the product shall be able to expire it according to accepted organization
+        policy; terminal request outcomes shall remain historical facts rather than being
+        reopened in place.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+
+    - id: REQ-PERM-007
+      statement: >-
+        Before a pending connectivity request becomes Allowed, the product shall
+        revalidate that the submitted connectivity meaning, participating Resources and
+        deployments, and business basis are still applicable. A material loss of that
+        basis shall produce an explicit invalidated outcome rather than silently granting
+        changed access.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+
+    - id: REQ-PERM-008
+      statement: >-
+        The approval requirements determined when a connectivity request is submitted
+        shall remain explainable for that request; later approval-policy changes shall
+        apply to later requests rather than rewriting the submitted request's historical
+        basis. Authority to take each pending approval action shall still be evaluated
+        when that action is performed.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+
+    - id: REQ-PERM-009
+      statement: >-
+        Repeated submission of the same still-pending exact connectivity request shall
+        not create a second independent pending request solely because submission was
+        repeated; after a terminal outcome, a new request may be submitted.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+
+    - id: REQ-PERM-010
+      statement: >-
+        The product shall allow organization policy to determine whether a requester may
+        approve their own pending connectivity request; when self-approval is forbidden,
+        such an approval action shall be rejected without changing the request outcome.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+
+    - id: REQ-RULE-006
+      statement: >-
+        For one exact decided connectivity meaning, the product shall have at most one
+        current effective access authorization at a time while preserving any earlier
+        historical authorization episodes.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+      rationale: Replaces the retired permanent-current-access identity rule with an observable uniqueness rule for current effective access.
+
+    - id: REQ-RULE-007
+      statement: >-
+        An authorized actor shall be able to revoke current effective access without
+        rewriting the earlier Allowed request, permission decision or historical
+        provenance.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+
+    - id: REQ-RULE-008
+      statement: >-
+        Restoring the same connectivity after its current effective access has been
+        revoked shall require a new connectivity request and permission decision; an old
+        Allowed decision shall not silently reactivate revoked access.
+      status: ACCEPTED
+      source_refs:
+        - current-stakeholder-input:2026-09-23
+
     - id: REQ-EXP-001
       statement: >-
         An authorized actor shall be able to select all current desired policy or an
@@ -323,7 +446,7 @@ content:
     - id: REQ-EXP-002
       statement: >-
         Selected access shall contribute desired effect at export evaluation time only
-        when it is authoritative from an Allowed decision, operationally Active and all
+        when it is current effective access resulting from an Allowed decision and all
         supported declarative effective conditions are satisfied.
       status: ACCEPTED
       source_refs:
@@ -367,9 +490,10 @@ content:
 
     - id: REQ-EXP-006
       statement: >-
-        Selected access that is Inactive or otherwise non-effective at evaluation time
-        shall contribute no policy row, and missing technical realization for that
-        non-effective access shall not by itself make the effective-policy export incomplete.
+        Selected access that is not currently effective, or whose effective conditions
+        are not satisfied at evaluation time, shall contribute no policy row; missing
+        technical realization for such non-effective access shall not by itself make the
+        effective-policy export incomplete.
       status: ACCEPTED
       source_refs:
         - c403ceed:docs/requirements/wave1-acceptance-examples.md#E11
@@ -388,9 +512,9 @@ content:
 
     - id: REQ-PROV-001
       statement: >-
-        The product shall preserve end-to-end explainable provenance from requesting
-        actor and effective authority scope/time through request subject, permission
-        decision, authoritative access identity, relevant operational state/effective
+        The product shall preserve end-to-end explainable provenance from the requesting
+        actor and submission-admission evidence through the submitted connectivity
+        meaning, permission decisions, current effective access, relevant effective
         conditions and source realization facts to normalized export rows and evaluation time.
       status: ACCEPTED
       source_refs:
@@ -417,8 +541,9 @@ content:
 
     - id: REQ-SCALE-002
       statement: >-
-        The first MVP shall use one installation for one organization; multi-tenant or
-        multi-organization hosting within one installation is not required.
+        The first MVP is required to support operation for one organization in one
+        installation. Cross-organization operation and multi-organization hosting are not
+        required first-MVP user-visible capabilities.
       status: ACCEPTED
       source_refs:
         - current-stakeholder-input:2026-09-21
@@ -447,11 +572,11 @@ content:
     - Provider/device-specific configuration rendering.
     - Direct firewall/provider execution and deployment.
     - Configured-state reconciliation/remediation.
-    - Internal Connectivity Decision policy/process/review mechanics.
+    - General-purpose or customer-specific CAB/ticket/quorum/multi-stage workflow mechanics beyond the accepted first-MVP connectivity approval behavior.
     - Word/Excel/XUIT transition compatibility.
     - Firewall/topology placement calculation.
     - BPMN/workflow-engine semantics for Business Processes.
     - Automatic criticality propagation/scoring rules.
     - Network address translation calculation/rules; the product consumes the already meaningful corporate address/prefix.
     - Automatic revocation solely because current known business justification disappears.
-    - Rule operational states beyond Active/Inactive unless separately accepted.
+    - A separate reversible operational enable/disable switch that can reactivate revoked access without a new permission decision.

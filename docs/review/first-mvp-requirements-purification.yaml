@@ -1,0 +1,104 @@
+version: 1
+kind: requirements-purification-review
+id: FIRST-MVP-REQUIREMENTS-PURIFICATION-2026-09-23
+status: ACCEPTED
+baseline_commit: 42481577fab7f795cf3a2118b7b6f1c3c075d066
+authority: PRODUCT-REQUIREMENTS
+artifact: FIRST-MVP-REQUIREMENTS
+purpose: >-
+  Record the semantic disposition used to purify the first-MVP requirements
+  boundary after Harness began enforcing Authority direction. This review is
+  audit evidence; product truth remains in first-mvp-product-requirements.yaml.
+
+classification_rule:
+  KEEP: Observable product meaning remains valid without importing downstream design.
+  GENERALIZE: Preserve the observable requirement but remove tactical/domain/architecture realization from the statement.
+  RETIRE: Previous normative meaning is materially superseded and its REQ id is not reused for the replacement.
+  ADD: Explicitly accepted product behavior was missing from the canonical requirements artifact.
+
+existing_requirement_dispositions:
+  - {id: REQ-MVP-001, disposition: KEEP}
+  - {id: REQ-AUTH-001, disposition: GENERALIZE}
+  - {id: REQ-AUTH-002, disposition: GENERALIZE}
+  - {id: REQ-APP-001, disposition: GENERALIZE}
+  - {id: REQ-APP-002, disposition: GENERALIZE}
+  - {id: REQ-INT-001, disposition: GENERALIZE}
+  - {id: REQ-INT-002, disposition: KEEP}
+  - {id: REQ-INT-003, disposition: KEEP}
+  - {id: REQ-DEP-001, disposition: GENERALIZE}
+  - {id: REQ-DEP-002, disposition: GENERALIZE}
+  - {id: REQ-RES-001, disposition: GENERALIZE}
+  - {id: REQ-RES-002, disposition: GENERALIZE}
+  - {id: REQ-RES-003, disposition: GENERALIZE}
+  - {id: REQ-RES-004, disposition: GENERALIZE}
+  - {id: REQ-RES-005, disposition: GENERALIZE}
+  - {id: REQ-RES-006, disposition: GENERALIZE}
+  - {id: REQ-BUS-001, disposition: KEEP}
+  - {id: REQ-BUS-002, disposition: KEEP}
+  - {id: REQ-BUS-003, disposition: KEEP}
+  - {id: REQ-BUS-004, disposition: KEEP}
+  - {id: REQ-BUS-005, disposition: KEEP}
+  - {id: REQ-BUS-006, disposition: KEEP}
+  - {id: REQ-BUS-007, disposition: KEEP}
+  - {id: REQ-BUS-008, disposition: GENERALIZE}
+  - {id: REQ-BUS-009, disposition: KEEP}
+  - {id: REQ-PERM-001, disposition: KEEP}
+  - {id: REQ-PERM-002, disposition: GENERALIZE}
+  - {id: REQ-PERM-003, disposition: KEEP}
+  - {id: REQ-RULE-001, disposition: RETIRE, replaced_by: [REQ-RULE-006]}
+  - {id: REQ-RULE-002, disposition: GENERALIZE}
+  - {id: REQ-RULE-003, disposition: RETIRE, replaced_by: [REQ-RULE-007, REQ-RULE-008]}
+  - {id: REQ-RULE-004, disposition: GENERALIZE}
+  - {id: REQ-RULE-005, disposition: KEEP}
+  - {id: REQ-EXP-001, disposition: KEEP}
+  - {id: REQ-EXP-002, disposition: GENERALIZE}
+  - {id: REQ-EXP-003, disposition: KEEP}
+  - {id: REQ-EXP-004, disposition: KEEP}
+  - {id: REQ-EXP-005, disposition: KEEP}
+  - {id: REQ-EXP-006, disposition: GENERALIZE}
+  - {id: REQ-EXP-007, disposition: KEEP}
+  - {id: REQ-PROV-001, disposition: GENERALIZE}
+  - {id: REQ-QUAL-001, disposition: KEEP}
+  - {id: REQ-SCALE-001, disposition: KEEP}
+  - {id: REQ-SCALE-002, disposition: GENERALIZE}
+  - {id: REQ-SCALE-003, disposition: KEEP}
+  - {id: REQ-SCALE-004, disposition: KEEP}
+
+added_requirements:
+  - REQ-ORG-001
+  - REQ-ORG-002
+  - REQ-PERM-004
+  - REQ-PERM-005
+  - REQ-PERM-006
+  - REQ-PERM-007
+  - REQ-PERM-008
+  - REQ-PERM-009
+  - REQ-PERM-010
+  - REQ-RULE-006
+  - REQ-RULE-007
+  - REQ-RULE-008
+
+upstream_cleanup:
+  problem_evidence:
+    - remove downstream Product Requirements references as evidence
+    - remove embedded Application/Interaction domain decisions from Problem Evidence
+  user_needs:
+    - remove reverse references to Product Requirements
+    - remove embedded downstream Task Model resolutions
+    - derive User Needs only from accepted Problem Evidence and stakeholder evidence
+
+semantic_review:
+  status: ACCEPTED
+  checks:
+    - source-discipline
+    - authority-boundary
+    - no-invention
+    - observable-product-level
+    - no-downstream-design-promotion
+
+downstream_currentness:
+  state: UNKNOWN
+  rule: >-
+    This purification does not silently reaccept Domain, Application, Architecture,
+    Interface, Data, Verification or Implementation knowledge against the new
+    requirements baseline. Those owners must be revalidated explicitly.

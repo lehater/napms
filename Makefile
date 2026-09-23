@@ -97,6 +97,7 @@ design-check: harness-pin-check
 	python $(HARNESS_ROOT)/architecture_driver_closure.py docs/requirements/first-mvp-architecture-driver-closure.yaml
 	python tools/check_canonical_graph.py
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_requirements_semantic_admission.py
 	python tools/check_knowledge_completeness.py
 	python tools/check_frontend_design_closure.py
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_frontend_provider_mapping.py

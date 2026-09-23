@@ -39,10 +39,16 @@ authorities:
     produces:
       - capability: engineering.requirements.product-intent
         knowledge_kind: product-requirements
-        requires: []
+        requires:
+          - engineering.hcd.application-components.user-needs
+          - engineering.hcd.access-request.user-needs
+          - engineering.hcd.policy-export.user-needs
       - capability: engineering.requirements.acceptance
         knowledge_kind: product-requirements
-        requires: []
+        requires:
+          - engineering.hcd.application-components.user-needs
+          - engineering.hcd.access-request.user-needs
+          - engineering.hcd.policy-export.user-needs
       - capability: engineering.hcd.application-components.requirements
         knowledge_kind: product-requirements
         requires:

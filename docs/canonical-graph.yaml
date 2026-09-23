@@ -7,7 +7,7 @@ rule: This file owns routing/dependency metadata only. Semantic truth remains in
 nodes:
   - {id: FIRST-MVP-HCD-PROBLEM-EVIDENCE, kind: problem-evidence, path: docs/discovery/first-mvp-hcd-problem-evidence.yaml, depends_on: []}
   - {id: FIRST-MVP-HCD-USER-NEEDS, kind: user-needs, path: docs/discovery/first-mvp-hcd-user-needs.yaml, depends_on: [FIRST-MVP-HCD-PROBLEM-EVIDENCE]}
-  - {id: FIRST-MVP-REQUIREMENTS, kind: product-requirements/v1, path: docs/requirements/first-mvp-product-requirements.yaml, depends_on: [FIRST-MVP-HCD-USER-NEEDS]}
+  - {id: FIRST-MVP-REQUIREMENTS, kind: product-requirements/v1, path: docs/requirements/first-mvp-product-requirements.yaml, depends_on: [FIRST-MVP-HCD-USER-NEEDS, MVP-QUALITY-TARGETS]}
   - {id: RC-DISCOVERY, kind: discovery, path: docs/discovery/resource-catalogue.yaml, depends_on: []}
   - {id: STRATEGIC-CAPABILITIES, kind: strategic-model, path: docs/model/strategic/capabilities.yaml, depends_on: []}
   - {id: STRATEGIC-CONTEXTS, kind: strategic-model, path: docs/model/strategic/bounded-contexts.yaml, depends_on: [STRATEGIC-CAPABILITIES]}
