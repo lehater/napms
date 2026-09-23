@@ -66,13 +66,10 @@ def main() -> int:
         for question in item.get("questions", [])
     }
     expected_wait = {
-        "engineering.hcd.application-components.task-model",
         "engineering.hcd.access-request.task-model",
         "engineering.hcd.policy-export.task-model",
     }
     expected_questions = {
-        "Q-APP-01",
-        "Q-APP-02",
         "Q-REQUEST-01",
         "Q-REQUEST-02",
         "Q-EXPORT-02",
@@ -92,7 +89,7 @@ def main() -> int:
     print("NAPMS pinned Harness integration PASS")
     print("BACKEND-IMPLEMENTATION: COMPLETE")
     print("FRONTEND-IMPLEMENTATION: BLOCKED")
-    print("HCD blocker: five Task Model Questions across application-components, access-request, policy-export")
+    print("HCD blocker: three Task Model Questions across access-request and policy-export")
     return 0
 
 

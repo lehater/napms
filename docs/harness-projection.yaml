@@ -46,6 +46,8 @@ bindings:
   - {artifact: BC-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
   - {artifact: AP-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
 
+  - {artifact: HCD-APPLICATION-COMPONENTS-TASK-MODEL, authority: APPLICATION-JOURNEY-DESIGN, provides: [engineering.hcd.application-components.task-model]}
+  - {artifact: HCD-APPLICATION-COMPONENTS-JOURNEY, authority: APPLICATION-JOURNEY-DESIGN, provides: [engineering.hcd.application-components.user-journey]}
   - {artifact: FIRST-MVP-JOURNEY, authority: APPLICATION-JOURNEY-DESIGN, provides: [engineering.application.journey, engineering.application.materialization-semantics]}
 
   - {artifact: C4-STRUCTURE, authority: SYSTEM-ARCHITECTURE, provides: [engineering.architecture.c4-model]}
@@ -79,14 +81,6 @@ bindings:
   - {artifact: FRONTEND-IMPLEMENTATION-DESIGN, authority: IMPLEMENTATION-DESIGN, provides: [engineering.frontend.implementation-design]}
 
 questions:
-  - id: Q-APP-01
-    authority: APPLICATION-JOURNEY-DESIGN
-    text: How does the user recognize the correct existing Application/Component communication profile to reuse rather than creating another one?
-    blocks_capabilities: [engineering.hcd.application-components.task-model]
-  - id: Q-APP-02
-    authority: APPLICATION-JOURNEY-DESIGN
-    text: Which information must be simultaneously available while defining or changing Components and communication intent?
-    blocks_capabilities: [engineering.hcd.application-components.task-model]
   - id: Q-REQUEST-01
     authority: APPLICATION-JOURNEY-DESIGN
     text: What minimum information must the requester inspect or compare before deciding that the concrete request subject is intended?

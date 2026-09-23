@@ -1,0 +1,64 @@
+version: 1
+kind: user-journey-design
+id: NAPMS-HCD-APPLICATION-COMPONENTS-JOURNEY
+status: ACCEPTED
+
+knowledge_coverage:
+  subject: application-components
+  knowledge: user-journey-design
+
+actor: ACTOR-CATALOGUE-CURATOR
+goal_ref: GOAL-APP-COMMUNICATION
+task_model_ref: NAPMS-HCD-APPLICATION-COMPONENTS-TASK-MODEL
+
+entry_condition: >-
+  The curator has a network communication requirement that must be represented as
+  reusable semantic knowledge independently from any one concrete deployment.
+
+preconditions:
+  - Accepted Application Communication Catalogue semantics are available.
+  - The curator can identify the intended communication participants and required network traffic semantics.
+
+interactions:
+  - step: 1
+    user: Compare the intended participant roles and network traffic requirements with existing Application Communication Profiles.
+    system: Expose profile meaning, Component roles and Interaction traffic semantics sufficient for semantic comparison.
+  - step: 2
+    user: Reuse the matching profile, or establish a distinct profile when the communication contract is materially different.
+    system: Preserve Application identity independently from concrete software-system inventory and deployment.
+  - step: 3
+    user: Add or select the participant roles needed by the profile.
+    system: Represent them as Components owned by that Application profile.
+  - step: 4
+    user: Define each independently meaningful directed Interaction between source and destination Component roles.
+    system: Reject endpoint pairs that cross Application-profile boundaries.
+  - step: 5
+    user: Supply the required IP protocol and applicable port ranges for the communication reason.
+    system: Validate canonical traffic semantics and publish an immutable Interaction revision.
+  - step: 6
+    user: When material traffic semantics later change, publish revised semantics for the same stable Interaction meaning.
+    system: Preserve prior revisions as historically resolvable truth.
+
+alternate_paths:
+  - condition: Existing profile already represents the same role/traffic contract.
+    result: Reuse it; concrete product/system identity alone does not justify another Application profile.
+  - condition: Endpoint roles were selected from different Application profiles.
+    result: Interaction is rejected; the curator corrects the classification instead of creating a cross-Application Interaction.
+  - condition: The same directed Component pair has another independently meaningful communication reason.
+    result: A separate Interaction may be defined for that reason.
+
+completion_condition: >-
+  A reusable Application Communication Profile contains the required participant
+  roles and directed Interaction semantics, with current traffic represented by an
+  immutable revision and no dependence on concrete deployment or current addresses.
+
+externally_visible_side_effects:
+  - Reusable Application/Component/Interaction identities are available to downstream deployment, business-connectivity and access-policy work.
+  - Historical Interaction revisions remain resolvable when traffic semantics change.
+
+upstream_refs:
+  - docs/discovery/first-mvp-hcd-user-needs.yaml
+  - docs/requirements/first-mvp-product-requirements.yaml
+  - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+
+unresolved_questions: []

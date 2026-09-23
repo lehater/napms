@@ -168,13 +168,10 @@ def main() -> int:
         semantic_evaluations=evaluate_frontend_coverage_semantics(),
         expected_status="BLOCKED",
         expected_wait_capabilities={
-            "engineering.hcd.application-components.task-model",
             "engineering.hcd.access-request.task-model",
             "engineering.hcd.policy-export.task-model",
         },
         expected_question_ids={
-            "Q-APP-01",
-            "Q-APP-02",
             "Q-REQUEST-01",
             "Q-REQUEST-02",
             "Q-EXPORT-02",
@@ -185,7 +182,7 @@ def main() -> int:
 
     print("NAPMS implementation-design closure PASS")
     print("BACKEND-IMPLEMENTATION: structural target + concern/subject coverage COMPLETE")
-    print("FRONTEND-IMPLEMENTATION: structural target BLOCKED on accepted HCD Task Model Questions")
+    print("FRONTEND-IMPLEMENTATION: structural target BLOCKED on remaining Access Request/Policy Export Task Model Questions")
     print("FRONTEND concern/subject coverage of currently materialized artifacts: COMPLETE")
     print("Requirement verification traceability: COMPLETE")
     print("Frontend subject test coverage of currently materialized artifacts: COMPLETE")

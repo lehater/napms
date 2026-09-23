@@ -1,0 +1,127 @@
+version: 1
+kind: task-model
+id: NAPMS-HCD-APPLICATION-COMPONENTS-TASK-MODEL
+status: ACCEPTED
+
+knowledge_coverage:
+  subject: application-components
+  knowledge: task-model
+
+goal_refs: [GOAL-APP-COMMUNICATION]
+user_need_refs: [NEED-APP-01]
+requirement_refs: [REQ-APP-001, REQ-APP-002, REQ-INT-001, REQ-INT-002, REQ-INT-003]
+
+purpose: >-
+  Define the intended human work for classifying reusable network communication
+  profiles, participant roles and directed traffic semantics before Interface
+  Design chooses screens or navigation.
+
+plan:
+  - id: APP-TASK-1
+    responsibility: USER
+    outcome: The intended network communication pattern is identified.
+    required_information:
+      - intended participant roles
+      - directed communication relationships
+      - required IP protocol semantics
+      - required source/destination port constraints where applicable
+    decision: Determine whether the intended pattern matches an existing Application Communication Profile.
+    rule: >-
+      Concrete software-system identity is not the classification criterion. Reuse
+      an existing profile when the required participant roles and network
+      communication semantics are the same; create a distinct profile when the
+      communication contract is materially different.
+    evidence_refs:
+      - current-stakeholder-input:2026-09-23
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-001
+
+  - id: APP-TASK-2
+    responsibility: USER
+    depends_on: [APP-TASK-1]
+    outcome: One Application Communication Profile is selected or created as the semantic container.
+    required_information:
+      - existing profile meaning
+      - existing Component roles
+      - existing Interaction directions and traffic semantics
+    decision: Reuse the matching profile or establish a new profile.
+    system_support: Provide enough profile/role/interaction meaning to distinguish semantic reuse from accidental name similarity.
+
+  - id: APP-TASK-3
+    responsibility: USER
+    depends_on: [APP-TASK-2]
+    outcome: The participant roles required by the profile are represented as Components.
+    required_information:
+      - selected Application profile
+      - participant role meaning
+    input: Add or select Component roles.
+    rule: Component represents a communication participant/role, not a network device.
+    evidence_refs:
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-002
+
+  - id: APP-TASK-4
+    responsibility: USER
+    depends_on: [APP-TASK-3]
+    outcome: A directed Interaction is described between two Components of the selected profile.
+    required_information:
+      - source Component role
+      - destination Component role
+      - independently meaningful communication reason
+      - protocol and applicable source/destination port ranges
+    input: Define source, destination, purpose and traffic semantics.
+    rules:
+      - Both endpoint Components belong to the same Application profile.
+      - Several independently meaningful Interactions may exist for the same directed Component pair.
+      - Each Interaction represents one independently meaningful communication reason.
+    evidence_refs:
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-INT-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-INT-002
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-INT-003
+
+  - id: APP-TASK-5
+    responsibility: SYSTEM
+    depends_on: [APP-TASK-4]
+    outcome: The communication definition is accepted only when endpoint ownership and traffic semantics satisfy ACC invariants.
+    system_support:
+      - reject cross-Application endpoint pairs
+      - validate protocol/port semantics
+      - preserve stable Interaction identity and immutable revision history
+
+  - id: APP-TASK-6
+    responsibility: USER
+    depends_on: [APP-TASK-5]
+    outcome: Later material traffic changes are recorded without rewriting historical meaning.
+    required_information:
+      - current Interaction meaning
+      - current published traffic semantics
+      - intended changed traffic semantics
+    decision: Publish a new immutable Interaction revision when traffic semantics materially change.
+    evidence_refs:
+      - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+
+alternate_and_recovery:
+  - trigger: Source and destination Components belong to different Application profiles.
+    system_outcome: Reject the Interaction.
+    user_work: >-
+      Re-evaluate the classification: use Components from the same reusable
+      communication profile, or establish a different profile when the required
+      communication contract is materially different. Do not connect profiles
+      with a cross-Application Interaction.
+  - trigger: Two concrete systems have the same network communication requirements.
+    user_work: Reuse the common Application Communication Profile rather than modeling concrete system identity as separate Applications.
+  - trigger: The same Component pair has another independently meaningful communication reason.
+    user_work: Define another Interaction rather than merging distinct reasons solely because endpoints match.
+
+sufficiency_review:
+  status: ACCEPTED
+  accepted_at: 2026-09-23
+  resolved_questions:
+    - Q-APP-01
+    - Q-APP-02
+  basis:
+    - current-stakeholder-input:2026-09-23
+    - docs/requirements/first-mvp-product-requirements.yaml
+    - docs/model/contexts/application-communication-catalogue/domain-model.yaml
+  conclusion: >-
+    The selected goal and requirements have task/support coverage without using
+    existing screens, routes, components or API shapes as task authority.
+  unresolved_questions: []

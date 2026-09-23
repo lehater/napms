@@ -112,13 +112,25 @@ user_needs:
       - docs/requirements/first-mvp-product-requirements.yaml#REQ-PROV-001
       - current-stakeholder-input:2026-09-23
 
-task_model_questions:
+resolved_task_model_questions:
   - id: Q-APP-01
     subject: application-components
-    question: How does the user recognize the correct existing Application/Component profile to reuse rather than creating another one?
+    resolution: >-
+      Reuse is determined by the network communication contract, not concrete
+      software-system identity. Profiles are shared when participant roles and
+      required protocol/port semantics represent the same reusable pattern.
+    resolution_ref: docs/model/tasks/application-components-task-model.yaml
+    evidence_ref: current-stakeholder-input:2026-09-23
   - id: Q-APP-02
     subject: application-components
-    question: Which information must be simultaneously available while defining or changing Components and communication intent?
+    resolution: >-
+      Task work needs the selected communication profile, participant Component
+      roles, Interaction direction/reason and the required protocol/port semantics
+      available as one coherent decision context.
+    resolution_ref: docs/model/tasks/application-components-task-model.yaml
+    evidence_ref: current-stakeholder-input:2026-09-23
+
+task_model_questions:
   - id: Q-REQUEST-01
     subject: access-request
     question: What minimum information must the requester inspect or compare before deciding the concrete request subject is intended?
@@ -133,6 +145,7 @@ sufficiency_review:
   status: ACCEPTED
   accepted_at: 2026-09-23
   conclusion: >-
-    The three goals and five solution-independent User Needs are accepted. The five
-    remaining questions concern intended task decomposition, information
-    requirements and recovery behavior and therefore route to Task Model.
+    The three goals and five solution-independent User Needs are accepted.
+    Application/Components Task Model questions are resolved by explicit stakeholder
+    clarification; the remaining three questions concern Access Request and Policy
+    Export task/recovery semantics and remain routed to Task Model.
