@@ -48,8 +48,7 @@ export async function queryInteractionParticipantCandidates(
       label: interaction.sourceApplicationName
         ? `${interaction.sourceComponentName ?? interaction.sourceComponentRef} — ` +
           interaction.sourceApplicationName
-        : (interaction.sourceComponentName ??
-          interaction.sourceComponentRef),
+        : (interaction.sourceComponentName ?? interaction.sourceComponentRef),
     },
     {
       value: interaction.destinationComponentRef,
