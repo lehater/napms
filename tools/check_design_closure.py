@@ -48,6 +48,9 @@ def coverage_check(
     consumer: str,
     obligations_path: str,
     semantic_evaluations=None,
+    expected_status: str = "COMPLETE",
+    expected_wait_capabilities: set[str] | None = None,
+    expected_question_ids: set[str] | None = None,
 ) -> None:
     aligned = validate_project_alignment(
         source,
@@ -56,9 +59,30 @@ def coverage_check(
         target_consumer=consumer,
     )
     target = evaluate_engineering_target(graph, consumer, aligned["model"])
+    actual_create = {item["capability"] for item in target["create"]}
+    actual_wait = {item["capability"] for item in target["wait"]}
+    actual_questions = {
+        question
+        for item in target["wait"]
+        for question in item.get("questions", [])
+    }
+    expected_wait = expected_wait_capabilities or set()
+    expected_questions = expected_question_ids or set()
     require(
-        target["status"] == "COMPLETE",
-        f"{consumer} structural target is {target['status']}, expected COMPLETE",
+        target["status"] == expected_status,
+        f"{consumer} structural target is {target['status']}, expected {expected_status}",
+    )
+    require(
+        not actual_create,
+        f"{consumer} has unexpected CREATE frontier: {sorted(actual_create)}",
+    )
+    require(
+        actual_wait == expected_wait,
+        f"{consumer} WAIT frontier mismatch: {sorted(actual_wait)} != {sorted(expected_wait)}",
+    )
+    require(
+        actual_questions == expected_questions,
+        f"{consumer} Question frontier mismatch: {sorted(actual_questions)} != {sorted(expected_questions)}",
     )
 
     result = evaluate_with_repository_policy(
@@ -142,15 +166,29 @@ def main() -> int:
         consumer="FRONTEND-IMPLEMENTATION",
         obligations_path="docs/harness/coverage/frontend-subject-obligations-v1.yaml",
         semantic_evaluations=evaluate_frontend_coverage_semantics(),
+        expected_status="BLOCKED",
+        expected_wait_capabilities={
+            "engineering.hcd.application-components.task-model",
+            "engineering.hcd.access-request.task-model",
+            "engineering.hcd.policy-export.task-model",
+        },
+        expected_question_ids={
+            "Q-APP-01",
+            "Q-APP-02",
+            "Q-REQUEST-01",
+            "Q-REQUEST-02",
+            "Q-EXPORT-02",
+        },
     )
     requirement_verification_check()
     frontend_subject_test_check()
 
     print("NAPMS implementation-design closure PASS")
-    print("BACKEND-IMPLEMENTATION: structural + semantic coverage COMPLETE")
-    print("FRONTEND-IMPLEMENTATION: structural + semantic coverage COMPLETE")
+    print("BACKEND-IMPLEMENTATION: structural target + concern/subject coverage COMPLETE")
+    print("FRONTEND-IMPLEMENTATION: structural target BLOCKED on accepted HCD Task Model Questions")
+    print("FRONTEND concern/subject coverage of currently materialized artifacts: COMPLETE")
     print("Requirement verification traceability: COMPLETE")
-    print("Frontend subject test coverage: COMPLETE")
+    print("Frontend subject test coverage of currently materialized artifacts: COMPLETE")
     return 0
 
 

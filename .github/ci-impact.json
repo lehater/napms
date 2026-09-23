@@ -86,6 +86,7 @@
       "tools/generate_*_view.py",
       "tools/generate_*_views.py",
       "tools/generate_persistence_erd.py",
+      "tools/check_design_closure.py",
       "Makefile",
       ".github/workflows/architecture.yml",
       ".github/ci-impact.json",
