@@ -35,7 +35,7 @@ vertical_sequence:
   - closure: security operability migrations idempotency cancellation and fresh-database end-to-end verification
 
 completion_definition:
-  - Cross-Application Interaction and multiple independent Interactions for the same Component pair are supported.
+  - Application is treated as a reusable network communication profile; cross-Application Interaction is rejected while multiple independent Interactions for the same intra-Application Component pair remain supported.
   - Resource has immutable AuthorityScopeRef and explicit logical Endpoint membership; no automatic grouping by address Site responsibility or name occurs.
   - BusinessProcess criticalityLabel is representable without score ordering taxonomy or propagation.
   - AccessRequest requires current participant-attributed Need plus effective scoped access.request authority for every participating Resource scope at admissionAt.

@@ -56,7 +56,11 @@ class Deployments:
 
 
 def test_deployment_identity_is_independent_from_resource_address() -> None:
-    component = Component(component_ref=UUID(int=1), name="API")
+    component = Component(
+        component_ref=UUID(int=1),
+        application_ref=UUID(int=10),
+        name="API",
+    )
     resource = Resource.register(
         resource_ref=UUID(int=2),
         display_name="node-a",

@@ -32,8 +32,8 @@ def load(path: Path) -> dict:
 
 GRAPH = load(PILOT / "engineering-graph.yaml")
 CURRENT = load(PILOT / "core-state-current.yaml")
-PROBLEM_CANDIDATE = load(PILOT / "candidate-problem-evidence.yaml")
-USER_NEEDS_CANDIDATE = load(PILOT / "candidate-user-needs.yaml")
+PROBLEM_ACCEPTED = load(PILOT / "accepted-problem-evidence.yaml")
+USER_NEEDS_ACCEPTED = load(PILOT / "accepted-user-needs.yaml")
 REGISTRY = load(HARNESS_ROOT / "skills" / "artifact-skill-registry-v0.yaml")
 
 
@@ -45,14 +45,14 @@ def with_artifact(model: dict, artifact: dict) -> dict:
 
 PROBLEM = {
     "id": "PILOT-PROBLEM-EVIDENCE",
-    "path": "docs/research/hcd-requirements-task-closure-v1/candidate-problem-evidence.yaml",
+    "path": "docs/research/hcd-requirements-task-closure-v1/accepted-problem-evidence.yaml",
     "authority": "DISCOVERY",
     "provides": ["pilot.first-mvp.problem-evidence"],
 }
 
 USER_NEEDS = {
     "id": "PILOT-USER-NEEDS",
-    "path": "docs/research/hcd-requirements-task-closure-v1/candidate-user-needs.yaml",
+    "path": "docs/research/hcd-requirements-task-closure-v1/accepted-user-needs.yaml",
     "authority": "DISCOVERY",
     "provides": [
         "pilot.application-components.user-needs",
@@ -100,22 +100,22 @@ def source_refs(value):
     return refs
 
 
-def validate_candidates() -> None:
-    for candidate in (PROBLEM_CANDIDATE, USER_NEEDS_CANDIDATE):
-        if candidate.get("status") != "CANDIDATE_REQUIRES_HUMAN_ACCEPTANCE":
-            raise AssertionError(candidate)
-        if candidate.get("canonical") is not False:
-            raise AssertionError(candidate)
+def validate_accepted_hcd() -> None:
+    for artifact in (PROBLEM_ACCEPTED, USER_NEEDS_ACCEPTED):
+        if artifact.get("status") != "ACCEPTED":
+            raise AssertionError(artifact)
+        if artifact.get("canonical") is not False:
+            raise AssertionError(artifact)
         forbidden = ("docs/contracts/ui/", "web/", "backend/", "docs/architecture/")
-        leaked = [ref for ref in source_refs(candidate) if ref.startswith(forbidden)]
+        leaked = [ref for ref in source_refs(artifact) if ref.startswith(forbidden)]
         if leaked:
             raise AssertionError(("downstream source leak", leaked))
 
-    needs = USER_NEEDS_CANDIDATE.get("user_needs", [])
+    needs = USER_NEEDS_ACCEPTED.get("user_needs", [])
     subjects = {item.get("subject") for item in needs}
     expected_subjects = {"application-components", "access-request", "policy-export"}
-    if subjects != expected_subjects:
-        raise AssertionError((subjects, needs))
+    if subjects != expected_subjects or len(needs) != 5:
+        raise AssertionError(needs)
 
     for need in needs:
         refs = need.get("evidence_refs", [])
@@ -127,7 +127,7 @@ def validate_candidates() -> None:
         ):
             raise AssertionError(("need lacks current canonical corroboration", need))
 
-    task_questions = USER_NEEDS_CANDIDATE.get("task_model_questions", [])
+    task_questions = USER_NEEDS_ACCEPTED.get("task_model_questions", [])
     blocking_subjects = {
         item.get("subject")
         for item in task_questions
@@ -136,27 +136,16 @@ def validate_candidates() -> None:
     if blocking_subjects != expected_subjects:
         raise AssertionError((blocking_subjects, task_questions))
 
-    resolved = USER_NEEDS_CANDIDATE.get("resolved_user_need_questions", [])
-    if {item.get("id") for item in resolved} != {"Q-EXPORT-01"}:
-        raise AssertionError(resolved)
-
-    sufficiency = USER_NEEDS_CANDIDATE.get("sufficiency_review", {})
-    if sufficiency.get("status") != "READY_FOR_HUMAN_ACCEPTANCE":
+    sufficiency = USER_NEEDS_ACCEPTED.get("sufficiency_review", {})
+    if sufficiency.get("status") != "ACCEPTED":
         raise AssertionError(sufficiency)
 
-    current_provides = {
-        capability
-        for artifact in CURRENT.get("artifacts", [])
-        for capability in artifact.get("provides", [])
-    }
-    forbidden_providers = {
-        "pilot.first-mvp.problem-evidence",
-        "pilot.application-components.user-needs",
-        "pilot.access-request.user-needs",
-        "pilot.policy-export.user-needs",
-    }
-    if current_provides & forbidden_providers:
-        raise AssertionError(("candidate accidentally registered", current_provides))
+    clarification = USER_NEEDS_ACCEPTED.get("semantic_clarification", {})
+    if clarification.get("interaction_rule") != (
+        "Interaction endpoints must belong to the same Application profile. "
+        "Cross-Application Interaction is invalid."
+    ):
+        raise AssertionError(clarification)
 
 
 def routed_kinds(model: dict) -> list[dict]:
@@ -191,7 +180,7 @@ def assert_frontier(model: dict, kind: str, authority: str, expected_capabilitie
 
 def main() -> int:
     validate_engineering_graph(GRAPH)
-    validate_candidates()
+    validate_accepted_hcd()
 
     # Real downstream providers exist now, but the missing root causal knowledge
     # keeps every requirement/task/interface expectation downstream pending.
@@ -265,12 +254,12 @@ def main() -> int:
 
     print("NAPMS HCD causal closure pilot: PASS")
     print(
-        "candidate user-needs:",
-        len(USER_NEEDS_CANDIDATE["user_needs"]),
+        "accepted user-needs:",
+        len(USER_NEEDS_ACCEPTED["user_needs"]),
         "task-model questions:",
-        len(USER_NEEDS_CANDIDATE["task_model_questions"]),
+        len(USER_NEEDS_ACCEPTED["task_model_questions"]),
         "status:",
-        USER_NEEDS_CANDIDATE["sufficiency_review"]["status"],
+        USER_NEEDS_ACCEPTED["sufficiency_review"]["status"],
     )
     print("current -> problem-evidence")
     print("problem-evidence -> user-needs[3]")

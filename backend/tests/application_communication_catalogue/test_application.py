@@ -73,9 +73,47 @@ class Refs:
         return next(self.values)
 
 
-def test_interaction_may_cross_application_boundary() -> None:
-    source = Component(component_ref=UUID(int=1), name="source")
-    destination = Component(component_ref=UUID(int=2), name="destination")
+def test_interaction_requires_components_from_same_application() -> None:
+    source = Component(
+        component_ref=UUID(int=1),
+        application_ref=UUID(int=100),
+        name="source",
+    )
+    destination = Component(
+        component_ref=UUID(int=2),
+        application_ref=UUID(int=200),
+        name="destination",
+    )
+    interactions = Interactions()
+    service = ApplicationCommunicationCatalogue(
+        applications=Applications(),
+        interactions=interactions,
+        components=Components(source, destination),
+        new_ref=Refs(UUID(int=10)),
+    )
+
+    with pytest.raises(ValueError, match="same application"):
+        service.create_interaction(
+            source_component_ref=source.component_ref,
+            destination_component_ref=destination.component_ref,
+            purpose="invalid cross-profile communication",
+        )
+
+    assert interactions.values == {}
+
+
+def test_interaction_is_created_for_roles_in_same_application_profile() -> None:
+    application_ref = UUID(int=100)
+    source = Component(
+        component_ref=UUID(int=1),
+        application_ref=application_ref,
+        name="client role",
+    )
+    destination = Component(
+        component_ref=UUID(int=2),
+        application_ref=application_ref,
+        name="server role",
+    )
     interactions = Interactions()
     service = ApplicationCommunicationCatalogue(
         applications=Applications(),
@@ -87,7 +125,7 @@ def test_interaction_may_cross_application_boundary() -> None:
     value = service.create_interaction(
         source_component_ref=source.component_ref,
         destination_component_ref=destination.component_ref,
-        purpose="cross-app communication",
+        purpose="profile communication",
     )
 
     assert value.source_component_ref == source.component_ref

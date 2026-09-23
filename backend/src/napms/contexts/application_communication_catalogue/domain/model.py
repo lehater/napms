@@ -32,6 +32,7 @@ class TrafficClause:
 @dataclass(frozen=True)
 class Component:
     component_ref: UUID
+    application_ref: UUID
     name: str
 
 
@@ -57,7 +58,14 @@ class Application:
             raise ValueError("component_ref already exists")
         return replace(
             self,
-            components=self.components + (Component(component_ref=component_ref, name=name),),
+            components=self.components
+            + (
+                Component(
+                    component_ref=component_ref,
+                    application_ref=self.application_ref,
+                    name=name,
+                ),
+            ),
             version=self.version + 1,
         )
 

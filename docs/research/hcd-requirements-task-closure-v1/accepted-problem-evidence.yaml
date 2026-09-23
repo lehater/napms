@@ -1,0 +1,72 @@
+version: 1
+kind: hcd-problem-evidence
+id: NAPMS-FIRST-MVP-HCD-PILOT-PROBLEM-EVIDENCE
+status: ACCEPTED
+canonical: false
+
+scope:
+  pilot_subjects: [application-components, access-request, policy-export]
+  boundary: first-MVP interactive work only; no UI/navigation/screen decisions
+
+source_policy:
+  current_canonical_requirement_source: docs/requirements/first-mvp-product-requirements.yaml
+  problem_space_sources:
+    - docs/horizontal/s0/problem-landscape.md
+    - docs/horizontal/s0/user-journeys.md
+  stakeholder_acceptance:
+    - current-stakeholder-input:2026-09-23
+  forbidden_as_problem_evidence:
+    - docs/contracts/ui/**
+    - web/**
+    - backend/**
+    - implementation-derived behavior
+
+problem_statement: >-
+  People responsible for application connectivity need to preserve reusable
+  network communication-profile meaning, submit concrete connectivity requests and
+  obtain explainable vendor-neutral policy output without reconstructing intent
+  from current technical realization or collapsing request authority, permission
+  outcome and export completeness into one kind of truth.
+
+semantic_decision:
+  application_term: >-
+    Application is the established NAPMS term for a reusable application
+    communication profile: a template that classifies network communication roles
+    and requirements. It is not inventory identity for one concrete software
+    product or system.
+  interaction_boundary: >-
+    Every Interaction belongs to one Application communication profile and connects
+    Components of that same Application. Cross-Application Interaction is invalid.
+  reuse_rule: >-
+    Concrete software systems that need the same network communication contract
+    should reuse the same profile through their concrete ComponentDeployments rather
+    than creating cross-Application Interactions.
+  decision_ref: current-stakeholder-input:2026-09-23
+
+observations:
+  - id: OBS-APP-01
+    subject: application-components
+    statement: Reusable network communication meaning must remain distinct from concrete deployment and changing technical realization.
+    evidence_refs:
+      - docs/horizontal/s0/problem-landscape.md#application-communication-meaning
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-APP-001
+      - current-stakeholder-input:2026-09-23
+  - id: OBS-REQUEST-01
+    subject: access-request
+    statement: Deliberate connectivity work must preserve business justification, exact request subject and the distinction between authority to request and later permission outcome.
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j5--propose-and-decide-concrete-access
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-BUS-001
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-PERM-001
+  - id: OBS-EXPORT-01
+    subject: policy-export
+    statement: Policy/network users need complete source-neutral policy output or an explicitly unresolved result.
+    evidence_refs:
+      - docs/horizontal/s0/user-journeys.md#j9--materialize-and-export-required-policy
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-004
+      - docs/requirements/first-mvp-product-requirements.yaml#REQ-EXP-005
+
+acceptance:
+  status: ACCEPTED
+  accepted_at: 2026-09-23
+  basis: stakeholder confirmed the pilot goals/User Needs and clarified Application/Interaction semantics

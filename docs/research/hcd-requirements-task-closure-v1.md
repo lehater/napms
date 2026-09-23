@@ -317,3 +317,43 @@ prematurely deciding task decomposition, interaction grouping or recovery UI.
 The candidate is still not registered in Harness. The next action remains a human
 semantic review of the three actor/goal pairs and five User Needs. Only after that
 acceptance should the Task Model capability become a real CREATE frontier.
+
+
+## Stakeholder acceptance and Application semantic correction
+
+On 2026-09-23 the stakeholder accepted the three pilot actor/goal pairs and five
+User Needs, and clarified the established NAPMS term `Application`.
+
+`Application` is not inventory identity for a concrete CRM, monitoring product,
+ERP or other software system. It is a reusable **Application Communication
+Profile**: a template that classifies network communication roles and the traffic
+requirements needed by those roles. Concrete systems instantiate those roles
+through ComponentDeployments.
+
+Consequently the corrected invariant is:
+
+```text
+Interaction.sourceComponent.applicationRef
+==
+Interaction.destinationComponent.applicationRef
+```
+
+Cross-Application Interaction is invalid. If two concrete systems need the same
+network communication contract, they reuse the relevant Application communication
+profile; the product does not connect Components from different profiles merely
+because the concrete software systems communicate.
+
+This resolves the earlier apparent conflict in favor of the original intra-
+Application rule. The newer cross-Application allowance in canonical requirements,
+domain, HTTP requirements, readiness/test intent and implementation was an
+incorrect semantic branch and is corrected together in this research branch.
+
+The accepted HCD artifacts are now:
+
+- `accepted-problem-evidence.yaml`;
+- `accepted-user-needs.yaml`.
+
+They remain branch-only/non-canonical until the adoption decision. With those
+accepted artifacts simulated as providers, the causal frontier is now the three
+Task Models; the five remaining questions are Task Model questions, not User Needs
+questions.

@@ -34,7 +34,7 @@ required_scenarios:
     expect: Resource identity and Endpoint identity survive realization changes; AuthorityScopeRef remains independent; no automatic endpoint grouping; Site/responsibility history remains explainable.
   - id: MVP-REQ-APPLICATION
     verifies: [REQ-APP-001, REQ-APP-002, REQ-INT-001, REQ-INT-002, REQ-INT-003]
-    expect: Cross-Application Interaction is accepted; multiple independent Interactions for the same pair are accepted; revision traffic semantics are immutable and canonical.
+    expect: Application is a reusable network communication profile; Cross-Application Interaction is rejected; multiple independent Interactions for the same intra-Application pair are accepted; revision traffic semantics are immutable and canonical.
   - id: MVP-REQ-DEPLOYMENT
     verifies: [REQ-DEP-001, REQ-DEP-002]
     expect: Deployment identity is independent from IP and materialization uses all current addressed Endpoints of each participating Resource.
