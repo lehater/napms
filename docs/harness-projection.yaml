@@ -84,4 +84,24 @@ bindings:
   - {artifact: FRONTEND-TEST-DESIGN, authority: TEST-DESIGN, provides: [engineering.frontend.test-design]}
   - {artifact: FRONTEND-IMPLEMENTATION-DESIGN, authority: IMPLEMENTATION-DESIGN, provides: [engineering.frontend.implementation-design]}
 
-questions: []
+questions:
+  - id: Q-STRATEGIC-OU-LIFECYCLE
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: What retirement and reparenting semantics apply to OrganizationalUnit identity, descendants, current Resource ownership and current authority?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-CROSS-ORG-RELATIONSHIP-POLICY
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: Which domain owner defines whether a relationship or connectivity meaning may cross Organization security boundaries?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-CROSS-ORG-APPROVAL-POLICY
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: Which domain owner defines the source-side and destination-side approval requirements for a cross-Organization AccessRequest?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-REQUEST-EXPIRATION-POLICY
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: Which domain owner defines how long a pending AccessRequest remains actionable before it expires?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-APPROVAL-POLICY-REVISION
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: How are per-Organization approval-policy revisions owned and how does a submitted AccessRequest preserve the approval basis that governed submission?
+    blocks: [STRATEGIC-CAPABILITIES]
