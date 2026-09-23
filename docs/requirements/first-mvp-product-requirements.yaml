@@ -41,11 +41,16 @@ content:
 
     - id: REQ-APP-001
       statement: >-
-        An Application description shall be reusable across multiple concrete deployments
-        and shall describe communication structure independently from current network realization.
+        An Application shall represent a reusable application communication profile:
+        a template of network communication roles and requirements, not an inventory
+        identity for one concrete software product or system. The profile shall be
+        reusable across multiple concrete deployments and independent from current
+        network realization.
       status: ACCEPTED
       source_refs:
         - stakeholder-network-intent:application-communication
+        - current-stakeholder-input:2026-09-23
+      rationale: Preserve the established Application term while making its network-communication-profile meaning explicit.
 
     - id: REQ-APP-002
       statement: >-
@@ -57,14 +62,14 @@ content:
 
     - id: REQ-INT-001
       statement: >-
-        A described directed Interaction shall be valid from its explicit communication
-        semantics and valid Component references; it shall not be rejected solely
-        because source and destination Components belong to different Applications.
+        A described directed Interaction shall connect source and destination Components
+        belonging to the same Application communication profile. Components belonging
+        to different Applications shall not be connected by one Interaction.
       status: ACCEPTED
       source_refs:
-        - c403ceed:docs/requirements/wave1-acceptance-examples.md#E1
         - stakeholder-network-intent:application-communication
-      rationale: Preserve the accepted negative constraint against a blanket same-Application rule.
+        - current-stakeholder-input:2026-09-23
+      rationale: Application classifies a reusable network communication contract; cross-Application interaction would cross profile boundaries instead of instantiating one profile.
 
     - id: REQ-INT-002
       statement: >-

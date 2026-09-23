@@ -8,9 +8,13 @@ knowledge_coverage:
 
 aggregate: Application and independent Interaction aggregates
 entities: [Application, Component, Interaction, InteractionRevision]
+language:
+  Application: Reusable application communication profile that classifies one family of network communication requirements; it is not inventory identity for a concrete software system.
+  Component: Participant role inside one Application communication profile; concrete realization belongs to ComponentDeployment.
 invariants:
   - A Component belongs to exactly one Application for its lifetime.
-  - Interaction source and destination are explicit ComponentRefs and may belong to different Applications.
+  - Interaction source and destination are explicit ComponentRefs belonging to the same Application.
+  - Cross-Application Interaction is invalid.
   - Several independently meaningful Interactions may exist for the same directed Component pair.
   - One Interaction represents one independently meaningful communication reason.
   - Interaction endpoints and purpose are immutable; traffic changes publish a new immutable InteractionRevision.

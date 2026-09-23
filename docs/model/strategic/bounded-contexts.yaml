@@ -30,10 +30,10 @@ contexts:
   - context_id: BC-APPLICATION-COMMUNICATION-CATALOGUE
     capability_ref: CAP-APPLICATION-COMMUNICATION-CATALOGUE
     name: Application Communication Catalogue
-    purpose: Own reusable application communication meaning.
-    responsibility: [Application identity, Component identity, independent directed Interaction identity, immutable InteractionRevision traffic semantics]
+    purpose: Own reusable network communication-profile meaning.
+    responsibility: [Application communication-profile identity, Component role identity, independent intra-Application directed Interaction identity, immutable InteractionRevision traffic semantics]
     boundary_basis:
-      cohesion_rationale: Reusable application communication meaning changes independently from deployment and Resource realization.
+      cohesion_rationale: Reusable network communication-profile meaning changes independently from deployment and Resource realization; Application is not concrete software-system inventory identity.
       separation_rationale: Concrete deployment, Resource realization, business need and access permission remain external.
     model_language_ownership:
       owned_terms_or_model_scope: [Application, Component, Interaction, InteractionRevision, TrafficClause]

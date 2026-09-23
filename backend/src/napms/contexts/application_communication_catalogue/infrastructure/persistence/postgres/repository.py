@@ -139,7 +139,11 @@ class PostgresApplicationCommunicationCatalogue:
                 name=row[1],
                 version=row[2],
                 components=tuple(
-                    Component(component_ref=component_ref, name=name)
+                    Component(
+                        component_ref=component_ref,
+                        application_ref=application_ref,
+                        name=name,
+                    )
                     for component_ref, name in component_rows
                 ),
             )
@@ -258,13 +262,17 @@ class PostgresApplicationCommunicationCatalogue:
         with psycopg.connect(self._dsn) as connection:
             row = connection.execute(
                 """
-                SELECT component_ref, name
+                SELECT component_ref, application_ref, name
                 FROM application_communication_catalogue.component
                 WHERE component_ref = %s
                 """,
                 (component_ref,),
             ).fetchone()
-            return None if row is None else Component(component_ref=row[0], name=row[1])
+            return (
+                None
+                if row is None
+                else Component(component_ref=row[0], application_ref=row[1], name=row[2])
+            )
 
     def resolve_revision(self, revision_ref: UUID) -> ResolvedInteractionRevision | None:
         with psycopg.connect(self._dsn) as connection:
