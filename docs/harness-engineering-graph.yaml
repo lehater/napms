@@ -71,7 +71,8 @@ authorities:
     produces:
       - capability: engineering.domain.strategic-model
         knowledge_kind: strategic-domain-design
-        requires: []
+        requires:
+          - engineering.requirements.product-intent
 
   - id: DOMAIN-USE-CASE-DESIGN
     responsibility: Own context-focused use-case behavior used to drive tactical domain modeling.

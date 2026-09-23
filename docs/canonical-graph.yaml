@@ -9,7 +9,7 @@ nodes:
   - {id: FIRST-MVP-HCD-USER-NEEDS, kind: user-needs, path: docs/discovery/first-mvp-hcd-user-needs.yaml, depends_on: [FIRST-MVP-HCD-PROBLEM-EVIDENCE]}
   - {id: FIRST-MVP-REQUIREMENTS, kind: product-requirements/v1, path: docs/requirements/first-mvp-product-requirements.yaml, depends_on: [FIRST-MVP-HCD-USER-NEEDS, MVP-QUALITY-TARGETS]}
   - {id: RC-DISCOVERY, kind: discovery, path: docs/discovery/resource-catalogue.yaml, depends_on: []}
-  - {id: STRATEGIC-CAPABILITIES, kind: strategic-model, path: docs/model/strategic/capabilities.yaml, depends_on: []}
+  - {id: STRATEGIC-CAPABILITIES, kind: strategic-model, path: docs/model/strategic/capabilities.yaml, depends_on: [FIRST-MVP-REQUIREMENTS]}
   - {id: STRATEGIC-CONTEXTS, kind: strategic-model, path: docs/model/strategic/bounded-contexts.yaml, depends_on: [STRATEGIC-CAPABILITIES]}
   - {id: STRATEGIC-RELATIONSHIPS, kind: strategic-model, path: docs/model/strategic/context-relationships.yaml, depends_on: [STRATEGIC-CONTEXTS]}
   - {id: RC-CURATION, kind: use-case, path: docs/model/use-cases/resource-catalogue-curation.yaml, depends_on: [RC-DISCOVERY, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
