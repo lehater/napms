@@ -84,4 +84,24 @@ bindings:
   - {artifact: FRONTEND-TEST-DESIGN, authority: TEST-DESIGN, provides: [engineering.frontend.test-design]}
   - {artifact: FRONTEND-IMPLEMENTATION-DESIGN, authority: IMPLEMENTATION-DESIGN, provides: [engineering.frontend.implementation-design]}
 
-questions: []
+questions:
+  - id: Q-STRATEGIC-ORG-HIERARCHY-OWNER
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: Which Bounded Context owns Organization and OrganizationalUnit identity, hierarchy and lifecycle, distinct from Resource ownership and authority evaluation?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-AUTHORITY-SCOPE
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: Which semantic scope targets may RoleAssignments use in the first MVP, and how does Organization-to-OrganizationalUnit hierarchy determine descendant authority?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-SYSTEM-SCOPE
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: How is platform/bootstrap authority represented separately from Organization and OrganizationalUnit authority scopes?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-PRINCIPAL-ASSIGNMENT
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: May RoleAssignments target both Actor and Group principals, and which system owns Group membership truth used for current authority evaluation?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-ROLE-RETIREMENT
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: What current-authority and historical-evidence semantics apply when a Role is retired or replaced?
+    blocks: [STRATEGIC-CAPABILITIES]
