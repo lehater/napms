@@ -1,4 +1,4 @@
-version: 3
+version: 4
 kind: strategic-capability-model
 id: NAPMS-STRATEGIC-CAPABILITIES
 
@@ -6,8 +6,8 @@ capabilities:
   - capability_id: CAP-ORGANIZATION-STRUCTURE
     name: Organization Structure
     business_outcome: Maintain stable organizational identity and administrative hierarchy.
-    responsibility: Own Organization and OrganizationalUnit identity, parent-child hierarchy, lifecycle and root security-boundary semantics.
-    language_terms: [Organization, OrganizationalUnit, organizational hierarchy]
+    responsibility: Own Organization and OrganizationalUnit identity, parent-child hierarchy, explicit same-Organization reparenting, ACTIVE/RETIRED lifecycle and root security-boundary semantics; a Unit retires only after active children and current Resource ownership have been removed.
+    language_terms: [Organization, OrganizationalUnit, organizational hierarchy, Reparent, Retired]
   - capability_id: CAP-RESOURCE-CATALOGUE
     name: Resource Catalogue
     business_outcome: Maintain stable logical Resource truth, current organizational ownership and current network realization.
@@ -31,8 +31,8 @@ capabilities:
   - capability_id: CAP-ACCESS-POLICY
     name: Access Policy
     business_outcome: Maintain deliberate access requests, permission history and authoritative current effective access.
-    responsibility: Own AccessRequest lifecycle, exact AccessSubject, approval/permission outcomes and evidence, business-justification associations, current effective access authorization, declarative effective conditions, revocation history and audit history.
-    language_terms: [AccessRequest, AccessSubject, PolicyRule, AuthorizationEvidence, Current Effective Access, Revocation, EffectiveWindow]
+    responsibility: Own AccessRequest lifecycle, exact AccessSubject, cross-Organization access eligibility, per-Organization ApprovalPolicy with immutable revisions, request-expiration policy, submission-time approval basis, approval/permission outcomes and evidence, business-justification associations, current effective access authorization, declarative effective conditions, revocation history and audit history.
+    language_terms: [AccessRequest, AccessSubject, ApprovalPolicy, ApprovalPolicyRevision, Approval Basis, PolicyRule, AuthorizationEvidence, Current Effective Access, Revocation, EffectiveWindow]
   - capability_id: CAP-AUTHORITY-MANAGEMENT
     name: Authority Management
     business_outcome: Evaluate effective principal action scope authority.

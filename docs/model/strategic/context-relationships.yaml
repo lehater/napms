@@ -1,10 +1,11 @@
-version: 3
+version: 4
 kind: strategic-context-relationship-model
 id: NAPMS-STRATEGIC-CONTEXT-RELATIONSHIPS
 
 whole_domain_relationships:
   - {from: Organization Structure, to: Resource Catalogue, semantics: Organization Structure supplies stable Organization/OrganizationalUnit identities and hierarchy; Resource Catalogue owns each Resource's current OrganizationalUnit affiliation and ownership history.}
   - {from: Organization Structure, to: Authority Management, semantics: Organization Structure supplies Organization/OrganizationalUnit identity and hierarchy; hierarchy alone grants no authority.}
+  - {from: Organization Structure, to: Access Policy, semantics: Organization identity provides administrative-side and security-boundary references; Access Policy owns whether access may cross those boundaries and owns each Organization-scoped approval policy.}
   - {from: Resource Catalogue, to: Authority Management, semantics: Resource Catalogue supplies the Resource's current OrganizationalUnit affiliation; Authority Management resolves current scope inheritance without owning Resource facts.}
   - {from: Authority Management, to: Access Policy, semantics: AccessRequest protected actions consume current effective authority derived from Principal RoleAssignments and System/Organization/OrganizationalUnit scope semantics; request admission remains distinct from permission outcome.}
   - {from: Authority Management, to: Required Policy Materialization, semantics: Export consumes current effective policy.export authority for the organizational scopes covering all selected Resources at evaluation time.}
@@ -42,6 +43,8 @@ context_mapping_relationships:
 
 strategic_invariants:
   - No Shared Kernel between peer contexts
+  - OrganizationalUnit reparenting is explicit, preserves Unit identity/history, stays inside one Organization and cannot create cycles
+  - OrganizationalUnit retirement is terminal for current use and requires no active child Units and no currently owned Resources
   - Organization is the root security boundary for its OrganizationalUnit hierarchy
   - OrganizationalUnit hierarchy never crosses an Organization boundary
   - Resource organizational ownership is current mutable truth with preserved history and does not change Resource identity
@@ -51,6 +54,11 @@ strategic_invariants:
   - Group membership is external IdP truth; missing or unresolved membership fails closed for current authority without destroying historical evidence
   - authority inheritance flows parent to descendants inside one Organization
   - retired Roles confer no current authority while historical evidence remains explainable
+  - cross-Organization access eligibility is an Access Policy decision and is never implied by organizational structure
+  - each administrative side uses the ApprovalPolicyRevision accepted for its Organization
+  - ApprovalPolicy revisions are immutable; a submitted AccessRequest preserves the resolved approval basis and later revisions govern later requests
+  - request expiration semantics are Access Policy truth and are resolved from the applicable policy basis at submission
+  - approval-policy basis defines which approvals are required, while current Authority Management determines who may perform each approval action at decision time
   - business justification is not permission
   - denied permission creates no current effective access authorization
   - revoked access does not become current again without a new request and permission decision

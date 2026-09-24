@@ -1,4 +1,4 @@
-version: 3
+version: 4
 kind: bounded-context-model
 id: NAPMS-BOUNDED-CONTEXTS
 
@@ -7,12 +7,12 @@ contexts:
     capability_ref: CAP-ORGANIZATION-STRUCTURE
     name: Organization Structure
     purpose: Own administrative organizational identity and hierarchy.
-    responsibility: [Organization identity and lifecycle, OrganizationalUnit identity and lifecycle, parent-child hierarchy inside one Organization, Organization as root security boundary]
+    responsibility: [Organization identity and lifecycle, OrganizationalUnit identity and ACTIVE/RETIRED lifecycle, explicit same-Organization reparenting, parent-child hierarchy inside one Organization, Organization as root security boundary]
     boundary_basis:
       cohesion_rationale: Organization and OrganizationalUnit identity, hierarchy and lifecycle form one administrative structure with one root boundary.
       separation_rationale: Resource ownership, actor/group membership, role assignment, permission decisions and technical realization remain external.
     model_language_ownership:
-      owned_terms_or_model_scope: [Organization, OrganizationalUnit, organizational hierarchy]
+      owned_terms_or_model_scope: [Organization, OrganizationalUnit, organizational hierarchy, Reparent, Retired]
       explicitly_external_terms: [Resource, ActorRef, GroupRef, RoleAssignment, AccessRequest, PolicyRule]
 
   - context_id: BC-RESOURCE-CATALOGUE
@@ -79,12 +79,12 @@ contexts:
     capability_ref: CAP-ACCESS-POLICY
     name: Access Policy
     purpose: Own deliberate access requests, permission outcomes/history and authoritative current effective access.
-    responsibility: [AccessRequest lifecycle, AccessSubject, approval and permission outcomes, AuthorizationEvidence, justification associations, current effective access authorization, declarative EffectiveWindow, revocation history, audit history]
+    responsibility: [AccessRequest lifecycle, AccessSubject, cross-Organization access eligibility, per-Organization ApprovalPolicy and immutable ApprovalPolicyRevision, request-expiration policy, submission-time approval basis, approval and permission outcomes, AuthorizationEvidence, justification associations, current effective access authorization, declarative EffectiveWindow, revocation history, audit history]
     boundary_basis:
-      cohesion_rationale: Request subject, approval/permission evidence and resulting current-access authorization history form one access-governance lifecycle owner.
+      cohesion_rationale: Cross-boundary eligibility, approval policy, request lifecycle, approval/permission evidence and resulting current-access authorization history form one access-governance lifecycle owner.
       separation_rationale: Organization hierarchy, Resource ownership, Need currentness, Resource realization, communication semantics and current authority evaluation remain independently owned.
     model_language_ownership:
-      owned_terms_or_model_scope: [AccessRequest, AccessSubject, PolicyRule, AuthorizationEvidence, Current Effective Access, Revocation, EffectiveWindow]
+      owned_terms_or_model_scope: [AccessRequest, AccessSubject, ApprovalPolicy, ApprovalPolicyRevision, Approval Basis, PolicyRule, AuthorizationEvidence, Current Effective Access, Revocation, EffectiveWindow]
       explicitly_external_terms: [Organization, OrganizationalUnit, ConnectivityNeed, RoleAssignment, ComponentDeployment, InteractionRevision]
 
   - context_id: BC-NETWORK-ENFORCEMENT-PLACEMENT
