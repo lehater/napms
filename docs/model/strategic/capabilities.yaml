@@ -1,4 +1,4 @@
-version: 4
+version: 5
 kind: strategic-capability-model
 id: NAPMS-STRATEGIC-CAPABILITIES
 
@@ -31,8 +31,8 @@ capabilities:
   - capability_id: CAP-ACCESS-POLICY
     name: Access Policy
     business_outcome: Maintain deliberate access requests, permission history and authoritative current effective access.
-    responsibility: Own AccessRequest lifecycle, exact AccessSubject, cross-Organization access eligibility, per-Organization ApprovalPolicy with immutable revisions, request-expiration policy, submission-time approval basis, approval/permission outcomes and evidence, business-justification associations, current effective access authorization, declarative effective conditions, revocation history and audit history.
-    language_terms: [AccessRequest, AccessSubject, ApprovalPolicy, ApprovalPolicyRevision, Approval Basis, PolicyRule, AuthorizationEvidence, Current Effective Access, Revocation, EffectiveWindow]
+    responsibility: Own AccessRequest lifecycle and exact AccessSubject; preserve immutable submission-time ApprovalBasis while reevaluating approver authority at action time; prevent more than one pending request for the same exact AccessSubject; own cross-Organization access eligibility, per-Organization ApprovalPolicy with immutable revisions, request-expiration policy, approval/permission outcomes and evidence, authorization episodes, declarative effective conditions, terminal revocation/regrant semantics, business-justification associations and audit history.
+    language_terms: [AccessRequest, AccessSubject, ApprovalPolicy, ApprovalPolicyRevision, ApprovalBasis, ApprovalObligation, PolicyRule, Authorization Episode, AuthorizationEvidence, Current Effective Access, Revocation, EffectiveWindow]
   - capability_id: CAP-AUTHORITY-MANAGEMENT
     name: Authority Management
     business_outcome: Evaluate effective principal action scope authority.

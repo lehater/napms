@@ -1,4 +1,4 @@
-version: 4
+version: 5
 kind: bounded-context-model
 id: NAPMS-BOUNDED-CONTEXTS
 
@@ -79,12 +79,12 @@ contexts:
     capability_ref: CAP-ACCESS-POLICY
     name: Access Policy
     purpose: Own deliberate access requests, permission outcomes/history and authoritative current effective access.
-    responsibility: [AccessRequest lifecycle, AccessSubject, cross-Organization access eligibility, per-Organization ApprovalPolicy and immutable ApprovalPolicyRevision, request-expiration policy, submission-time approval basis, approval and permission outcomes, AuthorizationEvidence, justification associations, current effective access authorization, declarative EffectiveWindow, revocation history, audit history]
+    responsibility: [AccessRequest lifecycle, exact AccessSubject, at most one pending request per exact AccessSubject, cross-Organization access eligibility, per-Organization ApprovalPolicy and immutable ApprovalPolicyRevision, immutable submission-time ApprovalBasis and ApprovalObligations, request-expiration policy, approval and permission outcomes, AuthorizationEvidence, one PolicyRule authorization episode per Allowed decision, at most one current authorization episode per exact AccessSubject, declarative EffectiveWindow, terminal revocation, regrant only through a new request and decision, justification associations, audit history]
     boundary_basis:
-      cohesion_rationale: Cross-boundary eligibility, approval policy, request lifecycle, approval/permission evidence and resulting current-access authorization history form one access-governance lifecycle owner.
+      cohesion_rationale: Cross-boundary eligibility, approval policy, request identity/lifecycle, approval basis, approval/permission evidence and authorization-episode history form one access-governance lifecycle owner.
       separation_rationale: Organization hierarchy, Resource ownership, Need currentness, Resource realization, communication semantics and current authority evaluation remain independently owned.
     model_language_ownership:
-      owned_terms_or_model_scope: [AccessRequest, AccessSubject, ApprovalPolicy, ApprovalPolicyRevision, Approval Basis, PolicyRule, AuthorizationEvidence, Current Effective Access, Revocation, EffectiveWindow]
+      owned_terms_or_model_scope: [AccessRequest, AccessSubject, ApprovalPolicy, ApprovalPolicyRevision, ApprovalBasis, ApprovalObligation, PolicyRule, Authorization Episode, AuthorizationEvidence, Current Effective Access, Revocation, EffectiveWindow]
       explicitly_external_terms: [Organization, OrganizationalUnit, ConnectivityNeed, RoleAssignment, ComponentDeployment, InteractionRevision]
 
   - context_id: BC-NETWORK-ENFORCEMENT-PLACEMENT

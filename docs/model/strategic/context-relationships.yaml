@@ -1,4 +1,4 @@
-version: 4
+version: 5
 kind: strategic-context-relationship-model
 id: NAPMS-STRATEGIC-CONTEXT-RELATIONSHIPS
 
@@ -14,8 +14,8 @@ whole_domain_relationships:
   - {from: Application Communication Catalogue, to: Business Connectivity, semantics: Need references reusable Interaction plus one participant Component.}
   - {from: Business Connectivity, to: Access Policy, semantics: Current Need supplies business justification but never permission.}
   - {from: Application Deployment, to: Access Policy, semantics: AccessSubject references concrete source and destination deployments.}
-  - {from: Application Communication Catalogue, to: Access Policy, semantics: AccessSubject references exact immutable InteractionRevision.}
-  - {from: Access Policy, to: Required Policy Materialization, semantics: Current effective access plus preserved permission evidence supplies authoritative desired access; revoked historical authorization does not silently become current again.}
+  - {from: Application Communication Catalogue, to: Access Policy, semantics: AccessSubject references one exact immutable InteractionRevision; a newer revision is new connectivity meaning, invalidates an old-revision pending request at pre-Allow semantic revalidation, and never silently migrates an existing authorization episode.}
+  - {from: Access Policy, to: Required Policy Materialization, semantics: At most one non-revoked authorization episode per exact AccessSubject contributes current effective access when its EffectiveWindow applies; revoked or superseded historical episodes never silently become current again.}
   - {from: Business Connectivity, to: Required Policy Materialization, semantics: Need currentness supplies reconciliation status without automatic revocation.}
   - {from: Application Communication Catalogue, to: Required Policy Materialization, semantics: Exact InteractionRevision supplies traffic semantics.}
   - {from: Application Deployment, to: Required Policy Materialization, semantics: Deployments identify participating Resources.}
@@ -56,11 +56,18 @@ strategic_invariants:
   - retired Roles confer no current authority while historical evidence remains explainable
   - cross-Organization access eligibility is an Access Policy decision and is never implied by organizational structure
   - each administrative side uses the ApprovalPolicyRevision accepted for its Organization
+  - submission preserves immutable ApprovalBasis and resolved ApprovalObligations; Actor Group and RoleAssignment membership are reevaluated at each approval action rather than frozen into that basis
+  - for one exact AccessSubject there is at most one pending AccessRequest; repeated submission does not create an independent parallel approval process
   - ApprovalPolicy revisions are immutable; a submitted AccessRequest preserves the resolved approval basis and later revisions govern later requests
   - request expiration semantics are Access Policy truth and are resolved from the applicable policy basis at submission
   - approval-policy basis defines which approvals are required, while current Authority Management determines who may perform each approval action at decision time
   - business justification is not permission
   - denied permission creates no current effective access authorization
+  - each Allowed AccessRequest creates one distinct PolicyRule authorization episode; PolicyRule identity does not span later revoke and regrant
+  - for one exact AccessSubject there is at most one current authorization episode while earlier episodes remain historical
+  - revocation is terminal for an authorization episode and preserves the Allowed request, approval decisions and original evidence
+  - regrant after revocation requires a new AccessRequest, new permission decision and new authorization episode
+  - a newer immutable InteractionRevision is new AccessSubject meaning; an old-revision pending request is invalidated before Allowed, while an existing old-revision authorization remains exact historical/current authorization for that old revision until separately revoked or otherwise ceases to be effective
   - revoked access does not become current again without a new request and permission decision
   - technical realization does not define access identity
   - zero current Need does not automatically revoke access
