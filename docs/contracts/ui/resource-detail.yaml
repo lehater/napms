@@ -1,9 +1,9 @@
-version: 2
+version: 3
 kind: ui-screen-contract
 id: NAPMS-RESOURCE-DETAIL-UI
 status: CURRENT
 
-purpose: Define the supported Resource detail workspace needed to inspect and author current Resource Catalogue facts while preserving inspectable history.
+purpose: Define the supported Resource detail workspace needed to inspect and author current Resource Catalogue facts including current organizational ownership while preserving inspectable history.
 
 screen:
   id: RESOURCE-DETAIL
@@ -23,8 +23,8 @@ screen:
       meaning: Resource exists and detail data is available.
       presentation: Current facts are primary; history is secondary but directly inspectable.
     empty-current:
-      meaning: Resource exists but one or more current fact categories have no effective fact.
-      presentation: Show explicit absence for that category while retaining available history.
+      meaning: Resource exists but one or more optional current fact categories have no effective fact.
+      presentation: Show explicit absence for that optional category while retaining available history; organizational owner is never optional.
     not-found:
       meaning: ResourceId does not resolve to a Resource.
       presentation: Do not render an empty Resource as if it existed; offer return to Resource catalogue.
@@ -35,11 +35,13 @@ screen:
   current:
     priority: primary
     behavior:
+      - Show the exactly one current OrganizationalUnit owner and enough Organization/Unit context to identify the administrative side.
+      - Allow an authorized same-Organization owner move without changing Resource identity.
       - Show the effective/current technical realization immediately when present; show explicit absence otherwise.
-      - Show immutable AuthorityScopeRef as Resource identity context; it is not a temporal affiliation and has no history stream.
       - Show zero-or-one current Site assignment.
-      - Show zero-or-one current OWNER and zero-or-one current ADMINISTRATOR responsibility.
-      - Existing authoring actions for replacing or ending supported facts remain available from the Resource workspace.
+      - Show zero-or-one current OWNER and zero-or-one current ADMINISTRATOR descriptive responsibility.
+      - Existing authoring actions for replacing or ending supported optional facts remain available from the Resource workspace.
+      - Organizational ownership, Site and descriptive responsibility are not presented as security grants.
 
   history:
     priority: secondary-inspectable
@@ -47,10 +49,10 @@ screen:
     behavior:
       - Provide an explicit History disclosure/section distinct from current facts.
       - Opening History does not navigate away from the Resource workspace.
-      - Show ended/replaced Endpoint address realizations, Site assignments and OWNER/ADMINISTRATOR responsibilities.
+      - Show prior Resource organizational owners plus ended/replaced Endpoint address realizations, Site assignments and OWNER/ADMINISTRATOR responsibilities.
       - For every historical fact expose its validity interval and provenance.
       - Do not present ended/replaced facts as current and do not collapse versions into mutable current state.
-      - Empty history is represented explicitly rather than by a missing or broken section.
+      - Empty optional history is represented explicitly rather than by a missing or broken section.
 
 interaction:
   - id: OPEN-RESOURCE
@@ -60,8 +62,16 @@ interaction:
     trigger: User opens History in a loaded Resource detail.
     transition: RESOURCE-DETAIL.current -> RESOURCE-DETAIL.current+history
     invariant: Current facts remain visible/readable while history is inspected.
+  - id: MOVE-ORGANIZATIONAL-OWNER
+    trigger: Authorized user selects another ACTIVE OrganizationalUnit in the same Organization.
+    transition: RESOURCE-DETAIL -> refresh RESOURCE-DETAIL
+    postcondition:
+      - ResourceId is unchanged.
+      - New OrganizationalUnitRef is current.
+      - Prior owner appears in ownership history with validity/provenance.
+    rejection: Cross-Organization target is not accepted by this operation.
   - id: REPLACE-OR-END-FACT
-    trigger: "User completes an accepted Resource mutation: set/clear Endpoint address, replace/clear Site, or replace/clear OWNER/ADMINISTRATOR responsibility."
+    trigger: "User completes an accepted Resource mutation: set/clear Endpoint address, replace/clear Site, or replace/clear OWNER/ADMINISTRATOR descriptive responsibility."
     transition: RESOURCE-DETAIL -> refresh RESOURCE-DETAIL
     postcondition:
       - New effective fact, when applicable, appears in current.
@@ -75,17 +85,20 @@ interaction:
 
 data_contract:
   source: GET /v1/resources/{resourceRef}
+  owner_mutation: PUT /v1/resources/{resourceRef}/organizational-owner
   mapping:
     identity: ResourceView.resourceRef
-    immutable_authority_scope: ResourceView.authorityScopeRef
+    current_organizational_owner: ResourceView.organizationalUnitRef
     current: ResourceView.current
+    ownership_history: ResourceView.history.organizationalOwnership
     history: ResourceView.history
   state_mapping:
-    http_200: loaded or empty-current according to current fact presence
+    http_200: loaded or empty-current according to optional current fact presence
     http_404: not-found
     other_failure: error
 
 out_of_scope:
+  - full Organization hierarchy administration UI
   - visual styling system
   - exact component library choice
   - pixel layout and responsive breakpoints
@@ -94,10 +107,10 @@ out_of_scope:
 human_interface_baseline:
   accessibility:
     - Current versus historical facts and loading/not-found/error states are conveyed by semantic text/state, not color alone.
-    - History disclosure and retry/return actions are keyboard reachable with visible focus.
+    - History disclosure and retry/return/actions are keyboard reachable with visible focus.
     - Loading/error/status changes are exposed through appropriate semantic status/error structure in the implementation.
   responsiveness:
-    - The current/history distinction and all required actions must remain available at ordinary desktop and narrower browser widths without information loss.
+    - The current/history distinction and all required Resource actions must remain available at ordinary desktop and narrower browser widths without information loss.
     - Exact breakpoints and component-library mechanics remain implementation choices.
   internationalization:
     state: NOT_APPLICABLE

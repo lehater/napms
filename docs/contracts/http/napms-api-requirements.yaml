@@ -1,4 +1,4 @@
-version: 3
+version: 4
 kind: http-contract-requirements
 id: NAPMS-MVP-HTTP-CONTRACT-REQUIREMENTS
 status: COMPLETE_CANONICAL_OPENAPI
@@ -9,9 +9,16 @@ delivery_protocol: HTTP/JSON
 contract_rule: One external application API; internal module boundaries are not HTTP boundaries.
 
 operations:
+  - GET /v1/organization
+  - GET /v1/organizational-units
+  - POST /v1/organizational-units
+  - GET /v1/organizational-units/{organizationalUnitRef}
+  - PUT /v1/organizational-units/{organizationalUnitRef}/parent
+  - POST /v1/organizational-units/{organizationalUnitRef}/retirement
   - GET /v1/resources
   - POST /v1/resources
   - GET /v1/resources/{resourceRef}
+  - PUT /v1/resources/{resourceRef}/organizational-owner
   - POST /v1/resources/{resourceRef}/endpoints
   - PUT /v1/resources/{resourceRef}/endpoints/{endpointRef}/address
   - DELETE /v1/resources/{resourceRef}/endpoints/{endpointRef}/address
@@ -34,12 +41,15 @@ operations:
   - PUT /v1/processes/{processRef}/criticality
   - POST /v1/processes/{processRef}/needs
   - POST /v1/processes/{processRef}/needs/{needRef}/retirement
+  - GET /v1/approval-policies/{organizationRef}
+  - POST /v1/approval-policies/{organizationRef}/revisions
   - GET /v1/access-requests
   - POST /v1/access-requests
   - GET /v1/access-requests/{requestRef}
-  - POST /v1/access-requests/{requestRef}/decision
+  - POST /v1/access-requests/{requestRef}/approval-decisions
+  - POST /v1/access-requests/{requestRef}/cancellation
   - GET /v1/policy-rules
-  - PUT /v1/policy-rules/{policyRuleRef}/operational-state
+  - POST /v1/policy-rules/{policyRuleRef}/revocation
   - POST /v1/policy-rules/{policyRuleRef}/justifications
   - GET /v1/policy-rules/{policyRuleRef}
   - POST /v1/policy-materializations
@@ -54,8 +64,8 @@ catalogue_query_contract:
   response: {shape: page-envelope, fields: [items, total, page, pageSize]}
   resource_catalogue:
     search: [displayName, resourceRef]
-    filters: [authorityScopeRef, siteRef]
-    sort_by: [displayName, resourceRef, authorityScopeRef]
+    filters: [organizationalUnitRef, siteRef]
+    sort_by: [displayName, resourceRef, organizationalUnitRef]
   application_catalogue:
     search: [name, applicationRef]
     filters: [componentRef]
@@ -70,39 +80,47 @@ catalogue_query_contract:
     sort_by: [name, processRef, criticalityLabel]
   access_request_catalogue:
     search: [requestRef]
-    filters: [sourceDeploymentRef, destinationDeploymentRef, decisionResult]
-    sort_by: [submittedAt, requestRef, decisionResult]
+    filters: [sourceDeploymentRef, destinationDeploymentRef, status]
+    sort_by: [submittedAt, requestRef, status]
   policy_rule_catalogue:
     search: [policyRuleRef]
-    filters: [sourceDeploymentRef, destinationDeploymentRef, effectState]
-    sort_by: [policyRuleRef, effectState]
+    filters: [sourceDeploymentRef, destinationDeploymentRef, revocationState]
+    sort_by: [policyRuleRef, createdAt, revokedAt]
 
 rules:
-  - Authentication is OIDC Bearer token only; request bodies never contain trusted actor permission or authority fields.
-  - access.request is admitted from effective scoped AuthorityGrants for the source Resource AuthorityScopeRef at server-owned admissionAt; destination request authority is not required merely to submit.
-  - policy.export is admitted from effective scoped AuthorityGrants for every selected Resource AuthorityScopeRef at database-owned evaluationAt.
+  - Authentication is OIDC Bearer token only; request bodies never contain trusted actor permission group-membership RoleAssignment or authority fields.
+  - External Group membership comes from the validated access-token identity context; NAPMS Role and RoleAssignment truth remains server-owned and is reevaluated for every protected action.
+  - Organization is the root security boundary; OrganizationalUnit identity/hierarchy/lifecycle is owned independently from Resource Catalogue.
+  - Resource creation requires one current organizationalUnitRef; same-Organization owner change preserves Resource identity/history and cross-Organization transfer is not this operation.
+  - access.request is admitted from current Authority Management evaluation for the source Resource's applicable Organization or OrganizationalUnit scope at server-owned admissionAt; destination request authority is not required merely to submit.
+  - AccessRequest submission freezes ApprovalBasis and resolved approval obligations from applicable immutable ApprovalPolicyRevisions and does not create a parallel exact PENDING request.
+  - Approval actions are APPROVED or DENIED decisions against a required obligation; each action reevaluates current access.decide authority for that side and does not directly set ALLOWED.
+  - PENDING AccessRequest may terminate only as ALLOWED, DENIED, CANCELLED, EXPIRED or INVALIDATED and never reopens; ALLOWED is produced only after all required approvals plus semantic revalidation.
+  - DENIED CANCELLED EXPIRED and INVALIDATED create no PolicyRule.
+  - Every ALLOWED AccessRequest creates one distinct PolicyRule authorization episode; at most one non-revoked current episode exists for the exact AccessSubject.
+  - PolicyRule revocation is terminal and requires current policy.revoke authority for either participating administrative side independently; the other side cannot veto revocation.
+  - Regrant after revocation requires a new AccessRequest and permission decision; an old PolicyRule is never reactivated.
+  - EffectiveWindow is declarative authorization-episode state and not an ACTIVE/INACTIVE lifecycle toggle.
+  - policy.export is admitted from current Authority Management evaluation for every applicable selected Organization or OrganizationalUnit scope at database-owned evaluationAt.
   - Interaction creation resolves both Component owners server-side and rejects source/destination Components that belong to different Applications.
   - Idempotent state-creating POST operations require Idempotency-Key; replay returns exact persisted original status/body/Location/ETag before NEW-command If-Match evaluation.
   - Aggregate mutations requiring optimistic concurrency use If-Match and return current ETag.
-  - DENIED AccessRequest decision creates no PolicyRule.
-  - PolicyRule operational state supports ACTIVE or INACTIVE plus optional half-open EffectiveWindow.
-  - Policy materialization accepts all Rules or an explicit non-empty unique Rule subset.
+  - Policy materialization accepts all current Rules or an explicit non-empty unique Rule subset.
   - Successful policy materialization returns one complete enriched selected-policy representation; missing current Resource addresses are row-level INCOMPLETE data, not a global UNRESOLVED application result. Invalid explicit Rule selection is rejected before result exposure and dependency/integrity inability is not converted into success.
   - Export response is self-contained with ExportAuthorityEvidence and per-Rule authorization/business provenance.
-  - Selected non-effective Rules contribute no effective technical rows; selected effective Rules with missing current address remain visible as enriched INCOMPLETE rows with Resource identity/name and nullable address fields.
+  - Revoked or otherwise non-effective Rules contribute no effective technical rows; selected effective Rules with missing current address remain visible as enriched INCOMPLETE rows with Resource identity/name and nullable address fields.
   - Catalogue GET operations return authoritative read collections required by the accepted frontend catalogue workspaces and use the corresponding read permission.
   - GET /v1/applications/{applicationRef} returns Application identity/version, Components, and every directed Interaction touching those Components, including revision traffic semantics required by APPLICATION-DETAIL.
   - GET /v1/interactions/{interactionRef} reconstructs revision-authoring state after navigation or reload, including the authoritative current version and revision traffic semantics.
   - GET /v1/deployments/{deploymentRef} returns immutable Deployment identity plus ComponentRef and ResourceRef required by DEPLOYMENT-DETAIL.
   - GET /v1/processes applies the accepted Business Process search/filter/sort/paging contract over the authoritative collection before page selection.
-  - GET /v1/access-requests applies the accepted Access Request search/filter/sort/paging contract over the authoritative collection before page selection; PENDING remains presentation for a null decisionResult and is not a new decision enum.
-  - GET /v1/policy-rules applies the accepted Policy Rule search/filter/sort/paging contract over the authoritative collection before page selection without changing policy materialization selection semantics.
+  - GET /v1/access-requests applies the accepted Access Request search/filter/sort/paging contract over the authoritative collection before page selection and exposes current PENDING or terminal status plus immutable approval basis/obligations/history.
+  - GET /v1/policy-rules applies the accepted Policy Rule search/filter/sort/paging contract over authorization episodes without collapsing historical episodes into one permanent access identity.
   - Connectivity Need retirement is an explicit optimistic-concurrency mutation; retirement preserves the Need and historical request/decision facts while changing its current status.
-  - Access Request catalogue/detail reads expose immutable request subject, current decision outcome and version required by the canonical decision route.
-  - Policy Rule catalogue/detail reads expose effective state plus authorization, business-justification and operational-history provenance required by the canonical Policy Rule workspace.
-  - GET /v1/resources/{resourceRef} returns the accepted Resource detail read model: immutable AuthorityScopeRef, current endpoint/site/responsibility facts and explanatory address/site/responsibility history.
-  - Resource AuthorityScopeRef is never represented as a temporal affiliation.
-  - Endpoint address clear, Site replace/clear and OWNER/ADMINISTRATOR replace/clear are public first-MVP Resource curation operations.
+  - GET /v1/resources/{resourceRef} returns stable Resource identity, current OrganizationalUnit owner, endpoint/site/responsibility facts and explanatory ownership/address/site/responsibility history.
+  - Resource organizational ownership is a temporal affiliation; Site and OWNER/ADMINISTRATOR responsibility remain descriptive and never grant authority.
+  - Endpoint address clear, Site replace/clear, same-Organization organizational owner move and OWNER/ADMINISTRATOR replace/clear are public first-MVP Resource curation operations.
+  - ApprovalPolicy revision publication is append-only; later revisions affect later requests and never rewrite an existing AccessRequest ApprovalBasis.
 
 transport_decisions:
   security_scheme: HTTP bearer JWT security scheme named OIDCBearer.
@@ -119,7 +137,7 @@ openapi_status: COMPLETE
 compatibility_policy:
   current_major: v1
   rules:
-    - Existing accepted v1 operation semantics and field meaning may not be silently redefined.
+    - This draft revalidation intentionally replaces pre-acceptance v1 shapes whose semantics conflict with current accepted requirements; those superseded shapes are not compatibility authority.
+    - After this contract is accepted, required-field/operation removal or semantic weakening is breaking and requires explicit interface/version revalidation.
     - Adding optional representation fields is compatible only when existing consumers can ignore them without semantic loss.
-    - Removing/renaming required fields or operations, changing identifier/time/error semantics, or weakening authorization/provenance is breaking and requires explicit interface/version revalidation.
     - Diagnostic message text is not a compatibility contract unless separately declared.
