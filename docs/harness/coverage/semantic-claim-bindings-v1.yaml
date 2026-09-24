@@ -45,34 +45,34 @@ bindings:
   - capability: engineering.domain.use-case.resource-catalogue
     semantic_claims:
       - {claim: engineering.application.use-cases, subject: BC-RESOURCE-CATALOGUE}
+      - {claim: engineering.application.use-cases, subject: Resource management}
   - capability: engineering.domain.use-case.authority-management
     semantic_claims:
       - {claim: engineering.application.use-cases, subject: BC-AUTHORITY-MANAGEMENT}
   - capability: engineering.domain.use-case.application-communication
     semantic_claims:
       - {claim: engineering.application.use-cases, subject: BC-APPLICATION-COMMUNICATION-CATALOGUE}
+      - {claim: engineering.application.use-cases, subject: Application management}
+      - {claim: engineering.application.use-cases, subject: Component management}
+      - {claim: engineering.application.use-cases, subject: Interaction management}
   - capability: engineering.domain.use-case.application-deployment
     semantic_claims:
       - {claim: engineering.application.use-cases, subject: BC-APPLICATION-DEPLOYMENT}
+      - {claim: engineering.application.use-cases, subject: Deployment management}
   - capability: engineering.domain.use-case.business-connectivity
     semantic_claims:
       - {claim: engineering.application.use-cases, subject: BC-BUSINESS-CONNECTIVITY}
+      - {claim: engineering.application.use-cases, subject: Business process and connectivity need}
   - capability: engineering.domain.use-case.access-policy
     semantic_claims:
       - {claim: engineering.application.use-cases, subject: BC-ACCESS-POLICY}
+      - {claim: engineering.application.use-cases, subject: Access request}
+      - {claim: engineering.application.use-cases, subject: Policy rule}
   - capability: engineering.application.journey
     semantic_claims:
       - engineering.application.use-cases
       - engineering.application.orchestration
       - engineering.application.failures
-      - {claim: engineering.application.use-cases, subject: Resource management}
-      - {claim: engineering.application.use-cases, subject: Application management}
-      - {claim: engineering.application.use-cases, subject: Component management}
-      - {claim: engineering.application.use-cases, subject: Interaction management}
-      - {claim: engineering.application.use-cases, subject: Deployment management}
-      - {claim: engineering.application.use-cases, subject: Business process and connectivity need}
-      - {claim: engineering.application.use-cases, subject: Access request}
-      - {claim: engineering.application.use-cases, subject: Policy rule}
       - {claim: engineering.application.use-cases, subject: Policy export}
   - capability: engineering.architecture.c4-model
     semantic_claims: [engineering.architecture.structure]

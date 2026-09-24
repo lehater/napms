@@ -207,13 +207,7 @@ authorities:
         requires:
           - engineering.hcd.application-components.user-needs
           - engineering.hcd.application-components.requirements
-          - engineering.domain.tactical.organization-structure
-          - engineering.domain.tactical.resource-catalogue
-          - engineering.domain.tactical.authority-management
           - engineering.domain.tactical.application-communication
-          - engineering.domain.tactical.application-deployment
-          - engineering.domain.tactical.business-connectivity
-          - engineering.domain.tactical.access-policy
       - capability: engineering.hcd.access-request.task-model
         knowledge_kind: task-model
         requires:
@@ -243,13 +237,7 @@ authorities:
         requires:
           - engineering.hcd.application-components.task-model
           - engineering.hcd.application-components.requirements
-          - engineering.domain.tactical.organization-structure
-          - engineering.domain.tactical.resource-catalogue
-          - engineering.domain.tactical.authority-management
           - engineering.domain.tactical.application-communication
-          - engineering.domain.tactical.application-deployment
-          - engineering.domain.tactical.business-connectivity
-          - engineering.domain.tactical.access-policy
       - capability: engineering.hcd.access-request.user-journey
         knowledge_kind: user-journey-design
         requires:

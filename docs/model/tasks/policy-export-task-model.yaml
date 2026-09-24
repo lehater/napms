@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: task-model
 id: NAPMS-HCD-POLICY-EXPORT-TASK-MODEL
 status: ACCEPTED
@@ -19,35 +19,40 @@ requirement_refs:
   - REQ-EXP-006
   - REQ-EXP-007
   - REQ-PROV-001
+  - REQ-RULE-004
+  - REQ-RULE-006
+  - REQ-RULE-007
 
 purpose: >-
-  Define the work for exporting the policy that has actually been formed, while
-  showing incomplete address realization explicitly instead of converting it into
-  a global UNRESOLVED workflow state.
+  Define the work for exporting current effective authorization episodes while
+  showing incomplete address realization explicitly and preserving permission
+  and business provenance without reviving revoked or otherwise non-effective history.
 
 plan:
   - id: EXPORT-TASK-1
     responsibility: USER
-    outcome: The desired policy scope is selected.
+    outcome: The desired current policy scope is selected.
     required_information:
-      - current Policy Rule identity and state
-      - enough policy meaning to select all current policy or an explicit subset
-    decision: Export all current effective policy or an explicit Policy Rule subset.
+      - current PolicyRule authorization-episode identity
+      - exact access meaning and current effectiveness
+      - enough policy meaning to select all current policy or an explicit current subset
+    decision: Export all current effective policy or an explicit current PolicyRule subset.
 
   - id: EXPORT-TASK-2
     responsibility: SYSTEM
     depends_on: [EXPORT-TASK-1]
-    outcome: The selected effective policy is evaluated coherently.
+    outcome: The selected current policy is evaluated coherently.
     system_support:
       - use one logical evaluation time and coherent snapshot
-      - enforce policy.export authority for selected Resource scopes
-      - retain per-Rule permission/business provenance
-      - exclude selected Rules that are not effective at evaluation time from technical rows
+      - include only non-revoked authorization episodes whose EffectiveWindow applies at evaluation time
+      - derive applicable Organization or OrganizationalUnit scopes from current participating Resource ownership
+      - reevaluate policy.export authority for every applicable selected scope
+      - retain per-episode permission and business provenance
 
   - id: EXPORT-TASK-3
     responsibility: SYSTEM
     depends_on: [EXPORT-TASK-2]
-    outcome: Each selected effective Policy Rule is represented in an enriched vendor-neutral table.
+    outcome: Each selected current effective PolicyRule is represented in an enriched vendor-neutral table.
     system_support:
       - resolve source/destination Resource identities and human-recognizable names
       - resolve immutable InteractionRevision traffic clauses
@@ -56,35 +61,36 @@ plan:
       - mark whether a row is technically READY or INCOMPLETE
     rule: >-
       Missing current address realization does not make the whole export UNRESOLVED
-      and must not silently remove the corresponding policy meaning. An INCOMPLETE
-      row is not a deployable firewall permit.
+      and must not silently remove the corresponding current policy meaning. An
+      INCOMPLETE row is not a deployable firewall permit.
 
   - id: EXPORT-TASK-4
     responsibility: USER
     depends_on: [EXPORT-TASK-3]
-    outcome: The user can inspect or hand off the complete enriched policy representation.
+    outcome: The user can inspect or hand off the complete enriched current-policy representation.
     required_information:
       - Resource names/identities
       - source/destination addresses when known
       - protocol and port semantics
       - row technical readiness
-      - evaluation time and provenance
-    decision: Use READY rows as fully materialized technical rules and treat INCOMPLETE rows as policy whose current address realization is missing.
+      - evaluation time
+      - authorization and business provenance
+    decision: Use READY rows as fully materialized technical rules and treat INCOMPLETE rows as current policy whose address realization is missing.
 
 alternate_and_recovery:
-  - trigger: A selected effective Rule has no current source or destination IP/prefix.
+  - trigger: A selected current effective PolicyRule has no current source or destination IP/prefix.
     system_outcome: Export succeeds with an INCOMPLETE enriched row carrying Resource identity/name and null address fields.
     user_work: No mandatory recovery workflow is required; the user may complete Resource address data and export again later.
-  - trigger: A selected Rule is inactive or otherwise non-effective.
-    system_outcome: It contributes no effective technical row and remains separately explainable as non-effective.
-  - trigger: Export authority is absent for selected scope.
+  - trigger: A historical PolicyRule episode is revoked or outside its EffectiveWindow at evaluationAt.
+    system_outcome: It contributes no current effective technical row and never silently becomes effective again.
+  - trigger: Export authority is absent for any applicable selected Organization or OrganizationalUnit scope.
     system_outcome: Reject export; do not expose the selected policy result.
 
 sufficiency_review:
   status: ACCEPTED
-  accepted_at: 2026-09-23
-  resolved_questions: [Q-EXPORT-02]
+  accepted_at: 2026-09-24
   basis:
-    - current-stakeholder-input:2026-09-23
+    - docs/discovery/first-mvp-hcd-user-needs.yaml
     - docs/requirements/first-mvp-product-requirements.yaml
+    - docs/model/use-cases/first-mvp-policy-export.yaml
   unresolved_questions: []
