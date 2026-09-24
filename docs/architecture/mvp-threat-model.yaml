@@ -1,30 +1,34 @@
-version: 3
+version: 4
 kind: threat-model
 id: NAPMS-MVP-THREAT-MODEL
 status: CURRENT
-scope: OIDC HTTP modular-monolith PostgreSQL and vendor-neutral policy materialization.
+scope: OIDC external Group membership HTTP modular-monolith Organization/Authority/Access Policy PostgreSQL and vendor-neutral policy materialization.
 method: STRIDE-oriented design review
 
 threats:
-  - {id: TM-SPOOF-001, category: Spoofing, concern: Caller forges actor permissions or authority., control: Only validated bearer JWT establishes Principal permissions and AuthorityGrants; caller or forwarded overrides are ignored.}
-  - {id: TM-AUTHZ-002, category: Elevation-of-Privilege, concern: One valid scope grant is reused for other Resource scopes., control: Request and export require matching effective grant for every distinct relevant AuthorityScopeRef.}
-  - {id: TM-METADATA-003, category: Elevation-of-Privilege, concern: Site owner administrator Process or Need metadata is treated as authority., control: Those facts explicitly never create AuthorityGrants or AuthorityScopeRef.}
-  - {id: TM-PERM-004, category: Tampering, concern: DENIED request creates desired access or old decision silently applies to changed traffic., control: DENIED creates no Rule; AccessSubject includes exact immutable InteractionRevision.}
-  - {id: TM-PROV-005, category: Repudiation, concern: Request export authority or permission provenance is lost., control: RequestAuthorityEvidence AuthorizationEvidence and ExportAuthorityEvidence preserve actor scope time and decision provenance.}
-  - {id: TM-EXPORT-006, category: Information-Disclosure, concern: Export subset exposes Rules outside actor scope., control: All selected Resource scopes are authorized before materialization result exposure.}
-  - {id: TM-OIDC-007, category: Spoofing, concern: Algorithm confusion stale keys or downgrade issuer/JWKS transport., control: Asymmetric allow-list kid exact issuer audience time validation HTTPS-only discovery/JWKS and deterministic max-stale policy.}
-  - {id: TM-DOS-008, category: Denial-of-Service, concern: Large export or dependency failure yields partial successful artifact., control: Request-body bound bounded/chunked traversal preflight before HTTP 200 and truncated stream is not a valid artifact.}
+  - {id: TM-SPOOF-001, category: Spoofing, concern: Caller forges ActorRef permissions Group membership or authority input., control: Only validated bearer JWT establishes authenticated ActorRef and token-backed Group membership evidence; NAPMS Role/RoleAssignment truth is server-owned and caller/forwarded overrides are ignored.}
+  - {id: TM-GROUP-002, category: Elevation-of-Privilege, concern: Stale or forged external Group membership grants current authority after IdP membership changed., control: Signed access-token membership is the accepted bounded-freshness snapshot; every protected action reevaluates RoleAssignments against the current token and changes take effect no later than token renewal/expiry; malformed or unresolved membership fails closed.}
+  - {id: TM-AUTHZ-003, category: Elevation-of-Privilege, concern: Authority for one Organization or Unit scope is reused for another or inherited across Organization boundary., control: Authority Management resolves current ScopeTarget hierarchy server-side; parent inheritance is same-Organization only and any applicable DENY overrides ALLOW.}
+  - {id: TM-METADATA-004, category: Elevation-of-Privilege, concern: Resource ownership Site descriptive responsibility Process or Need metadata is treated as permission., control: Those facts never create RoleAssignment or authority; Resource ownership only supplies administrative affiliation used to resolve semantic scope.}
+  - {id: TM-APPROVAL-005, category: Elevation-of-Privilege, concern: A user approves a required side without current authority or bypasses self-approval policy., control: Every approval action reevaluates access.decide authority for the immutable required side and enforces the submitted ApprovalPolicyRevision self-approval rule before changing request state.}
+  - {id: TM-PERM-006, category: Tampering, concern: A non-Allowed terminal request creates access or an old permission silently applies to changed traffic., control: DENIED CANCELLED EXPIRED and INVALIDATED create no PolicyRule; AccessSubject contains exact immutable InteractionRevision and pre-Allow semantic revalidation invalidates material loss.}
+  - {id: TM-DUPLICATE-007, category: Tampering, concern: Concurrent duplicate submissions or grants create parallel pending decisions or multiple current authorization episodes., control: PostgreSQL partial uniqueness plus owner transaction semantics enforce at most one PENDING AccessRequest and at most one non-revoked current PolicyRule per exact AccessSubject.}
+  - {id: TM-REVOKE-008, category: Elevation-of-Privilege, concern: Unauthorized revocation or reactivation rewrites current access., control: Revocation requires current policy.revoke authority for either participating administrative side, records immutable RevocationEvidence and is terminal for that PolicyRule; regrant requires a new request and decision.}
+  - {id: TM-PROV-009, category: Repudiation, concern: Submission approval permission revocation or export authority provenance is lost., control: AuthorityEvidence ApprovalDecision AuthorizationEvidence RevocationEvidence and ExportAuthorityEvidence preserve principal scope time and decision provenance without relying on current authority state.}
+  - {id: TM-EXPORT-010, category: Information-Disclosure, concern: Export exposes PolicyRules outside actor authority., control: Every applicable selected Organization/OrganizationalUnit scope is reevaluated for policy.export at one evaluationAt before materialization result exposure.}
+  - {id: TM-OIDC-011, category: Spoofing, concern: Algorithm confusion stale keys or downgrade issuer/JWKS transport., control: Asymmetric allow-list kid exact issuer audience time validation HTTPS-only discovery/JWKS and deterministic max-stale policy.}
+  - {id: TM-DOS-012, category: Denial-of-Service, concern: Large export or dependency failure yields partial successful artifact., control: Request-body bound bounded/chunked traversal preflight before HTTP 200 and truncated stream is not a valid artifact.}
 
 deferred_nonblocking:
   - production infrastructure hardening beyond the accepted application and deployment boundary
 
 vulnerability_management:
   - Runtime and build dependencies used by the accepted backend are version-locked by the implementation baseline.
-  - Material known advisories affecting the accepted OIDC, HTTP, PostgreSQL or serialization trust boundary are reviewed before release/update.
+  - Material known advisories affecting the accepted OIDC HTTP PostgreSQL or serialization trust boundary are reviewed before release/update.
   - A material unresolved advisory that invalidates an accepted control becomes a Security Question or blocks release; no universal CVSS threshold is invented.
 
 secure_development:
-  - Security-sensitive changes preserve fail-closed OIDC validation, scoped authorization, trusted-time boundaries and secret-redaction rules.
-  - Caller-controlled identity, permission, authority or provenance is never accepted as trusted input.
+  - Security-sensitive changes preserve fail-closed OIDC validation current Role/RoleAssignment authority evaluation deny-overrides trusted-time boundaries and secret-redaction rules.
+  - Caller-controlled identity permission Group membership RoleAssignment authority or provenance is never accepted as trusted input.
   - Security controls are verified through executable API/security evidence rather than assumed from framework defaults.
   - Dependency/framework changes that alter the trust boundary require threat-model revalidation.

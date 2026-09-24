@@ -45,7 +45,11 @@ schemas=api.get("components",{}).get("schemas",{})
 def walk(value,path=""):
     if isinstance(value,dict):
         for key,item in value.items():
-            if key.lower() in {"actor","actorid","actor_id","permissions","authoritygrants","authority_grants"}:
+            if key.lower() in {
+                "actor","actorid","actor_id","permissions",
+                "authoritygrants","authority_grants","roleassignments","role_assignments",
+                "groupmembership","group_membership",
+            }:
                 fail(f"trusted security field appears in request schema at {path}/{key}")
             walk(item,f"{path}/{key}")
     elif isinstance(value,list):
@@ -65,13 +69,22 @@ interaction=schemas.get("CreateInteractionRequest",{}).get("required",[])
 if interaction!=["sourceComponentRef","destinationComponentRef"]:
     fail("Interaction contract must not require one owning Application")
 
-decision=schemas.get("DecideAccessRequestRequest",{}).get("properties",{}).get("result",{})
-if decision.get("enum")!=["ALLOWED","DENIED"]:
-    fail("permission decision enum differs")
+approval=schemas.get("RecordApprovalDecisionRequest",{}).get("properties",{}).get("result",{})
+if approval.get("enum")!=["APPROVED","DENIED"]:
+    fail("approval decision enum differs")
 
-operational=schemas.get("SetPolicyRuleOperationalStateRequest",{}).get("properties",{}).get("effectState",{})
-if operational.get("enum")!=["ACTIVE","INACTIVE"]:
-    fail("PolicyRule operational state differs")
+request_status=schemas.get("AccessRequestView",{}).get("properties",{}).get("status",{})
+if request_status.get("enum")!=["PENDING","ALLOWED","DENIED","CANCELLED","EXPIRED","INVALIDATED"]:
+    fail("AccessRequest terminal lifecycle differs")
+
+rule_state=schemas.get("PolicyRuleView",{}).get("properties",{}).get("revocationState",{})
+if rule_state.get("enum")!=["CURRENT","REVOKED"]:
+    fail("PolicyRule revocation lifecycle differs")
+
+if "DecideAccessRequestRequest" in schemas:
+    fail("stale direct final permission decision request remains")
+if "SetPolicyRuleOperationalStateRequest" in schemas:
+    fail("stale reversible PolicyRule operational-state request remains")
 
 materialization=schemas.get("PolicyMaterializationResult",{})
 required=set(materialization.get("required",[]))
@@ -84,28 +97,52 @@ if request.get("minItems")!=1 or request.get("uniqueItems") is not True:
     fail("explicit Rule subset contract differs")
 
 create_resource=schemas.get("CreateResourceRequest",{})
-if "authorityScopeRef" not in create_resource.get("required",[]):
-    fail("Resource authorityScopeRef missing")
+required_create=set(create_resource.get("required",[]))
+if "organizationalUnitRef" not in required_create or "authorityScopeRef" in required_create:
+    fail("Resource organizational-owner creation contract differs")
+
+resource_view=schemas.get("ResourceView",{})
+resource_required=set(resource_view.get("required",[]))
+for field in ("resourceRef","organizationalUnitRef","version","current","history"):
+    if field not in resource_required:
+        fail(f"ResourceView missing required {field}")
+if "authorityScopeRef" in str(resource_view):
+    fail("stale Resource AuthorityScopeRef semantics remain")
+history=schemas.get("ResourceHistory",{})
+if "organizationalOwnership" not in set(history.get("required",[])):
+    fail("Resource ownership history is not explicit")
+
+org_unit=schemas.get("OrganizationalUnitView",{})
+for field in ("organizationalUnitRef","organizationRef","lifecycleState","version"):
+    if field not in set(org_unit.get("required",[])):
+        fail(f"OrganizationalUnitView missing required {field}")
+
+policy=schemas.get("ApprovalPolicyView",{})
+if not {"policyRef","organizationRef","currentRevision"}.issubset(set(policy.get("required",[]))):
+    fail("ApprovalPolicy current immutable revision contract differs")
+
+required_new_ops={
+    "GET /v1/organization",
+    "POST /v1/organizational-units",
+    "PUT /v1/resources/{resourceRef}/organizational-owner",
+    "POST /v1/approval-policies/{organizationRef}/revisions",
+    "POST /v1/access-requests/{requestRef}/approval-decisions",
+    "POST /v1/access-requests/{requestRef}/cancellation",
+    "POST /v1/policy-rules/{policyRuleRef}/revocation",
+}
+if not required_new_ops.issubset(set(actual)):
+    fail(f"revalidated operations missing: {sorted(required_new_ops-set(actual))}")
+
+for stale in (
+    "POST /v1/access-requests/{requestRef}/decision",
+    "PUT /v1/policy-rules/{policyRuleRef}/operational-state",
+):
+    if stale in actual:
+        fail(f"stale operation remains: {stale}")
 
 process=schemas.get("CreateProcessRequest",{}).get("properties",{})
 if "criticalityLabel" not in process:
     fail("BusinessProcess criticalityLabel missing")
-
-resource_view=schemas.get("ResourceView",{})
-resource_required=set(resource_view.get("required",[]))
-for field in ("resourceRef","authorityScopeRef","version","current","history"):
-    if field not in resource_required:
-        fail(f"ResourceView missing required {field}")
-if "scopeAffiliations" in str(resource_view):
-    fail("stale Resource scope-affiliation semantics remain")
-
-required_resource_ops={
-    "DELETE /v1/resources/{resourceRef}/endpoints/{endpointRef}/address",
-    "PUT /v1/resources/{resourceRef}/site",
-    "PUT /v1/resources/{resourceRef}/responsibilities/{role}",
-}
-if not required_resource_ops.issubset(set(actual)):
-    fail(f"Resource curation operations missing: {sorted(required_resource_ops-set(actual))}")
 
 payload_response=api.get("components",{}).get("responses",{}).get("PayloadTooLarge")
 if not isinstance(payload_response,dict):
@@ -119,19 +156,27 @@ for path,item in api.get("paths",{}).items():
             fail(f"{method.upper()} {path} request body has no 413 response")
 
 text=API.read_text(encoding="utf-8")
-for forbidden in ("RuleChange","SessionCookie","napms_session","same Application"):
+for forbidden in (
+    "RuleChange","SessionCookie","napms_session","same Application",
+    "authorityScopeRef","AuthorityGrant","effectState","operational-state",
+    "DecideAccessRequestRequest","SetPolicyRuleOperationalStateRequest",
+):
     if forbidden in text:
         fail(f"stale contract term remains: {forbidden}")
 
 ui=(ROOT/"docs/contracts/ui/resource-detail.yaml").read_text(encoding="utf-8")
-for forbidden in ("Responsibility Scope affiliations", "scope affiliations", "GET /api/resources/{resourceId}"):
+for forbidden in (
+    "Responsibility Scope affiliations","scope affiliations",
+    "immutable AuthorityScopeRef","authorityScopeRef",
+    "GET /api/resources/{resourceId}",
+):
     if forbidden in ui:
         fail(f"stale Resource UI semantic remains: {forbidden}")
 for required in (
-    "immutable AuthorityScopeRef",
+    "current OrganizationalUnit owner",
+    "PUT /v1/resources/{resourceRef}/organizational-owner",
+    "ownership history",
     "GET /v1/resources/{resourceRef}",
-    "Endpoint address realizations",
-    "OWNER/ADMINISTRATOR",
 ):
     if required not in ui:
         fail(f"Resource UI missing current semantic: {required}")

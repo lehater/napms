@@ -1,0 +1,17 @@
+version: 1
+kind: use-case-model
+id: NAPMS-UC-APPLICATION-COMMUNICATION
+knowledge_coverage:
+  subject: BC-APPLICATION-COMMUNICATION-CATALOGUE
+  knowledge: domain-use-case
+requirement_refs: [REQ-APP-001, REQ-APP-002, REQ-INT-001, REQ-INT-002, REQ-INT-003]
+bounded_context_refs: [BC-APPLICATION-COMMUNICATION-CATALOGUE]
+
+behavior: |-
+  Users shall be able to define and reuse an Application communication profile independently from concrete deployment, Resource realization or software-inventory identity; define participant Components as communication roles rather than network devices; and define independently meaningful directed Interactions only between Components of the same Application.
+
+interaction_semantics: |-
+  Multiple directed Interactions may exist for the same Component pair when they represent distinct communication reasons or independently applicable meaning. Each Interaction owns one independently meaningful communication reason and complete minimal traffic semantics through immutable InteractionRevision history. A materially changed traffic meaning is represented by a new immutable revision rather than rewriting the earlier revision.
+
+integrity: |-
+  Cross-Application Interaction is rejected. Application and Component identity are reusable communication-model truth and do not imply deployment placement or current network realization.

@@ -1,4 +1,4 @@
-version: 3
+version: 4
 kind: application-architecture-rules
 id: NAPMS-MVP-SYSTEM-RULES
 status: CURRENT
@@ -7,36 +7,47 @@ requirements_ref: docs/requirements/first-mvp-product-requirements.yaml
 architecture_driver_closure_ref: docs/requirements/first-mvp-architecture-driver-closure.yaml
 structural_model_ref: docs/architecture/structurizr/workspace.dsl
 
-architecture_goal: Realize the accepted backend MVP as one modular-monolith process plus PostgreSQL and external OIDC, preserving owner boundaries and complete policy materialization.
+architecture_goal: Realize the accepted backend MVP as one modular-monolith process plus PostgreSQL and external OIDC while preserving Organization Resource Authority Access Policy ownership and complete current-policy materialization.
 
 application_boundary_rules:
   design_rule: One HTTP/JSON application boundary orchestrates owner modules; internal Bounded Context interaction is in-process through explicit contracts.
   required_capabilities:
-    - manage Resource Site responsibility AuthorityScopeRef Endpoints and address realization
+    - manage Organization and OrganizationalUnit hierarchy reparenting retirement and stable history
+    - manage Resource current OrganizationalUnit ownership history Site descriptive responsibility Endpoints and address realization
     - manage reusable Applications Components Interactions and immutable InteractionRevisions
     - create ComponentDeployments
     - manage BusinessProcess criticality and participant-attributed ConnectivityNeeds
-    - submit AccessRequests and record final ALLOWED or DENIED decisions
-    - manage PolicyRule Active/Inactive EffectiveWindow and additional Need justification
-    - materialize all current policy or explicit Rule subset with scoped export admission
-  error_rule: Missing current Resource address remains explicit as an INCOMPLETE enriched export row; missing durable owner truth or dependency failure is not a successful materialization.
+    - manage Role Action and temporal RoleAssignment truth and evaluate current authority with hierarchy inheritance deny-overrides and external Group membership
+    - submit exact AccessRequests with immutable ApprovalBasis and required approval sides; support PENDING to ALLOWED DENIED CANCELLED EXPIRED or INVALIDATED without reopen
+    - create one distinct PolicyRule authorization episode per ALLOWED request, enforce at most one current episode per exact AccessSubject, support terminal revocation and declarative EffectiveWindow
+    - materialize all current effective policy or an explicit current Rule subset with scoped export admission
+  error_rule: Missing current Resource address remains explicit as an INCOMPLETE enriched export row; missing durable owner truth unresolved identity/group dependency or other required dependency failure is not a successful domain or materialization result.
 
 interaction_rules:
   - Owner modules interact in-process through public application/read ports; HTTP and database tables are not internal integration boundaries.
   - Cross-owner references are opaque owner-defined identities; consumers do not duplicate peer mutable truth.
-  - AccessRequest submission validates current Need under an owner-provided lock, resolves the source Resource AuthorityScopeRef and requires access.request authority only for that source scope; destination scope is not request-admission authority.
-  - DENIED finalization mutates only AccessRequest and creates no PolicyRule.
-  - ALLOWED finalization atomically resolves or creates one Rule per AccessSubject and appends authorization and justification evidence.
+  - Organization Structure owns Organization and OrganizationalUnit hierarchy/lifecycle; Resource Catalogue owns only each Resource's current OrganizationalUnitRef and ownership history.
+  - Authority Management owns Role/RoleAssignment truth and evaluates exact PrincipalRef Action ScopeTarget and time; Resource ownership Site responsibility and business metadata never grant authority.
+  - AccessRequest submission validates current business basis under owner-provided consistency control, resolves the source Resource current organizational owner and requires access.request authority for the applicable source Organization or Unit scope; destination-side request authority is not required merely to submit.
+  - Access Policy resolves immutable ApprovalBasis and ApprovalObligations at submission; repeated exact submission while PENDING identifies the existing request rather than creating a parallel approval process.
+  - Every approve or deny action re-evaluates current authority for the action and required side; completed approval evidence remains historical after later authority loss.
+  - DENIED CANCELLED EXPIRED and INVALIDATED finalization mutate only AccessRequest-owned state/evidence and create no PolicyRule.
+  - ALLOWED finalization creates one new PolicyRule authorization episode for the exact AccessSubject only after all required approvals and semantic revalidation; an existing historical episode is never reactivated or reused as the new episode.
+  - PolicyRule revocation is terminal for that authorization episode and never rewrites the earlier Allowed request or approval evidence; regrant requires a new request decision and PolicyRule.
+  - PolicyRule revocation evaluates current policy.revoke authority for the source and destination administrative sides and succeeds when either participating side independently authorizes the actor; the other side cannot veto revocation.
   - Policy materialization is read-only composition and owns no domain truth.
   - Materialization uses one read-only REPEATABLE READ snapshot and database transaction_timestamp() as evaluationAt.
-  - Export authority for every distinct selected Resource scope is evaluated at the same evaluationAt before result exposure.
-  - Preflight validates selected Rule references, durable deployment/revision/Resource truth and export authority before HTTP 200 commitment; ordinary missing current Resource address is represented inside the enriched COMPLETE result as row-level INCOMPLETE data. Post-commit stream failure is not a valid export artifact.
+  - Export authority for every applicable selected current Organization or OrganizationalUnit scope is evaluated at the same evaluationAt before result exposure.
+  - Preflight validates selected current Rule references durable deployment/revision/Resource/Organization truth and export authority before HTTP 200 commitment; ordinary missing current Resource address is represented inside the enriched COMPLETE result as row-level INCOMPLETE data. Post-commit stream failure is not a valid export artifact.
 
 consistency:
   local: Aggregate invariants are transactional in the owning module.
-  request_submission: Business Connectivity current-Need validation lock is held through Access Policy request commit; Access Policy does not write peer state.
-  allowed_finalization: AccessRequest finalization PolicyRule resolve/create AuthorizationEvidence initial justification and idempotency result commit atomically.
-  export: One shared read snapshot covers selection authority evaluation effectiveness provenance and technical realization.
+  organization_hierarchy: Reparent and retirement validate cross-aggregate hierarchy/resource-ownership preconditions before committing the owning Unit lifecycle change; ordinary Resource ownership mutation never crosses Organization boundary.
+  request_submission: Business Connectivity current-basis validation is held through Access Policy request commit; exact-PENDING uniqueness and immutable ApprovalBasis are committed atomically with the request.
+  approval_action: One approval/denial decision plus current AuthorityEvidence and request aggregate version update commit atomically.
+  allowed_finalization: AccessRequest terminal ALLOWED outcome, new PolicyRule authorization episode, AuthorizationEvidence, initial justification and current-authorization uniqueness commit atomically.
+  revocation: PolicyRule revocation and its audit evidence commit atomically; revoked episode cannot become current again.
+  export: One shared read snapshot covers selection current authority evaluation effectiveness provenance organizational ownership and technical realization.
 
 deployment:
   baseline: One stateless backend binary with explicit migrate and serve modes, PostgreSQL, external HTTPS OIDC issuer and trusted ingress terminating external TLS.

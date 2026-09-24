@@ -1,0 +1,63 @@
+version: 1
+kind: tactical-domain-model
+id: NAPMS-ORG-DOMAIN-MODEL
+bounded_context_ref: BC-ORGANIZATION-STRUCTURE
+knowledge_coverage:
+  subject: BC-ORGANIZATION-STRUCTURE
+  knowledge: tactical-domain-model
+depends_on: [NAPMS-UC-ORGANIZATION-STRUCTURE]
+
+aggregates:
+  - aggregate_id: AGG-ORGANIZATION
+    name: Organization
+    root_entity_ref: ENTITY-ORGANIZATION
+    consistency_basis:
+      - Organization identity is stable and is the root security boundary.
+      - Ordinary lifecycle never physically deletes or reuses Organization identity.
+  - aggregate_id: AGG-ORGANIZATIONAL-UNIT
+    name: OrganizationalUnit
+    root_entity_ref: ENTITY-ORGANIZATIONAL-UNIT
+    consistency_basis:
+      - OrganizationalUnit identity is stable.
+      - OrganizationRef is immutable for the lifetime of the Unit.
+      - ParentUnitRef may change only through explicit same-Organization reparenting.
+      - ACTIVE to RETIRED is terminal for current use while history remains explainable.
+
+entities:
+  - entity_id: ENTITY-ORGANIZATION
+    name: Organization
+    identity: OrganizationId
+    attributes: [LifecycleState]
+  - entity_id: ENTITY-ORGANIZATIONAL-UNIT
+    name: OrganizationalUnit
+    identity: OrganizationalUnitId
+    attributes: [OrganizationRef, ParentUnitRef, LifecycleState]
+
+value_objects:
+  - {value_object_id: VO-ORGANIZATION-ID, name: OrganizationId, semantics: Stable opaque Organization identity.}
+  - {value_object_id: VO-ORGANIZATION-REF, name: OrganizationRef, semantics: Stable reference to the owning Organization.}
+  - {value_object_id: VO-ORGANIZATIONAL-UNIT-ID, name: OrganizationalUnitId, semantics: Stable opaque Unit identity.}
+  - {value_object_id: VO-PARENT-UNIT-REF, name: ParentUnitRef, semantics: Optional reference to the current parent Unit inside the same Organization.}
+  - {value_object_id: VO-LIFECYCLE-STATE, name: LifecycleState, semantics: ACTIVE or RETIRED; retirement is non-destructive.}
+
+domain_services:
+  - service_id: SERVICE-ORGANIZATION-HIERARCHY
+    name: OrganizationHierarchy
+    responsibility: Coordinate hierarchy changes that require reading more than one OrganizationalUnit aggregate and current Resource ownership.
+    operations:
+      - reparent_unit validates same Organization target, prevents cycles and preserves Unit identity plus subtree identity.
+      - retire_unit requires no ACTIVE child Unit and no Resource currently owned by the Unit before recording RETIRED.
+
+invariants:
+  - {invariant_id: INV-ORG-STABLE-IDENTITY, rule: Organization and OrganizationalUnit identifiers are never reused or physically erased by ordinary lifecycle operations.}
+  - {invariant_id: INV-ORG-SAME-BOUNDARY, rule: A Unit belongs to exactly one Organization for its lifetime and reparenting never crosses that Organization boundary.}
+  - {invariant_id: INV-ORG-ACYCLIC, rule: ParentUnitRef never creates a hierarchy cycle.}
+  - {invariant_id: INV-ORG-REPARENT-CONTINUITY, rule: Reparenting preserves Unit identity and the identities of its descendants.}
+  - {invariant_id: INV-ORG-RETIREMENT, rule: A Unit may retire only with no ACTIVE child Unit and no currently owned Resource; retirement never deletes history.}
+
+public_semantics: [OrganizationRef, OrganizationalUnitRef, ParentUnitRef, ACTIVE, RETIRED, ReparentOrganizationalUnit, RetireOrganizationalUnit]
+
+deliberately_not_decided_here:
+  - persistence representation
+  - HTTP representation
+  - cross-Organization Resource migration workflow

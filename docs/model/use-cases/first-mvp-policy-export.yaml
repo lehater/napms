@@ -1,13 +1,14 @@
-version: 3
+version: 4
 kind: cross-context-use-case
 id: FIRST-MVP-POLICY-EXPORT
 status: CURRENT
 
 requirements_ref: docs/requirements/first-mvp-product-requirements.yaml
 requirements_id: NAPMS-FIRST-MVP-PRODUCT-REQUIREMENTS
-purpose: Realize all accepted first-MVP backend requirements without moving semantic ownership into the composition layer.
+purpose: Compose the accepted first-MVP connectivity-request, approval, authorization-episode and vendor-neutral policy-export flow without moving owner semantics into the composition layer or claiming unrelated backend behavior.
 
 participating_strategic_owners:
+  - Organization Structure
   - Resource Catalogue
   - Application Communication Catalogue
   - Application Deployment
@@ -20,51 +21,60 @@ supporting_owner:
 workflow_composition:
   name: Current Vendor-Neutral Policy Materialization
   peer_bounded_context: false
-  responsibility: Compose selected owner truth and scoped export admission into a complete enriched vendor-neutral policy representation without owning domain truth.
+  responsibility: Compose selected owner truth, approval/authorization lifecycle and scoped export admission into a complete enriched vendor-neutral current-policy representation without owning domain truth.
 
 required_semantics:
-  - Resource has immutable AuthorityScopeRef and explicit logical Endpoints whose current address may change independently.
+  - Organization is the root security boundary and OrganizationalUnits form a stable non-destructive hierarchy inside it.
+  - Resource has exactly one current OrganizationalUnit owner with ownership history; same-Organization owner moves preserve Resource identity and cross-Organization transfer is separate migration semantics.
   - Application is a reusable network communication profile rather than a concrete software-system inventory identity.
-  - Every Interaction connects Components of the same Application; cross-Application Interaction is invalid.
-  - Several independent Interactions may exist for the same directed Component pair.
+  - Every Interaction connects Components of the same Application; several independent Interactions may exist for the same directed Component pair and material traffic change publishes a new immutable InteractionRevision.
   - ComponentDeployment binds one Component to one Resource and is independent from current address.
-  - Deliberate AccessRequest requires one current participant-attributed Process-backed ConnectivityNeed.
-  - AccessRequest requires effective access.request authority for the source Resource scope at server-owned admissionAt; destination request authority is not required merely to submit the request.
-  - DENIED creates no PolicyRule.
-  - ALLOWED resolves one PolicyRule per exact AccessSubject(source Deployment, destination Deployment, immutable InteractionRevision).
-  - PolicyRule supports reversible ACTIVE/INACTIVE and absolute EffectiveWindow without new permission decision.
-  - Additional current Needs add justification without duplicating Rule; zero current Needs is reconciliation and not automatic revocation.
-  - Export selects all Rules or an explicit Rule subset and requires effective policy.export authority for all distinct selected Resource scopes at evaluationAt.
+  - Deliberate AccessRequest requires Process-backed business justification and exact AccessSubject(source Deployment, destination Deployment, immutable InteractionRevision).
+  - Request submission requires current access.request authority for the source side's applicable Organization or OrganizationalUnit scope at submission time; destination-side request authority is not required merely to submit.
+  - Submission preserves immutable ApprovalBasis and ApprovalObligations derived from applicable immutable ApprovalPolicyRevisions; at most one PENDING request exists for one exact AccessSubject.
+  - While PENDING the requester may cancel, accepted policy may expire the request, and each approval action reevaluates the acting principal's current authority for its side; completed approvals remain historical after later authority loss.
+  - Any required denial yields DENIED; all required approvals plus pre-Allow semantic revalidation are necessary for ALLOWED; material loss of submitted meaning, Resources, deployments or business basis yields INVALIDATED.
+  - PENDING transitions only to ALLOWED, DENIED, CANCELLED, EXPIRED or INVALIDATED and terminal requests never reopen.
+  - Every ALLOWED request creates one distinct PolicyRule authorization episode; DENIED CANCELLED EXPIRED and INVALIDATED create none.
+  - At most one current non-revoked authorization episode exists per exact AccessSubject; revocation is terminal for that episode and regrant requires a new request, decision and PolicyRule.
+  - Either participating administrative side may independently revoke a current authorization episode when the actor has current policy.revoke authority for that side; revocation never requires approval from the other side.
+  - EffectiveWindow may control whether a non-revoked authorization episode contributes at evaluation time without changing decided meaning.
+  - Resource address or Endpoint realization changes do not redefine access identity or historical permission evidence.
+  - Additional current Needs add justification without duplicating current authorization; zero current Needs is reconciliation and not automatic revocation.
+  - Export selects current effective authorization episodes for all policy or an explicit subset and requires current policy.export authority for every applicable selected Organization or OrganizationalUnit scope at evaluationAt.
   - One database-owned logical evaluationAt and one coherent read snapshot govern effectiveness and materialization.
-  - Every selected Rule has self-contained permission/business provenance; selected effective Rules are represented even when current address realization is missing.
+  - Every selected current effective authorization episode has self-contained permission/business provenance; selected effective policy remains represented when current address realization is missing.
   - Missing current source or destination address is represented by an enriched INCOMPLETE row with Resource identity/name and null address rather than a global UNRESOLVED result or silent omission.
 
 cross_context_flow:
-  - {step: 1, owner: Resource Catalogue, result: Resources exist with immutable AuthorityScopeRef plus logical Endpoints and current HostAddress-or-Prefix realization when known.}
-  - {step: 2, owner: Application Communication Catalogue, result: Applications Components independent directed Interactions and exact immutable InteractionRevisions exist.}
-  - {step: 3, owner: Application Deployment, result: Concrete source and destination ComponentDeployments bind participating Components to Resources.}
-  - {step: 4, owner: Business Connectivity, result: Current Process-backed participant-attributed ConnectivityNeed supplies business justification.}
-  - {step: 5, owner: Authority Management, result: Request actor is effective for access.request on the source Resource scope at admissionAt; destination scope authority is not required for submission.}
-  - {step: 6, owner: Access Policy, result: AccessRequest is submitted; DENIED creates no Rule and ALLOWED resolves one exact-subject PolicyRule with authorization evidence and initial justification.}
-  - {step: 7, owner: Access Policy, result: PolicyRule may be ACTIVE or INACTIVE and may carry an absolute EffectiveWindow; additional Needs may attach without changing identity.}
-  - {step: 8, owner: Authority Management, result: Export actor is effective for policy.export on every distinct selected Resource scope at the database-owned evaluationAt.}
-  - {step: 9, owner: Current Vendor-Neutral Policy Materialization, result: One coherent snapshot produces one complete enriched policy representation with provenance; READY rows have complete address/protocol/port tuples and INCOMPLETE rows retain policy/Resource meaning with missing addresses explicit.}
+  - {step: 1, owner: Organization Structure, result: Organization and ACTIVE OrganizationalUnits establish current administrative hierarchy and semantic authority scope targets.}
+  - {step: 2, owner: Resource Catalogue, result: Resources exist with exactly one current OrganizationalUnit owner plus logical Endpoints and current HostAddress-or-Prefix realization when known.}
+  - {step: 3, owner: Application Communication Catalogue, result: Applications Components independent directed Interactions and exact immutable InteractionRevisions exist.}
+  - {step: 4, owner: Application Deployment, result: Concrete source and destination ComponentDeployments bind participating Components to Resources.}
+  - {step: 5, owner: Business Connectivity, result: Current Process-backed participant-attributed ConnectivityNeed supplies business justification.}
+  - {step: 6, owner: Authority Management, result: Request actor is currently effective for access.request on the source side's applicable Organization or OrganizationalUnit scope at submission time.}
+  - {step: 7, owner: Access Policy, result: Exact AccessRequest is created or an existing exact PENDING request is identified; immutable ApprovalBasis and ApprovalObligations are preserved.}
+  - {step: 8, owner: Authority Management, result: Every approve or deny action reevaluates the acting principal's current authority for the required side and records historical AuthorityEvidence.}
+  - {step: 9, owner: Access Policy, result: Request reaches one terminal outcome; ALLOWED creates one distinct PolicyRule authorization episode after semantic revalidation while other terminal outcomes create none.}
+  - {step: 10, owner: Authority Management, result: Export actor is currently effective for policy.export on every applicable selected Organization or OrganizationalUnit scope at the database-owned evaluationAt.}
+  - {step: 11, owner: Current Vendor-Neutral Policy Materialization, result: One coherent snapshot produces one complete enriched current-policy representation with provenance; READY rows have complete address/protocol/port tuples and INCOMPLETE rows retain policy/Resource meaning with missing addresses explicit.}
 
 materialization_join:
-  policy: PolicyRule exact AccessSubject plus operational state window authorization evidence and justification refs
+  policy: non-revoked current PolicyRule authorization episode for exact AccessSubject plus EffectiveWindow AuthorizationEvidence and justification refs
   traffic: ResolveInteractionRevision(interactionRevisionRef) -> canonical TrafficClauses
-  endpoints: ResolveComponentDeployment(source/destination) -> ResourceRef; Resource -> all logical Endpoints with current address when known, retaining Resource identity/name when address is absent
+  endpoints: ResolveComponentDeployment(source/destination) -> ResourceRef; Resource -> current OrganizationalUnitRef plus all logical Endpoints with current address when known, retaining Resource identity/name when address is absent
   business: Resolve associated Needs -> current or retired justification plus reconciliation
-  authority: selected Resource AuthorityScopeRefs -> effective policy.export grants at evaluationAt
-  result_rule: Preserve independent Rule provenance and exact traffic semantics; no provider-specific rendering.
+  authority: current Resource organizational owners -> Organization or OrganizationalUnit ScopeTargets -> current effective policy.export authority at evaluationAt
+  result_rule: Preserve independent authorization-episode provenance and exact traffic semantics; no provider-specific rendering.
 
 context_model_refs:
+  Organization Structure: docs/model/contexts/organization-structure/domain-model.yaml
   Resource Catalogue: docs/model/contexts/resource-catalogue/domain-model.yaml
+  Authority Management: docs/model/contexts/authority-management/domain-model.yaml
   Application Communication Catalogue: docs/model/contexts/application-communication-catalogue/domain-model.yaml
   Application Deployment: docs/model/contexts/application-deployment/domain-model.yaml
   Business Connectivity: docs/model/contexts/business-connectivity/domain-model.yaml
   Access Policy: docs/model/contexts/access-policy/domain-model.yaml
-  Authority Management: docs/model/contexts/authority-management/language.yaml
 
 strategic_refs:
   capabilities: docs/model/strategic/capabilities.yaml

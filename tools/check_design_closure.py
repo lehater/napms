@@ -26,6 +26,7 @@ from engineering_coverage import evaluate_with_repository_policy, load_scope_sou
 from integration_alignment import validate_project_alignment  # noqa: E402
 
 from evaluate_frontend_coverage_semantics import evaluate as evaluate_frontend_coverage_semantics
+from evaluate_security_identity_semantics import evaluate as evaluate_security_identity_semantics
 
 
 def load(relative: str):
@@ -160,6 +161,7 @@ def main() -> int:
         projection,
         consumer="BACKEND-IMPLEMENTATION",
         obligations_path="docs/harness/coverage/backend-subject-obligations-v1.yaml",
+        semantic_evaluations=evaluate_security_identity_semantics(),
     )
     coverage_check(
         graph,

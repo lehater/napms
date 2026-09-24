@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: implementation-plan
 id: NAPMS-MVP-FRONTEND-IMPLEMENTATION-DESIGN
 status: CURRENT
@@ -18,13 +18,15 @@ implementation_boundary:
   includes:
     - local-dev authentication bootstrap into the canonical bearer boundary
     - application shell/routing and canonical API boundary
-    - Resource management
+    - Organization Structure administration within the Resource-management subject
+    - Resource management with current OrganizationalUnit ownership/history
     - Application/Component/Interaction management
     - ComponentDeployment management
     - Business Process/Connectivity Need management
-    - Access Request submission/outcome
-    - Policy Rule inspection/operational-state changes
-    - Policy Export selection/result/completeness diagnostics
+    - Approval Policy current-revision inspection/publication
+    - Access Request submission ApprovalBasis/progress side decisions cancellation and terminal outcomes
+    - Policy Rule authorization-episode inspection/revocation/justification
+    - Policy Export selection/result with row-level completeness diagnostics
     - shared accessibility/responsiveness/error-state obligations
   excludes:
     - new product/domain semantics
@@ -36,9 +38,9 @@ sequence:
   - realize shared Presentation System tokens/pattern primitives and application shell without changing canonical design semantics
   - establish local-dev sign-in bootstrap, runtime bearer state and API boundary/error mapping
   - establish application shell composition behind the authenticated runtime gate
-  - implement Resource and Application/Component/Interaction features
+  - implement Organization Structure Resource and Application/Component/Interaction features
   - implement Deployment and Business Connectivity features
-  - implement Access Request and Policy Rule features
+  - implement Approval Policy Access Request and Policy Rule features
   - implement Policy Export feature
   - satisfy shared accessibility/responsiveness evidence
   - run subject-specific feature/integration/end-to-end verification
@@ -51,7 +53,7 @@ delivery:
 completion_definition:
   - every REQUIRED frontend subject in docs/harness/coverage/frontend-subject-obligations-v1.yaml has exact subject-scoped semantic proof;
   - all selected frontend capabilities are materialized by canonical design artifacts;
-  - all nine canonical workspaces have accepted Screen/View composition inheriting the shared Presentation System;
+  - all eleven canonical workspaces have accepted Screen/View composition inheriting the shared Presentation System;
   - frontend verification/test contracts are executable and green when implementation is authorized;
   - no unresolved design Question blocks FRONTEND-IMPLEMENTATION;
   - Engineering Coverage for FRONTEND-IMPLEMENTATION is complete.

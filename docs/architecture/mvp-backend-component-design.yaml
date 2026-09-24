@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: component-design
 id: NAPMS-MVP-BACKEND-COMPONENT-DESIGN
 status: CURRENT
@@ -36,24 +36,24 @@ components:
 
   composition:
     responsibility: Assemble concrete adapters and module applications into one runtime.
-    depends_on: [resource-catalogue, application-communication-catalogue, application-deployment, business-connectivity, access-policy, authority-management, policy-materialization, http-adapter, persistence-adapters, identity-adapter, diagnostics]
+    depends_on: [organization-structure, resource-catalogue, application-communication-catalogue, application-deployment, business-connectivity, access-policy, authority-management, policy-materialization, http-adapter, persistence-adapters, identity-adapter, diagnostics]
     may_contain: [dependency wiring, transaction/snapshot wiring, runtime lifecycle wiring]
     must_not_contain: [domain rules, transport-specific business decisions]
 
   http-adapter:
     responsibility: Realize the accepted OpenAPI contract and translate HTTP requests/responses to application/module contracts.
-    depends_on: [resource-catalogue, application-communication-catalogue, application-deployment, business-connectivity, access-policy, policy-materialization, authority-management, diagnostics]
+    depends_on: [organization-structure, resource-catalogue, application-communication-catalogue, application-deployment, business-connectivity, access-policy, policy-materialization, authority-management, diagnostics]
     may_contain: [routing, request decoding, response encoding, HTTP error mapping, correlation extraction]
     must_not_contain: [domain state mutation outside module contracts, persistence access]
 
   identity-adapter:
-    responsibility: Validate accepted OIDC/JWKS identity semantics and supply authenticated principal/grant input to Authority Management.
+    responsibility: Validate accepted OIDC/JWKS identity semantics and supply authenticated ActorRef plus signed external Group-membership evidence to Authority Management.
     depends_on: [authority-management, diagnostics]
-    must_not_contain: [resource scope invention, product permission decisions]
+    must_not_contain: [Role or RoleAssignment truth, Organization scope invention, product permission decisions]
 
   persistence-adapters:
     responsibility: Implement module-owned repositories and shared transaction/snapshot mechanics against the accepted PostgreSQL design.
-    depends_on: [resource-catalogue, application-communication-catalogue, application-deployment, business-connectivity, access-policy, authority-management, policy-materialization, diagnostics]
+    depends_on: [organization-structure, resource-catalogue, application-communication-catalogue, application-deployment, business-connectivity, access-policy, authority-management, policy-materialization, diagnostics]
     may_contain: [SQL, row mapping, migration execution, repository implementations, transaction/snapshot coordination]
     must_not_contain: [cross-module table coupling, domain rule ownership]
 
@@ -62,10 +62,15 @@ components:
     depends_on: []
     must_not_contain: [domain outcome reinterpretation, secret-bearing diagnostic payloads]
 
+  organization-structure:
+    responsibility: Own Organization and OrganizationalUnit identity hierarchy reparenting retirement and declared read/application ports.
+    depends_on: []
+    contracts: [CreateOrganizationalUnit, ReparentOrganizationalUnit, RetireOrganizationalUnit, ResolveOrganizationalUnit, ResolveOrganizationHierarchy]
+
   resource-catalogue:
-    responsibility: Own Resource Catalogue domain/application behavior and its declared in-process ports.
-    depends_on: [authority-management]
-    contracts: [RegisterResource, AddEndpoint, SetEndpointAddress, ClearEndpointAddress, SetSite, SetResponsibility, ResolveResource, ReadResourceDetail, ResolveAuthorityScope, CurrentEndpointAddresses]
+    responsibility: Own Resource Catalogue behavior including exactly one current OrganizationalUnit owner plus ownership/address/Site/responsibility history.
+    depends_on: [organization-structure, authority-management]
+    contracts: [RegisterResource, MoveResourceOrganizationalOwner, AddEndpoint, SetEndpointAddress, ClearEndpointAddress, SetSite, SetResponsibility, ResolveResource, ReadResourceDetail, CurrentEndpointAddresses]
 
   application-communication-catalogue:
     responsibility: Own Application, Component and Interaction domain/application behavior and declared ports.
@@ -83,18 +88,18 @@ components:
     contracts: [RegisterBusinessProcess, SetResponsibleOrganization, SetCriticalityLabel, DeclareNeed, RetireNeed, LockAndResolveCurrentNeed, ResolveNeedCurrentOrHistory]
 
   access-policy:
-    responsibility: Own AccessRequest and PolicyRule behavior, evidence and operational history.
-    depends_on: [business-connectivity, application-communication-catalogue, application-deployment, authority-management, resource-catalogue]
-    contracts: [SubmitAccessRequest, RecordPermissionDecision, SetPolicyRuleOperationalState, AttachPolicyRuleJustification, ReadPolicyRule, PageCurrentPolicyRules]
+    responsibility: Own ApprovalPolicy revisions terminal AccessRequest lifecycle side approval evidence distinct PolicyRule authorization episodes revocation and justification history.
+    depends_on: [organization-structure, business-connectivity, application-communication-catalogue, application-deployment, authority-management, resource-catalogue]
+    contracts: [PublishApprovalPolicyRevision, SubmitAccessRequest, RecordApprovalDecision, CancelAccessRequest, ExpireAccessRequest, RevalidateAndAllowAccessRequest, RevokePolicyRule, AttachPolicyRuleJustification, ReadAccessRequest, ReadPolicyRule, PageCurrentPolicyRules]
 
   authority-management:
-    responsibility: Own evaluation of authenticated scoped authority grants.
-    depends_on: []
-    contracts: [RequireScopedAuthority]
+    responsibility: Own Role and temporal RoleAssignment lifecycle plus current fail-closed authority evaluation with hierarchy inheritance deny-overrides and external Group membership evidence.
+    depends_on: [organization-structure]
+    contracts: [CreateRole, RetireRole, AssignRole, EndRoleAssignment, RequireEffectiveAuthority]
 
   policy-materialization:
     responsibility: Orchestrate read-only current-policy materialization over owner read ports in one accepted snapshot.
-    depends_on: [access-policy, business-connectivity, application-communication-catalogue, application-deployment, resource-catalogue, authority-management]
+    depends_on: [access-policy, business-connectivity, application-communication-catalogue, application-deployment, organization-structure, resource-catalogue, authority-management]
     contracts: [MaterializeCurrentPolicy]
 
 dependency_rules:

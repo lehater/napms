@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: user-journey-design
 id: NAPMS-HCD-POLICY-EXPORT-JOURNEY
 status: ACCEPTED
@@ -11,38 +11,39 @@ actor: ACTOR-POLICY-NETWORK-USER
 goal_ref: GOAL-POLICY-EXPORT
 task_model_ref: NAPMS-HCD-POLICY-EXPORT-TASK-MODEL
 
-entry_condition: The user wants to inspect or hand off policy that has already been formed by accepted Policy Rules.
+entry_condition: The user wants to inspect or hand off current effective policy formed by non-revoked PolicyRule authorization episodes.
 
 preconditions:
-  - Policy Rules exist from ALLOWED access decisions.
-  - The actor has effective policy.export authority for the selected scope.
+  - At least one PolicyRule authorization episode exists from an ALLOWED AccessRequest.
+  - Current policy.export authority can be evaluated for the applicable selected policy scopes.
 
 interactions:
   - step: 1
-    user: Select all current effective policy or an explicit domain-policy subset.
-    system: Keep selection in Policy Rule terms rather than vendor/device syntax.
+    user: Select all current effective policy or an explicit current PolicyRule subset.
+    system: Keep selection in exact domain-policy terms rather than vendor/device syntax.
   - step: 2
     user: Execute export.
-    system: Evaluate the selected policy at one logical time in one coherent snapshot.
+    system: At one logical evaluation time determine non-revoked episodes whose EffectiveWindow applies, derive current Resource organizational scopes and reevaluate policy.export authority for every selected scope.
   - step: 3
-    system: Produce an enriched vendor-neutral table for every selected effective Rule, including Resource names/identities, protocol/ports, provenance and current addresses when known.
+    system: Produce an enriched vendor-neutral table for every selected current effective Rule, including Resource names/identities protocol/ports authorization/business provenance and current addresses when known.
   - step: 4
-    system: Mark rows with missing current address realization as INCOMPLETE with null address fields rather than omitting the policy or returning a global UNRESOLVED result.
+    system: Mark rows with missing current address realization as INCOMPLETE with null address fields rather than omitting current policy or returning a global UNRESOLVED result.
     user: Inspect READY and INCOMPLETE rows; optionally correct Resource address data and export again.
 
 alternate_paths:
-  - condition: A selected Rule is non-effective.
-    result: It contributes no effective technical row and is reported separately as non-effective.
+  - condition: A historical Rule episode is revoked or outside its EffectiveWindow.
+    result: It contributes no current effective row and remains historical; it never silently reactivates.
   - condition: Current source or destination address is missing.
-    result: The enriched row remains present with Resource identity/name, null address and INCOMPLETE technical status.
-  - condition: Export authority is denied.
+    result: The enriched row remains present with Resource identity/name null address and INCOMPLETE technical status.
+  - condition: Export authority is denied for any applicable selected scope.
     result: No selected policy export is exposed.
 
-completion_condition: The user receives one complete enriched representation of the selected effective policy at one evaluation time.
+completion_condition: The user receives one complete enriched representation of the selected current effective policy at one evaluation time.
 
 externally_visible_side_effects:
-  - Export is read-only and creates no policy truth.
-  - READY rows contain fully materialized network tuples; INCOMPLETE rows preserve policy meaning without pretending to be deployable permits.
+  - Export is read-only and creates no policy or authority truth.
+  - READY rows contain fully materialized network tuples; INCOMPLETE rows preserve current policy meaning without pretending to be deployable permits.
+  - Revoked or out-of-window historical authorization episodes are never silently exported as current access.
 
 upstream_refs:
   - docs/discovery/first-mvp-hcd-user-needs.yaml

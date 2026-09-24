@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: screen-view-design
 id: NAPMS-MVP-SCREEN-VIEW-DESIGN
 status: CURRENT
@@ -29,8 +29,81 @@ composition_contract:
   migration_gaps: []
 
 screens:
+  - id: ORGANIZATION-STRUCTURE
+    purpose: Inspect and administer the Organization/OrganizationalUnit hierarchy that owns Resource administrative affiliation and authority scope targets.
+    patterns: [DETAIL, STRUCTURED-LIST, EDITOR, TASK-ACTIONS, STATUS]
+    regions:
+      - {id: context, role: heading-context, priority: primary}
+      - {id: hierarchy, role: primary-content, pattern: STRUCTURED-LIST, priority: primary}
+      - {id: selected-unit, role: primary-content, pattern: DETAIL, priority: primary}
+      - {id: editor, role: task-editor, pattern: EDITOR, priority: primary}
+      - {id: actions, role: task-actions, priority: primary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: organization-structure-workspace
+      ordered_regions: [context, actions, hierarchy, selected-unit, editor, feedback]
+      hierarchy: {pattern: STRUCTURED-LIST}
+      selected-unit: {pattern: DETAIL}
+    primary_action_role: create-unit
+    action_hierarchy:
+      hierarchy: reparent-unit
+      lifecycle: retire-unit
+    states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
+    semantic_contract:
+      reads:
+        - {id: organization, operation_id: getOrganization, projection: OrganizationView}
+        - {id: units, operation_id: listOrganizationalUnits, projection: "OrganizationalUnitView[]"}
+        - {id: selected-unit, operation_id: getOrganizationalUnit, projection: OrganizationalUnitView}
+      commands:
+        - {id: create-unit, operation_id: createOrganizationalUnit}
+        - {id: reparent-unit, operation_id: reparentOrganizationalUnit}
+        - {id: retire-unit, operation_id: retireOrganizationalUnit}
+      view_model:
+        id: OrganizationStructureScreenModel
+        fields:
+          - {id: organization, source: read:organization}
+          - {id: units, source: read:units}
+          - {id: selected_unit_ref, source: read:selected-unit.organizationalUnitRef}
+          - {id: selected_parent_ref, source: read:selected-unit.parentUnitRef}
+          - {id: selected_lifecycle, source: read:selected-unit.lifecycleState}
+          - {id: selected_version, source: read:selected-unit.version}
+      capabilities:
+        allowed:
+          - {id: inspect-organization, backed_by: read:organization}
+          - {id: inspect-hierarchy, backed_by: read:units}
+          - {id: inspect-unit, backed_by: read:selected-unit}
+          - {id: create-unit, backed_by: command:create-unit}
+          - {id: reparent-unit, backed_by: command:reparent-unit}
+          - {id: retire-unit, backed_by: command:retire-unit}
+        excluded: [delete-organization, delete-unit, cross-organization-reparent]
+      pattern_mapping:
+        - {pattern: DETAIL, feature_bindings: {}}
+        - {pattern: STRUCTURED-LIST, feature_bindings: {}}
+        - {pattern: EDITOR, feature_bindings: {}}
+        - {pattern: TASK-ACTIONS, feature_bindings: {}}
+        - {pattern: STATUS, feature_bindings: {}}
+      state_mapping:
+        loading: [read:organization.pending, read:units.pending, read:selected-unit.pending]
+        loaded: [read:organization.200, read:units.200, read:selected-unit.200]
+        empty: read:units.200
+        editing: local:organization-structure-editor
+        submitting: [command:create-unit.pending, command:reparent-unit.pending, command:retire-unit.pending]
+        validation-rejected: [command:create-unit.422, command:reparent-unit.422, command:retire-unit.422]
+        authorization-rejected: [read:organization.401, read:organization.403, read:units.401, read:units.403, read:selected-unit.401, read:selected-unit.403, command:create-unit.401, command:create-unit.403, command:reparent-unit.401, command:reparent-unit.403, command:retire-unit.401, command:retire-unit.403]
+        conflict: [command:create-unit.409, command:reparent-unit.409, command:retire-unit.409]
+        not-found: read:selected-unit.404
+        technical-error: [read:organization.failure, read:units.failure, read:selected-unit.failure, command:create-unit.failure, command:reparent-unit.failure, command:retire-unit.failure]
+      verification:
+        contract: [operation:getOrganization, operation:listOrganizationalUnits, operation:createOrganizationalUnit, operation:getOrganizationalUnit, operation:reparentOrganizationalUnit, operation:retireOrganizationalUnit]
+        semantic: [organization-unit-identity-hierarchy-lifecycle-closure]
+        rendered: [organization-hierarchy-administration-conformance]
+    responsive:
+      - hierarchy identity and parent relation remain legible when the workspace reflows
+      - selected Unit lifecycle and administration actions remain available without relying on drag-only interaction
+    overrides: []
+
   - id: RESOURCE-CATALOGUE
-    purpose: Locate/select Resources and start supported Resource authoring.
+    purpose: Locate/select Resources and start supported Resource authoring using current OrganizationalUnit ownership.
     patterns: [CATALOGUE, FILTER-BAR, DATA-TABLE, EDITOR, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
@@ -49,10 +122,10 @@ screens:
         pattern: FILTER-BAR
         search: {source: query:listResources.search, matches: [displayName, resourceRef]}
         filters:
-          - {id: authority-scope-ref, source: query:listResources.authorityScopeRef}
+          - {id: organizational-unit-ref, source: query:listResources.organizationalUnitRef}
           - {id: site-ref, source: query:listResources.siteRef}
         sort:
-          fields: [displayName, resourceRef, authorityScopeRef]
+          fields: [displayName, resourceRef, organizationalUnitRef]
           default: {field: displayName, direction: asc}
         paging: {page: query:listResources.page, page_size: query:listResources.pageSize}
       resources:
@@ -60,7 +133,7 @@ screens:
         columns:
           - {id: display-name, role: primary-identity, sort: displayName}
           - {id: resource-reference, role: technical-identity, sort: resourceRef}
-          - {id: authority-scope, role: distinguishing-attribute, sort: authorityScopeRef}
+          - {id: organizational-owner, role: distinguishing-attribute, sort: organizationalUnitRef}
           - {id: site, role: current-fact}
           - {id: endpoints, role: current-fact-summary}
           - {id: responsibilities, role: current-fact-summary}
@@ -69,7 +142,7 @@ screens:
         pattern: EDITOR
         fields:
           - {id: display-name, source: request:createResource.displayName, required: true}
-          - {id: authority-scope-ref, source: request:createResource.authorityScopeRef, required: true}
+          - {id: organizational-unit-ref, source: request:createResource.organizationalUnitRef, required: true}
           - {id: site-ref, source: request:createResource.siteRef, required: false}
         submit_action: create-resource
     reference_adaptation:
@@ -94,9 +167,9 @@ screens:
           projection: ResourceCataloguePage
           query:
             search: {source: local:query.search, semantics: accepted-text-search}
-            authorityScopeRef: {source: local:query.filters.authority-scope-ref, semantics: exact-attribute-filter}
+            organizationalUnitRef: {source: local:query.filters.organizational-unit-ref, semantics: exact-attribute-filter}
             siteRef: {source: local:query.filters.site-ref, semantics: exact-attribute-filter}
-            sortBy: {source: local:query.sort.field, accepted: [displayName, resourceRef, authorityScopeRef]}
+            sortBy: {source: local:query.sort.field, accepted: [displayName, resourceRef, organizationalUnitRef]}
             sortDirection: {source: local:query.sort.direction, accepted: [asc, desc]}
             page: {source: local:query.page, minimum: 1}
             pageSize: {source: local:query.page-size, default: 25, maximum: 100}
@@ -111,7 +184,7 @@ screens:
           - {id: page_size, source: read:catalogue.pageSize}
           - {id: display_name, source: read:catalogue.items.displayName}
           - {id: resource_ref, source: read:catalogue.items.resourceRef}
-          - {id: authority_scope_ref, source: read:catalogue.items.authorityScopeRef}
+          - {id: organizational_unit_ref, source: read:catalogue.items.organizationalUnitRef}
           - {id: current, source: read:catalogue.items.current}
       capabilities:
         allowed:
@@ -142,16 +215,15 @@ screens:
         technical-error: [read:catalogue.failure, command:create-resource.failure]
       verification:
         contract: [operation:listResources-query-parameters, operation:createResource]
-        semantic: [resource-catalogue-query-capability-and-state-closure]
+        semantic: [resource-catalogue-organizational-owner-query-capability-and-state-closure]
         rendered: [resource-catalogue-filter-table-density-reference-conformance]
     responsive:
-      - collection preserves Resource identity, current distinguishing facts and open action
+      - collection preserves Resource identity current organizational owner current distinguishing facts and open action
       - query controls reflow without losing active state or clear action
       - table may become labeled records while preserving column labels and actions
     overrides: []
-
   - id: RESOURCE-DETAIL
-    purpose: Inspect and author one Resource current state and inspect history.
+    purpose: Inspect and author one Resource current organizational owner technical/descriptive facts and inspect history.
     patterns: [DETAIL, EDITOR, DISCLOSURE, TASK-ACTIONS, STATUS]
     source_contract: docs/contracts/ui/resource-detail.yaml
     regions:
@@ -164,7 +236,7 @@ screens:
       root: detail-workspace
       ordered_regions: [identity-context, current-facts, actions, history, feedback]
       current-facts:
-        groups: [site, endpoints, responsibilities]
+        groups: [organizational-owner, site, endpoints, responsibilities]
         interaction: contextual-editor
       history:
         pattern: DISCLOSURE
@@ -178,11 +250,14 @@ screens:
       not_adopted:
         - {reference_feature: legacy-detail-fields, reason: modern ResourceView and Resource contract remain semantic authority}
         - {reference_feature: legacy-mutation-shapes, reason: modern HTTP/current-state operations remain semantic authority}
+    action_hierarchy:
+      organization-owner: move-organizational-owner
     states: [loading, loaded, empty-current, not-found, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
     semantic_contract:
       reads:
         - {id: detail, operation_id: getResource, projection: ResourceView}
       commands:
+        - {id: move-organizational-owner, operation_id: moveResourceOrganizationalOwner}
         - {id: add-endpoint, operation_id: addResourceEndpoint}
         - {id: set-address, operation_id: setEndpointAddress}
         - {id: clear-address, operation_id: clearEndpointAddress}
@@ -192,6 +267,7 @@ screens:
         id: ResourceDetailScreenModel
         fields:
           - {id: identity, source: read:detail.resourceRef}
+          - {id: organizational_unit_ref, source: read:detail.organizationalUnitRef}
           - {id: current, source: read:detail.current}
           - {id: history, source: read:detail.history}
           - {id: version, source: read:detail.version}
@@ -199,8 +275,9 @@ screens:
         allowed:
           - {id: inspect-current, backed_by: read:detail}
           - {id: inspect-history, backed_by: read:detail}
+          - {id: move-organizational-owner, backed_by: command:move-organizational-owner}
           - {id: edit-current, backed_by: local:resource-current-editors}
-        excluded: [delete-resource, bulk-operation]
+        excluded: [delete-resource, cross-organization-owner-move, bulk-operation]
       pattern_mapping:
         - {pattern: DETAIL, feature_bindings: {show-primary: inspect-current, show-secondary: inspect-history}}
         - {pattern: EDITOR, feature_bindings: {}}
@@ -212,21 +289,20 @@ screens:
         loaded: read:detail.200
         empty-current: read:detail.200
         not-found: read:detail.404
-        submitting: [command:add-endpoint.pending, command:set-address.pending, command:clear-address.pending, command:set-site.pending, command:set-responsibility.pending]
-        validation-rejected: [command:set-address.422, command:set-site.422, command:set-responsibility.422]
-        authorization-rejected: [read:detail.401, read:detail.403, command:add-endpoint.401, command:add-endpoint.403, command:set-address.401, command:set-address.403, command:clear-address.401, command:clear-address.403, command:set-site.401, command:set-site.403, command:set-responsibility.401, command:set-responsibility.403]
-        conflict: [command:add-endpoint.409, command:set-address.409, command:clear-address.409, command:set-site.409, command:set-responsibility.409]
-        technical-error: [read:detail.failure, command:add-endpoint.failure, command:set-address.failure, command:clear-address.failure, command:set-site.failure, command:set-responsibility.failure]
+        submitting: [command:move-organizational-owner.pending, command:add-endpoint.pending, command:set-address.pending, command:clear-address.pending, command:set-site.pending, command:set-responsibility.pending]
+        validation-rejected: [command:move-organizational-owner.422, command:set-address.422, command:set-site.422, command:set-responsibility.422]
+        authorization-rejected: [read:detail.401, read:detail.403, command:move-organizational-owner.401, command:move-organizational-owner.403, command:add-endpoint.401, command:add-endpoint.403, command:set-address.401, command:set-address.403, command:clear-address.401, command:clear-address.403, command:set-site.401, command:set-site.403, command:set-responsibility.401, command:set-responsibility.403]
+        conflict: [command:move-organizational-owner.409, command:add-endpoint.409, command:set-address.409, command:clear-address.409, command:set-site.409, command:set-responsibility.409]
+        technical-error: [read:detail.failure, command:move-organizational-owner.failure, command:add-endpoint.failure, command:set-address.failure, command:clear-address.failure, command:set-site.failure, command:set-responsibility.failure]
       verification:
-        contract: [operation:getResource, operation:addResourceEndpoint, operation:setEndpointAddress, operation:clearEndpointAddress, operation:setResourceSite, operation:setResourceResponsibility]
-        semantic: [resource-detail-current-history-command-state-closure]
+        contract: [operation:getResource, operation:moveResourceOrganizationalOwner, operation:addResourceEndpoint, operation:setEndpointAddress, operation:clearEndpointAddress, operation:setResourceSite, operation:setResourceResponsibility]
+        semantic: [resource-detail-current-owner-history-command-state-closure]
         rendered: [resource-detail-reference-conformance]
     responsive:
-      - current facts remain before historical facts in reading order
+      - current organizational owner and current technical facts remain before historical facts in reading order
       - actions remain available with their affected fact group
-      - history remains secondary but directly discoverable
+      - ownership and other history remains secondary but directly discoverable
     overrides: []
-
   - id: APPLICATION-CATALOGUE
     purpose: Locate/select reusable Applications and start supported Application creation.
     patterns: [CATALOGUE, FILTER-BAR, DATA-TABLE, EDITOR, TASK-ACTIONS, STATUS]
@@ -632,8 +708,67 @@ screens:
       - Connectivity Needs remain labeled nested records inside the selected Business Process detail
     overrides: []
 
+  - id: APPROVAL-POLICY
+    purpose: Inspect the Organization approval policy currently used for new Access Requests and publish a new immutable revision for future submissions.
+    patterns: [DETAIL, EDITOR, OUTCOME, TASK-ACTIONS, STATUS]
+    regions:
+      - {id: context, role: heading-context, priority: primary}
+      - {id: current-policy, role: primary-content, pattern: DETAIL, priority: primary}
+      - {id: revision-editor, role: task-editor, pattern: EDITOR, priority: primary}
+      - {id: outcome, role: authoritative-outcome, pattern: OUTCOME, priority: primary}
+      - {id: actions, role: task-actions, priority: primary}
+      - {id: feedback, role: operation-status, priority: supporting}
+    composition:
+      root: approval-policy-workspace
+      ordered_regions: [context, current-policy, actions, revision-editor, outcome, feedback]
+    primary_action_role: publish-policy-revision
+    states: [loading, loaded, not-configured, editing, submitting, validation-rejected, authorization-rejected, conflict, technical-error]
+    semantic_contract:
+      reads:
+        - {id: policy, operation_id: getApprovalPolicy, projection: ApprovalPolicyView}
+      commands:
+        - {id: publish-policy-revision, operation_id: publishApprovalPolicyRevision}
+      view_model:
+        id: ApprovalPolicyScreenModel
+        fields:
+          - {id: policy_ref, source: read:policy.policyRef}
+          - {id: organization_ref, source: read:policy.organizationRef}
+          - {id: current_revision_ref, source: read:policy.currentRevision.revisionRef}
+          - {id: self_approval_allowed, source: read:policy.currentRevision.selfApprovalAllowed}
+          - {id: request_ttl_seconds, source: read:policy.currentRevision.requestTtlSeconds}
+          - {id: published_at, source: read:policy.currentRevision.publishedAt}
+      capabilities:
+        allowed:
+          - {id: inspect-current-policy, backed_by: read:policy}
+          - {id: publish-policy-revision, backed_by: command:publish-policy-revision}
+        excluded: [edit-published-revision, rewrite-request-approval-basis]
+      pattern_mapping:
+        - {pattern: DETAIL, feature_bindings: {show-primary: inspect-current-policy}}
+        - {pattern: EDITOR, feature_bindings: {}}
+        - {pattern: OUTCOME, feature_bindings: {}}
+        - {pattern: TASK-ACTIONS, feature_bindings: {primary: publish-policy-revision}}
+        - {pattern: STATUS, feature_bindings: {}}
+      state_mapping:
+        loading: read:policy.pending
+        loaded: read:policy.200
+        not-configured: read:policy.404
+        editing: local:approval-policy-revision-editor
+        submitting: command:publish-policy-revision.pending
+        validation-rejected: command:publish-policy-revision.422
+        authorization-rejected: [read:policy.401, read:policy.403, command:publish-policy-revision.401, command:publish-policy-revision.403]
+        conflict: command:publish-policy-revision.409
+        technical-error: [read:policy.failure, command:publish-policy-revision.failure]
+      verification:
+        contract: [operation:getApprovalPolicy, operation:publishApprovalPolicyRevision]
+        semantic: [approval-policy-immutable-revision-and-future-request-closure]
+        rendered: [approval-policy-detail-revision-conformance]
+    responsive:
+      - current revision semantics stay visible before the revision editor
+      - self-approval and expiration policy remain explicit text/state after reflow
+    overrides: []
+
   - id: ACCESS-REQUESTS
-    purpose: Locate/submit Access Requests and inspect or record immutable permission outcomes under backend-confirmed authority.
+    purpose: Locate/submit exact Access Requests, inspect immutable ApprovalBasis and approval progress, take currently authorized side decisions, cancel pending requests and inspect terminal outcomes.
     patterns: [CATALOGUE, FILTER-BAR, DATA-TABLE, DETAIL, EDITOR, OUTCOME, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
@@ -657,28 +792,29 @@ screens:
         filters:
           - {id: source-deployment-ref, source: query:listAccessRequests.sourceDeploymentRef}
           - {id: destination-deployment-ref, source: query:listAccessRequests.destinationDeploymentRef}
-          - {id: decision-result, source: query:listAccessRequests.decisionResult}
+          - {id: status, source: query:listAccessRequests.status}
         sort:
-          fields: [submittedAt, requestRef, decisionResult]
+          fields: [submittedAt, requestRef, status]
           default: {field: submittedAt, direction: asc}
         paging: {page: query:listAccessRequests.page, page_size: query:listAccessRequests.pageSize}
       requests:
         pattern: DATA-TABLE
         columns:
           - {id: request-reference, role: primary-identity, sort: requestRef}
-          - {id: decision, role: authoritative-outcome-summary, sort: decisionResult}
+          - {id: status, role: authoritative-outcome-summary, sort: status}
           - {id: source-deployment, role: distinguishing-attribute}
           - {id: destination-deployment, role: distinguishing-attribute}
           - {id: submitted-at, role: distinguishing-attribute, sort: submittedAt}
         row_action: open-access-request
     primary_action_role: submit-request
     action_hierarchy:
-      request: record-decision
-    authority_rule: Visible/enabled controls never establish request or decision authority; backend admission is authoritative.
+      approval: record-approval-decision
+      pending-request: cancel-request
+    authority_rule: Visible/enabled controls never establish request approval or cancellation authority; backend admission is authoritative and each approval action is reevaluated at action time.
     exits:
-      - select Access Request -> ACCESS-REQUESTS detail/decision route
-      - submit Access Request -> ACCESS-REQUESTS detail/decision route
-      - allowed decision may navigate to the resulting POLICY-RULES detail
+      - select Access Request -> ACCESS-REQUESTS detail route
+      - submit Access Request -> ACCESS-REQUESTS detail route
+      - ALLOWED outcome may navigate to the resulting POLICY-RULES detail
     states: [loading, loaded, empty, editing, submitting, validation-rejected, authorization-rejected, conflict, not-found, technical-error]
     semantic_contract:
       reads:
@@ -689,15 +825,16 @@ screens:
             search: {source: local:query.search, semantics: accepted-text-search}
             sourceDeploymentRef: {source: local:query.filters.source-deployment-ref, semantics: exact-attribute-filter}
             destinationDeploymentRef: {source: local:query.filters.destination-deployment-ref, semantics: exact-attribute-filter}
-            decisionResult: {source: local:query.filters.decision-result, accepted: [ALLOWED, DENIED]}
-            sortBy: {source: local:query.sort.field, accepted: [submittedAt, requestRef, decisionResult]}
+            status: {source: local:query.filters.status, accepted: [PENDING, ALLOWED, DENIED, CANCELLED, EXPIRED, INVALIDATED]}
+            sortBy: {source: local:query.sort.field, accepted: [submittedAt, requestRef, status]}
             sortDirection: {source: local:query.sort.direction, accepted: [asc, desc]}
             page: {source: local:query.page, minimum: 1}
             pageSize: {source: local:query.page-size, default: 25, maximum: 100}
         - {id: detail, operation_id: getAccessRequest, projection: AccessRequestView}
       commands:
         - {id: submit-request, operation_id: submitAccessRequest}
-        - {id: record-decision, operation_id: decideAccessRequest}
+        - {id: record-approval-decision, operation_id: recordAccessRequestApprovalDecision}
+        - {id: cancel-request, operation_id: cancelAccessRequest}
       view_model:
         id: AccessRequestScreenModel
         fields:
@@ -711,9 +848,14 @@ screens:
           - {id: interaction_revision_ref, source: read:detail.interactionRevisionRef}
           - {id: need_ref, source: read:detail.needRef}
           - {id: submitted_at, source: read:detail.submittedAt}
-          - {id: decision_result, source: read:detail.decisionResult}
-          - {id: decided_by_subject, source: read:detail.decidedBySubject}
-          - {id: decided_at, source: read:detail.decidedAt}
+          - {id: expires_at, source: read:detail.expiresAt}
+          - {id: status, source: read:detail.status}
+          - {id: approval_basis, source: read:detail.approvalBasis}
+          - {id: approval_obligations, source: read:detail.approvalObligations}
+          - {id: approval_decisions, source: read:detail.approvalDecisions}
+          - {id: terminal_reason, source: read:detail.terminalReason}
+          - {id: terminal_at, source: read:detail.terminalAt}
+          - {id: resulting_policy_rule_ref, source: read:detail.resultingPolicyRuleRef}
           - {id: version, source: read:detail.version}
       capabilities:
         allowed:
@@ -726,8 +868,9 @@ screens:
           - {id: submit-request, backed_by: command:submit-request}
           - {id: inspect-access-request, backed_by: read:detail}
           - {id: inspect-outcome, backed_by: read:detail}
-          - {id: record-decision, backed_by: command:record-decision}
-        excluded: [bulk-operation, inline-edit-request-subject, rewrite-final-decision]
+          - {id: record-approval-decision, backed_by: command:record-approval-decision}
+          - {id: cancel-request, backed_by: command:cancel-request}
+        excluded: [bulk-operation, inline-edit-request-subject, set-final-allowed-directly, reopen-terminal-request]
       pattern_mapping:
         - {pattern: CATALOGUE, feature_bindings: {open-item: open-access-request, create-item: submit-request}}
         - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
@@ -742,24 +885,23 @@ screens:
         loaded: [read:catalogue.200, read:detail.200]
         empty: read:catalogue.200
         editing: local:access-request-editor
-        submitting: [command:submit-request.pending, command:record-decision.pending]
-        validation-rejected: command:submit-request.422
-        authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, command:submit-request.401, command:submit-request.403, command:record-decision.401, command:record-decision.403]
-        conflict: [command:submit-request.409, command:record-decision.409]
+        submitting: [command:submit-request.pending, command:record-approval-decision.pending, command:cancel-request.pending]
+        validation-rejected: [command:submit-request.422, command:record-approval-decision.422, command:cancel-request.422]
+        authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, command:submit-request.401, command:submit-request.403, command:record-approval-decision.401, command:record-approval-decision.403, command:cancel-request.401, command:cancel-request.403]
+        conflict: [command:submit-request.409, command:record-approval-decision.409, command:cancel-request.409]
         not-found: read:detail.404
-        technical-error: [read:catalogue.failure, read:detail.failure, command:submit-request.failure, command:record-decision.failure]
+        technical-error: [read:catalogue.failure, read:detail.failure, command:submit-request.failure, command:record-approval-decision.failure, command:cancel-request.failure]
       verification:
-        contract: [operation:listAccessRequests-query-parameters, operation:getAccessRequest, operation:submitAccessRequest, operation:decideAccessRequest]
-        semantic: [access-request-catalogue-query-capability-and-state-closure, pending-is-null-decision-not-new-domain-enum]
-        rendered: [access-request-filter-table-detail-outcome-conformance]
+        contract: [operation:listAccessRequests-query-parameters, operation:getAccessRequest, operation:submitAccessRequest, operation:recordAccessRequestApprovalDecision, operation:cancelAccessRequest]
+        semantic: [access-request-terminal-lifecycle-approval-basis-authority-and-state-closure]
+        rendered: [access-request-filter-table-detail-approval-outcome-conformance]
     responsive:
-      - Request identity, subject deployments, submission time and outcome remain available when the catalogue reflows
+      - Request identity exact subject submission time status and approval progress remain available when the catalogue reflows
       - query controls reflow without losing active state or clear action
-      - immutable request subject and permission outcome remain jointly inspectable in detail
+      - immutable request basis approval history and terminal outcome remain jointly inspectable in detail
     overrides: []
-
   - id: POLICY-RULES
-    purpose: Locate authoritative desired-access rules, inspect one Rule and change supported operational state.
+    purpose: Locate current and historical authorization episodes, inspect one PolicyRule and revoke a current episode without rewriting its Allowed request or evidence.
     patterns: [CATALOGUE, FILTER-BAR, DATA-TABLE, DETAIL, EDITOR, OUTCOME, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
@@ -783,24 +925,26 @@ screens:
         filters:
           - {id: source-deployment-ref, source: query:listPolicyRules.sourceDeploymentRef}
           - {id: destination-deployment-ref, source: query:listPolicyRules.destinationDeploymentRef}
-          - {id: effect-state, source: query:listPolicyRules.effectState}
+          - {id: revocation-state, source: query:listPolicyRules.revocationState}
         sort:
-          fields: [policyRuleRef, effectState]
+          fields: [policyRuleRef, createdAt, revokedAt]
           default: {field: policyRuleRef, direction: asc}
         paging: {page: query:listPolicyRules.page, page_size: query:listPolicyRules.pageSize}
       rules:
         pattern: DATA-TABLE
         columns:
           - {id: policy-rule-reference, role: primary-identity, sort: policyRuleRef}
-          - {id: effect-state, role: authoritative-state, sort: effectState}
+          - {id: revocation-state, role: authoritative-state}
           - {id: source-deployment, role: distinguishing-attribute}
           - {id: destination-deployment, role: distinguishing-attribute}
           - {id: interaction-revision, role: distinguishing-attribute}
+          - {id: created-at, role: distinguishing-attribute, sort: createdAt}
         row_action: open-policy-rule
     primary_action_role: export-effective-policy
     action_hierarchy:
-      rule: change-supported-operational-state
+      authorization: revoke-current-authorization
       justification: attach-business-justification
+    authority_rule: Revocation controls never establish authority; backend current policy.revoke evaluation for either participating administrative side is authoritative.
     exits:
       - select Policy Rule -> POLICY-RULES detail route
       - export effective policy -> POLICY-EXPORT
@@ -814,14 +958,14 @@ screens:
             search: {source: local:query.search, semantics: accepted-text-search}
             sourceDeploymentRef: {source: local:query.filters.source-deployment-ref, semantics: exact-attribute-filter}
             destinationDeploymentRef: {source: local:query.filters.destination-deployment-ref, semantics: exact-attribute-filter}
-            effectState: {source: local:query.filters.effect-state, accepted: [ACTIVE, INACTIVE]}
-            sortBy: {source: local:query.sort.field, accepted: [policyRuleRef, effectState]}
+            revocationState: {source: local:query.filters.revocation-state, accepted: [CURRENT, REVOKED]}
+            sortBy: {source: local:query.sort.field, accepted: [policyRuleRef, createdAt, revokedAt]}
             sortDirection: {source: local:query.sort.direction, accepted: [asc, desc]}
             page: {source: local:query.page, minimum: 1}
             pageSize: {source: local:query.page-size, default: 25, maximum: 100}
         - {id: detail, operation_id: getPolicyRule, projection: PolicyRuleView}
       commands:
-        - {id: change-supported-operational-state, operation_id: setPolicyRuleOperationalState}
+        - {id: revoke-current-authorization, operation_id: revokePolicyRule}
         - {id: attach-business-justification, operation_id: attachPolicyRuleJustification}
       view_model:
         id: PolicyRuleScreenModel
@@ -831,14 +975,17 @@ screens:
           - {id: page, source: read:catalogue.page}
           - {id: page_size, source: read:catalogue.pageSize}
           - {id: policy_rule_ref, source: read:detail.policyRuleRef}
-          - {id: effect_state, source: read:detail.effectState}
+          - {id: access_request_ref, source: read:detail.accessRequestRef}
+          - {id: revocation_state, source: read:detail.revocationState}
           - {id: effective_window, source: read:detail.effectiveWindow}
           - {id: source_deployment_ref, source: read:detail.sourceDeploymentRef}
           - {id: destination_deployment_ref, source: read:detail.destinationDeploymentRef}
           - {id: interaction_revision_ref, source: read:detail.interactionRevisionRef}
+          - {id: created_at, source: read:detail.createdAt}
+          - {id: revoked_at, source: read:detail.revokedAt}
           - {id: authorization_evidence, source: read:detail.authorizationEvidence}
+          - {id: revocation_evidence, source: read:detail.revocationEvidence}
           - {id: justifications, source: read:detail.justifications}
-          - {id: operational_history, source: read:detail.operationalHistory}
           - {id: version, source: read:detail.version}
       capabilities:
         allowed:
@@ -850,10 +997,10 @@ screens:
           - {id: open-policy-rule, backed_by: navigation:policy-rule-detail}
           - {id: inspect-policy-rule, backed_by: read:detail}
           - {id: inspect-outcome, backed_by: read:detail}
-          - {id: change-supported-operational-state, backed_by: command:change-supported-operational-state}
+          - {id: revoke-current-authorization, backed_by: command:revoke-current-authorization}
           - {id: attach-business-justification, backed_by: command:attach-business-justification}
           - {id: export-effective-policy, backed_by: navigation:policy-export}
-        excluded: [bulk-operation, inline-edit-rule-subject, rewrite-authorization-evidence]
+        excluded: [bulk-operation, inline-edit-rule-subject, reactivate-revoked-episode, rewrite-authorization-evidence]
       pattern_mapping:
         - {pattern: CATALOGUE, feature_bindings: {open-item: open-policy-rule}}
         - {pattern: FILTER-BAR, feature_bindings: {search: search, filters: filter, sort: sort, clear: filter}}
@@ -867,25 +1014,24 @@ screens:
         loading: [read:catalogue.pending, read:detail.pending]
         loaded: [read:catalogue.200, read:detail.200]
         empty: read:catalogue.200
-        editing: local:policy-rule-editor
-        submitting: [command:change-supported-operational-state.pending, command:attach-business-justification.pending]
-        validation-rejected: [command:change-supported-operational-state.422, command:attach-business-justification.422]
-        authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, command:change-supported-operational-state.401, command:change-supported-operational-state.403, command:attach-business-justification.401, command:attach-business-justification.403]
-        conflict: [command:change-supported-operational-state.409, command:attach-business-justification.409]
+        editing: local:policy-rule-action-editor
+        submitting: [command:revoke-current-authorization.pending, command:attach-business-justification.pending]
+        validation-rejected: [command:revoke-current-authorization.422, command:attach-business-justification.422]
+        authorization-rejected: [read:catalogue.401, read:catalogue.403, read:detail.401, read:detail.403, command:revoke-current-authorization.401, command:revoke-current-authorization.403, command:attach-business-justification.401, command:attach-business-justification.403]
+        conflict: [command:revoke-current-authorization.409, command:attach-business-justification.409]
         not-found: read:detail.404
-        technical-error: [read:catalogue.failure, read:detail.failure, command:change-supported-operational-state.failure, command:attach-business-justification.failure]
+        technical-error: [read:catalogue.failure, read:detail.failure, command:revoke-current-authorization.failure, command:attach-business-justification.failure]
       verification:
-        contract: [operation:listPolicyRules-query-parameters, operation:getPolicyRule, operation:setPolicyRuleOperationalState, operation:attachPolicyRuleJustification]
-        semantic: [policy-rule-catalogue-query-capability-and-state-closure, materialization-selection-remains-independent-from-ui-paging]
-        rendered: [policy-rule-filter-table-detail-outcome-conformance]
+        contract: [operation:listPolicyRules-query-parameters, operation:getPolicyRule, operation:revokePolicyRule, operation:attachPolicyRuleJustification]
+        semantic: [policy-rule-authorization-episode-revocation-and-catalogue-closure, materialization-selection-remains-independent-from-ui-paging]
+        rendered: [policy-rule-filter-table-detail-revocation-outcome-conformance]
     responsive:
-      - Policy Rule identity, effect state and subject remain available when the catalogue reflows
+      - PolicyRule identity current-vs-revoked state and exact subject remain available when the catalogue reflows
       - query controls reflow without losing active state or clear action
-      - selected rule identity/state stays before provenance/history
+      - selected authorization episode stays before permission/revocation provenance
     overrides: []
-
   - id: POLICY-EXPORT
-    purpose: Select effective policy scope, execute normalized export and inspect completeness diagnostics.
+    purpose: Select current effective policy scope, execute normalized export and inspect row-level completeness diagnostics.
     patterns: [SCOPE-SELECTOR, OUTCOME, TASK-ACTIONS, STATUS]
     regions:
       - {id: context, role: heading-context, priority: primary}
@@ -901,7 +1047,7 @@ screens:
       export-result: {pattern: OUTCOME}
     primary_action_role: execute-export
     authority_rule: Visible/enabled controls never establish export authority; backend admission is authoritative.
-    states: [editing, submitting, complete-success, unresolved-or-degraded, validation-rejected, authorization-rejected, technical-error]
+    states: [editing, submitting, complete-success, complete-with-incomplete-rows, validation-rejected, authorization-rejected, technical-error]
     semantic_contract:
       reads: []
       commands:
@@ -918,7 +1064,7 @@ screens:
           - {id: select-scope, backed_by: local:policy-scope-selection}
           - {id: execute-export, backed_by: command:materialize-policy}
           - {id: inspect-outcome, backed_by: command:materialize-policy}
-        excluded: [search, filter, sort, bulk-edit, implicit-success-on-unresolved]
+        excluded: [search, filter, sort, bulk-edit, implicit-success-on-missing-address]
       pattern_mapping:
         - {pattern: SCOPE-SELECTOR, feature_bindings: {}}
         - {pattern: OUTCOME, feature_bindings: {summary: inspect-outcome, details: inspect-outcome, provenance: inspect-outcome}}
@@ -927,21 +1073,20 @@ screens:
       state_mapping:
         editing: local:policy-scope-selection
         submitting: command:materialize-policy.pending
-        complete-success: command:materialize-policy.200-COMPLETE
-        unresolved-or-degraded: command:materialize-policy.200-UNRESOLVED
+        complete-success: command:materialize-policy.200
+        complete-with-incomplete-rows: semantic:materialization-has-INCOMPLETE-rows
         validation-rejected: command:materialize-policy.422
         authorization-rejected: [command:materialize-policy.401, command:materialize-policy.403]
         technical-error: command:materialize-policy.failure
       verification:
         contract: [operation:materializeCurrentPolicy]
-        semantic: [policy-export-complete-vs-unresolved-state-closure]
+        semantic: [policy-export-complete-with-row-level-incomplete-state-closure]
         rendered: [policy-export-outcome-conformance]
     responsive:
       - scope and execute action remain visible before result
-      - completeness diagnostics remain distinct from technical failure
+      - row-level completeness diagnostics remain distinct from technical failure
       - provenance remains inspectable after reflow
     overrides: []
-
 global_rules:
   - every screen inherits NAPMS-MVP-PRESENTATION-SYSTEM;
   - no screen redefines common visual/presentation rules locally without an explicit justified override;
@@ -952,6 +1097,7 @@ global_rules:
 
 coverage:
   required_workspaces:
+    - ORGANIZATION-STRUCTURE
     - RESOURCE-CATALOGUE
     - RESOURCE-DETAIL
     - APPLICATION-CATALOGUE
@@ -959,8 +1105,9 @@ coverage:
     - DEPLOYMENTS
     - DEPLOYMENT-DETAIL
     - BUSINESS-CONNECTIVITY
+    - APPROVAL-POLICY
     - ACCESS-REQUESTS
     - POLICY-RULES
     - POLICY-EXPORT
-  semantic_contract_pilot: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, DEPLOYMENTS, DEPLOYMENT-DETAIL, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES, POLICY-EXPORT]
+  semantic_contract_pilot: [ORGANIZATION-STRUCTURE, RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, DEPLOYMENTS, DEPLOYMENT-DETAIL, BUSINESS-CONNECTIVITY, APPROVAL-POLICY, ACCESS-REQUESTS, POLICY-RULES, POLICY-EXPORT]
   rule: FRONTEND-IMPLEMENTATION is not presentation-complete unless every required workspace has explicit composition and inherits the shared Presentation System; pilot screens additionally require machine-checked semantic closure.

@@ -1,13 +1,18 @@
-version: 2
+version: 6
 kind: strategic-capability-model
 id: NAPMS-STRATEGIC-CAPABILITIES
 
 capabilities:
+  - capability_id: CAP-ORGANIZATION-STRUCTURE
+    name: Organization Structure
+    business_outcome: Maintain stable organizational identity and administrative hierarchy.
+    responsibility: Own Organization and OrganizationalUnit stable identity, parent-child hierarchy, explicit same-Organization reparenting, non-destructive ACTIVE/RETIRED lifecycle with history and root security-boundary semantics; a Unit retires only after active children and current Resource ownership have been removed.
+    language_terms: [Organization, OrganizationalUnit, organizational hierarchy, Reparent, Retired]
   - capability_id: CAP-RESOURCE-CATALOGUE
     name: Resource Catalogue
-    business_outcome: Maintain stable logical Resource truth and current network realization.
-    responsibility: Own Resource identity, AuthorityScopeRef affiliation, logical Endpoints, address realization, Site, responsibility and explanatory history.
-    language_terms: [Resource, AuthorityScopeRef, ResourceEndpoint, HostAddress, Prefix, Site, ResponsibilityGroup]
+    business_outcome: Maintain stable logical Resource truth, current organizational ownership and current network realization.
+    responsibility: Own Resource identity, exactly one current organizational owner within its Organization with ownership history, logical Endpoints, address realization, Site, descriptive responsibility and explanatory history; cross-Organization transfer is separate migration semantics rather than an ordinary ownership change.
+    language_terms: [Resource, OrganizationalUnitRef, ResourceEndpoint, HostAddress, Prefix, Site, ResponsibilityGroup]
   - capability_id: CAP-APPLICATION-COMMUNICATION-CATALOGUE
     name: Application Communication Catalogue
     business_outcome: Describe reusable network communication profiles and independently meaningful directed communication.
@@ -25,14 +30,14 @@ capabilities:
     language_terms: [BusinessProcess, ConnectivityNeed, criticalityLabel, business justification]
   - capability_id: CAP-ACCESS-POLICY
     name: Access Policy
-    business_outcome: Maintain deliberate requests, permission evidence and authoritative current desired access.
-    responsibility: Own AccessRequest, exact AccessSubject, PolicyRule, authorization evidence, business-justification associations and operational/effective state.
-    language_terms: [AccessRequest, AccessSubject, PolicyRule, AuthorizationEvidence, Active, Inactive, EffectiveWindow]
+    business_outcome: Maintain deliberate access requests, permission history and authoritative current effective access.
+    responsibility: Own terminal AccessRequest lifecycle PENDING to ALLOWED/DENIED/CANCELLED/EXPIRED/INVALIDATED and exact AccessSubject; preserve immutable submission-time ApprovalBasis while reevaluating approver authority at action time; preserve completed approvals after later authority loss; prevent more than one pending request for the same exact AccessSubject; own cross-Organization access eligibility, per-Organization ApprovalPolicy with immutable revisions including self-approval and expiration policy, pre-Allow semantic revalidation, approval/permission outcomes and evidence, authorization episodes, declarative effective conditions, terminal revocation/regrant semantics, business-justification associations and audit history.
+    language_terms: [AccessRequest, AccessSubject, ApprovalPolicy, ApprovalPolicyRevision, ApprovalBasis, ApprovalObligation, PolicyRule, Authorization Episode, AuthorizationEvidence, Current Effective Access, Revocation, EffectiveWindow]
   - capability_id: CAP-AUTHORITY-MANAGEMENT
     name: Authority Management
-    business_outcome: Evaluate effective actor action scope authority.
-    responsibility: Own effective actor/action/scope/time evaluation semantics over authenticated AuthorityGrants.
-    language_terms: [ActorRef, ActionRef, AuthorityScopeRef, AuthorityGrant, Effective Authority]
+    business_outcome: Evaluate effective principal action scope authority.
+    responsibility: Own stable ActorRef/GroupRef principal references, Role containing Actions, temporal RoleAssignments, System/Organization/OrganizationalUnit scope-target semantics without a separate mutable Scope entity, parent-to-descendant authority inheritance, explicit deny/exclusion with deny-overrides, Role retirement and fail-closed current effective authority reevaluation for every protected action; Group membership remains external IdP truth and historical authority evidence remains explainable.
+    language_terms: [ActorRef, GroupRef, PrincipalRef, Role, Action, RoleAssignment, Explicit Deny, System Scope, Organization Scope, OrganizationalUnit Scope, Effective Authority, AuthorityEvidence]
   - capability_id: CAP-NETWORK-ENFORCEMENT-PLACEMENT
     name: Network Enforcement Placement
     business_outcome: Identify candidate enforcement targets and policy locators.
@@ -55,6 +60,7 @@ capabilities:
     language_terms: [execution]
 
 peer_bounded_context_capabilities:
+  - CAP-ORGANIZATION-STRUCTURE
   - CAP-RESOURCE-CATALOGUE
   - CAP-APPLICATION-COMMUNICATION-CATALOGUE
   - CAP-APPLICATION-DEPLOYMENT

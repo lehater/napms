@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: user-journey-design
 id: NAPMS-HCD-ACCESS-REQUEST-JOURNEY
 status: ACCEPTED
@@ -11,48 +11,64 @@ actor: ACTOR-CONNECTIVITY-REQUESTER
 goal_ref: GOAL-ACCESS-REQUEST
 task_model_ref: NAPMS-HCD-ACCESS-REQUEST-TASK-MODEL
 
-entry_condition: The user needs network access from one Resource under their request authority.
+entry_condition: The user needs network access from one Resource for whose current organizational scope they have request authority.
 
 preconditions:
-  - Source and candidate destination Resources exist.
+  - Source and candidate destination Resources exist with current organizational owners.
   - Application communication profiles, Components, directed Interactions and concrete ComponentDeployments exist.
-  - A current Process-backed ConnectivityNeed can provide business justification for the selected Interaction.
+  - Current Process-backed business basis can justify the selected Interaction.
 
 interactions:
   - step: 1
-    system: Present source Resources for which the actor currently has access.request authority.
+    system: Present source Resources for which the actor currently has access.request authority on the applicable Organization or OrganizationalUnit scope.
     user: Select the Resource from which access is needed.
   - step: 2
     system: Derive technically possible communication candidates from deployed Components and directed Interactions and present destination Resources with communication meaning.
     user: Select the intended destination/communication candidate and applicable business justification.
   - step: 3
-    system: Resolve the exact source/destination deployments and immutable InteractionRevision and validate the current Need and source-scope request authority.
-    user: Review the selected source, destination, traffic meaning and business basis and submit.
+    system: Resolve exact deployments and immutable InteractionRevision, validate business basis and source-side request authority, and determine immutable ApprovalBasis plus required administrative sides.
+    user: Review source destination traffic meaning business basis and approval requirements, then submit.
   - step: 4
-    system: Persist the Access Request and expose its pending/final outcome without changing its subject.
+    system: Create the exact PENDING AccessRequest or identify the already-existing exact pending request; expose immutable subject approval basis and current approval progress.
+    user: Inspect the request and, while it remains PENDING, optionally cancel it.
   - step: 5
-    system: On ALLOWED create or resolve one PolicyRule; on DENIED persist decision actor/time and create no PolicyRule.
-    user: Inspect the final decision and, when allowed, the resulting policy access.
+    system: Accept approve/deny actions only from actors currently authorized for their required side, preserve completed approval evidence, and apply self-approval/expiration policy.
+  - step: 6
+    system: Before ALLOWED revalidate submitted meaning Resources deployments and business basis; terminate as INVALIDATED on material loss.
+  - step: 7
+    system: Preserve one terminal ALLOWED DENIED CANCELLED EXPIRED or INVALIDATED outcome; ALLOWED creates one distinct PolicyRule authorization episode and other outcomes create none.
+    user: Inspect the final outcome and, when allowed, the resulting current authorization episode.
 
 alternate_paths:
-  - condition: Source-scope request authority is absent.
-    result: Submission is rejected before Access Request creation; this is not a DENIED permission decision.
+  - condition: Source-side request authority is absent.
+    result: Submission is rejected before AccessRequest creation; this is not a DENIED permission decision.
+  - condition: Exact AccessSubject already has a PENDING request.
+    result: No parallel request is created; the existing request is opened.
   - condition: Destination has no technically possible deployed Interaction from the selected source.
     result: It is not offered as a requestable communication candidate.
+  - condition: Requester cancels while PENDING.
+    result: Request becomes CANCELLED and never reopens.
+  - condition: Request expires under accepted policy.
+    result: Request becomes EXPIRED and never reopens.
+  - condition: Submitted semantic basis materially ceases to apply before ALLOWED.
+    result: Request becomes INVALIDATED and no PolicyRule is created.
   - condition: Permission decision is DENIED.
-    result: Request history remains visible with decision/time/actor and no PolicyRule.
+    result: Request history remains visible with decision evidence and no PolicyRule.
   - condition: Permission decision is ALLOWED.
-    result: Exact-subject PolicyRule becomes authoritative desired access.
+    result: A new exact-subject PolicyRule authorization episode becomes current subject to its effective conditions.
 
-completion_condition: The request has an immutable subject and a final ALLOWED or DENIED outcome, with a PolicyRule only for ALLOWED.
+completion_condition: The exact request is either still PENDING and inspectable or has one terminal outcome; terminal requests never reopen and a PolicyRule exists only for ALLOWED.
 
 externally_visible_side_effects:
-  - Request history preserves submitter/time and final decision/time/actor.
-  - Allowed access becomes inspectable policy for the exact technical subject.
+  - Request history preserves immutable submission basis approval evidence and terminal outcome.
+  - Allowed access becomes inspectable as a distinct authorization episode for the exact AccessSubject.
 
 upstream_refs:
   - docs/discovery/first-mvp-hcd-user-needs.yaml
   - docs/requirements/first-mvp-product-requirements.yaml
+  - docs/model/contexts/organization-structure/domain-model.yaml
+  - docs/model/contexts/resource-catalogue/domain-model.yaml
+  - docs/model/contexts/authority-management/domain-model.yaml
   - docs/model/contexts/access-policy/domain-model.yaml
   - docs/model/contexts/application-deployment/domain-model.yaml
   - docs/model/contexts/application-communication-catalogue/domain-model.yaml

@@ -1,0 +1,17 @@
+version: 1
+kind: use-case-model
+id: NAPMS-UC-ORGANIZATION-STRUCTURE
+knowledge_coverage:
+  subject: BC-ORGANIZATION-STRUCTURE
+  knowledge: domain-use-case
+requirement_refs: [REQ-ORG-001, REQ-SCALE-002]
+bounded_context_refs: [BC-ORGANIZATION-STRUCTURE]
+
+behavior: |-
+  The first MVP shall maintain one Organization as the root administrative and security boundary and a tree of stable OrganizationalUnits inside it. Authorized administration may create OrganizationalUnits, inspect the hierarchy, explicitly reparent a Unit only within the same Organization, and retire a Unit without reusing or destroying its identity.
+
+integrity: |-
+  Reparenting preserves Unit identity/history, moves the existing subtree with the Unit, never crosses an Organization boundary and never creates a cycle. A Unit may be retired only after it has no active child Units and no currently owned Resources. Organization and OrganizationalUnit lifecycle is non-destructive: historical identity and hierarchy facts remain explainable rather than being physically deleted as an ordinary lifecycle operation.
+
+scope: |-
+  Cross-Organization operation and multi-Organization hosting are outside first-MVP user-visible scope. A future cross-Organization Resource transfer is separate migration semantics, not OrganizationalUnit reparenting.

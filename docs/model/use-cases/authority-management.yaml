@@ -1,0 +1,17 @@
+version: 1
+kind: use-case-model
+id: NAPMS-UC-AUTHORITY-MANAGEMENT
+knowledge_coverage:
+  subject: BC-AUTHORITY-MANAGEMENT
+  knowledge: domain-use-case
+requirement_refs: [REQ-AUTH-001, REQ-AUTH-002, REQ-PERM-005, REQ-PERM-008, REQ-PERM-010]
+bounded_context_refs: [BC-AUTHORITY-MANAGEMENT, BC-ORGANIZATION-STRUCTURE, BC-RESOURCE-CATALOGUE]
+
+behavior: |-
+  Authority Management shall evaluate whether the authenticated principal may perform one exact protected Action at one evaluation time and semantic scope target. Principal may be Actor or externally managed Group. Role contains Actions; temporal RoleAssignments target System, Organization or OrganizationalUnit scope. Organization assignments inherit to descendant Units and Unit assignments inherit to descendant Units inside the same Organization.
+
+evaluation: |-
+  Every protected action reevaluates current Role lifecycle, RoleAssignment validity, Organization/OrganizationalUnit hierarchy and current external Group membership. Explicit matching deny/exclusion overrides matching allow authority. Missing, malformed, unresolved or out-of-window authority fails closed. Organizational ownership, Site and descriptive responsibility never manufacture authority.
+
+history: |-
+  ActorRef and GroupRef are stable audit references. Role retirement is terminal for current authority and prevents new assignments while historical Role/RoleAssignment/AuthorityEvidence remains explainable. Loss of authority after an already completed approval does not rewrite that historical approval evidence; any later protected action performs a new current-authority evaluation.

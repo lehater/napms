@@ -83,6 +83,7 @@ design-sync: harness-pin-check
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_design_closure.py
 	python tools/check_knowledge_completeness.py
+	python tools/check_semantic_deprecations.py
 	python tools/generate_strategic_views.py
 	python tools/generate_resource_catalogue_views.py
 	python tools/generate_acc_view.py
@@ -97,6 +98,7 @@ design-check: harness-pin-check
 	python $(HARNESS_ROOT)/architecture_driver_closure.py docs/requirements/first-mvp-architecture-driver-closure.yaml
 	python tools/check_canonical_graph.py
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_harness_integration.py
+	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_requirements_semantic_admission.py
 	python tools/check_knowledge_completeness.py
 	python tools/check_frontend_design_closure.py
 	HARNESS_ROOT="$(HARNESS_ROOT)" python tools/check_frontend_provider_mapping.py
@@ -104,6 +106,7 @@ design-check: harness-pin-check
 	python tools/evaluate_security_identity_semantics.py --require-accepted
 	python tools/check_openapi_contract.py
 	python tools/check_persistence_model.py
+	python tools/check_semantic_deprecations.py
 	python tools/check_design_control.py
 	python tools/validate_skill_routing.py
 	python tools/generate_strategic_views.py --check

@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: task-model
 id: NAPMS-HCD-ACCESS-REQUEST-TASK-MODEL
 status: ACCEPTED
@@ -16,23 +16,31 @@ requirement_refs:
   - REQ-PERM-001
   - REQ-PERM-002
   - REQ-PERM-003
+  - REQ-PERM-004
+  - REQ-PERM-005
+  - REQ-PERM-006
+  - REQ-PERM-007
+  - REQ-PERM-008
+  - REQ-PERM-009
+  - REQ-PERM-010
+  - REQ-RULE-002
+  - REQ-RULE-006
 
 purpose: >-
-  Define the human work for requesting technically possible network access from
-  a Resource under the requester's authority to another Resource, without asking
-  the user to construct internal Deployment/InteractionRevision identifiers.
+  Define the requester's human work for selecting, submitting and later explaining
+  one exact connectivity request without constructing internal identifiers and
+  without confusing request authority, approval obligations, permission outcome
+  or resulting authorization episode.
 
 plan:
   - id: REQUEST-TASK-1
     responsibility: SYSTEM
-    outcome: Candidate source Resources under the requester's access.request authority are available.
+    outcome: Candidate source Resources for which the requester currently has access.request authority are available.
     system_support:
-      - evaluate effective access.request authority against source Resource AuthorityScopeRef
-      - preserve Resource identity independently from current address
-    rule: Destination Resource request-authority is not required merely to ask for access to it.
-    evidence_refs:
-      - current-stakeholder-input:2026-09-23
-      - docs/requirements/first-mvp-product-requirements.yaml#REQ-AUTH-001
+      - resolve each Resource current OrganizationalUnit owner
+      - evaluate effective access.request authority against the applicable Organization or OrganizationalUnit scope
+      - preserve Resource identity independently from current owner and address
+    rule: Destination-side request authority is not required merely to ask for access to it.
 
   - id: REQUEST-TASK-2
     responsibility: USER
@@ -40,7 +48,7 @@ plan:
     outcome: One requester-controlled source Resource is selected.
     required_information:
       - source Resource identity and human-recognizable name
-      - enough current Resource context to distinguish it from other Resources
+      - current organizational owner and enough Resource context to distinguish it
     decision: Choose the Resource from which access is needed.
 
   - id: REQUEST-TASK-3
@@ -70,54 +78,103 @@ plan:
   - id: REQUEST-TASK-5
     responsibility: SYSTEM
     depends_on: [REQUEST-TASK-4]
-    outcome: One exact immutable AccessSubject is derived and validated.
+    outcome: One exact AccessSubject and immutable submission basis are derived and validated.
     system_support:
       - resolve exact source/destination ComponentDeployments
       - resolve exact immutable InteractionRevision
-      - validate one current Process-backed ConnectivityNeed for the selected Interaction
-      - evaluate access.request authority for the source Resource scope at admission time
+      - validate current Process-backed business basis
+      - reevaluate access.request authority for the source side at submission time
+      - resolve applicable immutable ApprovalPolicyRevisions and ApprovalObligations into ApprovalBasis
+      - detect an existing exact PENDING request instead of creating a parallel duplicate
 
   - id: REQUEST-TASK-6
     responsibility: USER
     depends_on: [REQUEST-TASK-5]
-    outcome: The exact request is deliberately submitted for permission decision.
+    outcome: The exact request is deliberately submitted or the existing exact pending request is opened.
     required_information:
       - selected source Resource
       - selected destination Resource
       - communication meaning/traffic semantics
       - business justification
-    decision: Submit or abandon the request.
+      - required approval sides and current request state
+    decision: Submit, inspect the existing pending request, or abandon the action.
 
   - id: REQUEST-TASK-7
     responsibility: SYSTEM
     depends_on: [REQUEST-TASK-6]
-    outcome: The Access Request remains inspectable with its immutable subject and eventual decision history.
+    outcome: A PENDING AccessRequest remains inspectable with immutable subject ApprovalBasis obligations and approval history.
     system_support:
-      - persist request actor and submission time
-      - persist final ALLOWED or DENIED result with deciding actor and time
-      - create/resolve a PolicyRule only for ALLOWED
-      - create no PolicyRule for DENIED
+      - preserve submitter and submission time
+      - expose required approval sides without assigning the obligation permanently to one person
+      - accept approval/denial actions only after current authority evaluation for that action and side
+      - preserve completed approval evidence after later authority loss
+      - allow requester cancellation while still PENDING
+      - apply accepted expiration policy
+      - before ALLOWED revalidate submitted meaning Resources deployments and business basis
+
+  - id: REQUEST-TASK-8
+    responsibility: USER
+    depends_on: [REQUEST-TASK-7]
+    outcome: The requester can inspect the current pending state or final historical outcome.
+    required_information:
+      - PENDING approval progress or terminal outcome
+      - DENIED decision evidence when applicable
+      - CANCELLED EXPIRED or INVALIDATED reason when applicable
+      - resulting current authorization episode when ALLOWED
+    decision: While PENDING cancel the request or leave it awaiting required decisions; after a terminal outcome inspect the result.
+
+  - id: REQUEST-TASK-9
+    responsibility: SYSTEM
+    depends_on: [REQUEST-TASK-8]
+    outcome: Terminal outcome is preserved without reopening the request.
+    system_support:
+      - any required denial produces DENIED
+      - all required approvals plus successful semantic revalidation are necessary for ALLOWED
+      - requester cancellation produces CANCELLED
+      - policy expiration produces EXPIRED
+      - material pre-Allow loss of basis produces INVALIDATED
+      - ALLOWED creates one distinct PolicyRule authorization episode
+      - non-ALLOWED terminal outcomes create no PolicyRule
 
 alternate_and_recovery:
-  - trigger: Requester lacks effective access.request authority for the selected source Resource.
-    system_outcome: Reject submission before creating an Access Request.
+  - trigger: Requester lacks effective access.request authority for the selected source side.
+    system_outcome: Reject submission before creating an AccessRequest.
     user_work: No permission decision exists to continue; the attempted action ends as an authority rejection.
+  - trigger: The same exact AccessSubject already has a PENDING request.
+    system_outcome: Do not create an independent parallel request; identify the existing pending request.
+    user_work: Inspect or continue with the existing request.
   - trigger: No directed Interaction/deployment combination makes the selected destination technically possible.
     system_outcome: Do not offer the destination as a requestable communication candidate.
     user_work: Choose another technically possible destination/communication or return to catalogue work.
-  - trigger: Submitted Access Request is DENIED.
-    system_outcome: Persist request, DENIED result, deciding actor and decision time; create no PolicyRule.
-    user_work: The request ends; no additional recovery workflow is required for the first MVP.
-  - trigger: Submitted Access Request is ALLOWED.
-    system_outcome: Create or resolve one PolicyRule for the exact AccessSubject.
-    user_work: The resulting access can later be inspected as current outgoing/incoming policy.
+  - trigger: Requester cancels while PENDING.
+    system_outcome: Persist CANCELLED as a terminal historical outcome and create no PolicyRule.
+    user_work: A later request, if still needed, is a new request.
+  - trigger: Accepted expiration policy fires while PENDING.
+    system_outcome: Persist EXPIRED as a terminal historical outcome and create no PolicyRule.
+    user_work: A later request, if still needed, is a new request.
+  - trigger: Submitted meaning Resources deployments or business basis materially cease to apply before ALLOWED.
+    system_outcome: Persist INVALIDATED and create no PolicyRule.
+    user_work: Correct the underlying truth and submit a new request when applicable.
+  - trigger: Any required approval side denies.
+    system_outcome: Persist DENIED and create no PolicyRule.
+    user_work: The request ends; a later attempt is a new request.
+  - trigger: All required approvals complete and semantic revalidation succeeds.
+    system_outcome: Persist ALLOWED and create one distinct PolicyRule authorization episode for the exact AccessSubject.
+    user_work: Inspect the resulting current access authorization.
 
 sufficiency_review:
   status: ACCEPTED
-  accepted_at: 2026-09-23
-  resolved_questions: [Q-REQUEST-01, Q-REQUEST-02]
+  accepted_at: 2026-09-24
   basis:
-    - current-stakeholder-input:2026-09-23
+    - docs/discovery/first-mvp-hcd-user-needs.yaml
     - docs/requirements/first-mvp-product-requirements.yaml
+    - docs/model/contexts/organization-structure/domain-model.yaml
+    - docs/model/contexts/resource-catalogue/domain-model.yaml
+    - docs/model/contexts/authority-management/domain-model.yaml
     - docs/model/contexts/access-policy/domain-model.yaml
+  conclusion: >-
+    The requester task covers selection submission cancellation and explainable
+    observation of the accepted request lifecycle. Approval actions by other
+    authorized actors are owner behavior consumed by this task, not reclassified
+    as requester user needs.
   unresolved_questions: []

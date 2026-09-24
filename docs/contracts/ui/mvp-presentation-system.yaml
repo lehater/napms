@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: presentation-system-design
 id: NAPMS-MVP-PRESENTATION-SYSTEM
 status: CURRENT
@@ -17,6 +17,7 @@ basis:
 
 scope:
   surfaces:
+    - ORGANIZATION-STRUCTURE
     - RESOURCE-CATALOGUE
     - RESOURCE-DETAIL
     - APPLICATION-CATALOGUE
@@ -24,6 +25,7 @@ scope:
     - DEPLOYMENTS
     - DEPLOYMENT-DETAIL
     - BUSINESS-CONNECTIVITY
+    - APPROVAL-POLICY
     - ACCESS-REQUESTS
     - POLICY-RULES
     - POLICY-EXPORT

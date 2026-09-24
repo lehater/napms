@@ -11,23 +11,68 @@ bindings:
       - engineering.intent.quality-targets
   - capability: engineering.domain.strategic-model
     semantic_claims: [engineering.domain.model, engineering.domain.boundaries]
-  - capability: engineering.domain.tactical-model
-    semantic_claims: [engineering.domain.model, engineering.domain.invariants]
-  - capability: engineering.domain.use-case-model
-    semantic_claims: [engineering.application.use-cases]
+  - capability: engineering.domain.tactical.organization-structure
+    semantic_claims:
+      - {claim: engineering.domain.model, subject: BC-ORGANIZATION-STRUCTURE}
+      - {claim: engineering.domain.invariants, subject: BC-ORGANIZATION-STRUCTURE}
+  - capability: engineering.domain.tactical.resource-catalogue
+    semantic_claims:
+      - {claim: engineering.domain.model, subject: BC-RESOURCE-CATALOGUE}
+      - {claim: engineering.domain.invariants, subject: BC-RESOURCE-CATALOGUE}
+  - capability: engineering.domain.tactical.authority-management
+    semantic_claims:
+      - {claim: engineering.domain.model, subject: BC-AUTHORITY-MANAGEMENT}
+      - {claim: engineering.domain.invariants, subject: BC-AUTHORITY-MANAGEMENT}
+  - capability: engineering.domain.tactical.application-communication
+    semantic_claims:
+      - {claim: engineering.domain.model, subject: BC-APPLICATION-COMMUNICATION-CATALOGUE}
+      - {claim: engineering.domain.invariants, subject: BC-APPLICATION-COMMUNICATION-CATALOGUE}
+  - capability: engineering.domain.tactical.application-deployment
+    semantic_claims:
+      - {claim: engineering.domain.model, subject: BC-APPLICATION-DEPLOYMENT}
+      - {claim: engineering.domain.invariants, subject: BC-APPLICATION-DEPLOYMENT}
+  - capability: engineering.domain.tactical.business-connectivity
+    semantic_claims:
+      - {claim: engineering.domain.model, subject: BC-BUSINESS-CONNECTIVITY}
+      - {claim: engineering.domain.invariants, subject: BC-BUSINESS-CONNECTIVITY}
+  - capability: engineering.domain.tactical.access-policy
+    semantic_claims:
+      - {claim: engineering.domain.model, subject: BC-ACCESS-POLICY}
+      - {claim: engineering.domain.invariants, subject: BC-ACCESS-POLICY}
+  - capability: engineering.domain.use-case.organization-structure
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-ORGANIZATION-STRUCTURE}
+  - capability: engineering.domain.use-case.resource-catalogue
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-RESOURCE-CATALOGUE}
+      - {claim: engineering.application.use-cases, subject: Resource management}
+  - capability: engineering.domain.use-case.authority-management
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-AUTHORITY-MANAGEMENT}
+  - capability: engineering.domain.use-case.application-communication
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-APPLICATION-COMMUNICATION-CATALOGUE}
+      - {claim: engineering.application.use-cases, subject: Application management}
+      - {claim: engineering.application.use-cases, subject: Component management}
+      - {claim: engineering.application.use-cases, subject: Interaction management}
+  - capability: engineering.domain.use-case.application-deployment
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-APPLICATION-DEPLOYMENT}
+      - {claim: engineering.application.use-cases, subject: Deployment management}
+  - capability: engineering.domain.use-case.business-connectivity
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-BUSINESS-CONNECTIVITY}
+      - {claim: engineering.application.use-cases, subject: Business process and connectivity need}
+  - capability: engineering.domain.use-case.access-policy
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-ACCESS-POLICY}
+      - {claim: engineering.application.use-cases, subject: Access request}
+      - {claim: engineering.application.use-cases, subject: Policy rule}
   - capability: engineering.application.journey
     semantic_claims:
       - engineering.application.use-cases
       - engineering.application.orchestration
       - engineering.application.failures
-      - {claim: engineering.application.use-cases, subject: Resource management}
-      - {claim: engineering.application.use-cases, subject: Application management}
-      - {claim: engineering.application.use-cases, subject: Component management}
-      - {claim: engineering.application.use-cases, subject: Interaction management}
-      - {claim: engineering.application.use-cases, subject: Deployment management}
-      - {claim: engineering.application.use-cases, subject: Business process and connectivity need}
-      - {claim: engineering.application.use-cases, subject: Access request}
-      - {claim: engineering.application.use-cases, subject: Policy rule}
       - {claim: engineering.application.use-cases, subject: Policy export}
   - capability: engineering.architecture.c4-model
     semantic_claims: [engineering.architecture.structure]
@@ -66,11 +111,16 @@ bindings:
       - engineering.verification.data
       - engineering.transition.revalidation
 
+  - capability: engineering.security.identity
+    semantic_claims:
+      - engineering.security.identity
   - capability: engineering.architecture.security
     semantic_claims:
       - engineering.security.boundaries
       - engineering.security.confidentiality
       - engineering.security.integrity
+      - engineering.security.authorization
+      - engineering.security.accountability
   - capability: engineering.security.browser-credential-lifecycle
     semantic_claims:
       - engineering.security.identity

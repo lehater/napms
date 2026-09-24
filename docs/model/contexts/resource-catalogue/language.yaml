@@ -1,16 +1,19 @@
-version: 2
+version: 3
 kind: context-language
 id: NAPMS-RC-LANGUAGE
 bounded_context_ref: BC-RESOURCE-CATALOGUE
 depends_on: [NAPMS-UC-RC-CURATION]
 
 terms:
-  - {term_id: TERM-RESOURCE, term: Resource, definition: Stable logical access-management unit independent from current address realization.}
-  - {term_id: TERM-AUTHORITY-SCOPE, term: AuthorityScopeRef, definition: Required immutable opaque Resource affiliation used by protected scoped admission; it is not derived from Site responsibility or address.}
+  - {term_id: TERM-RESOURCE, term: Resource, definition: Stable logical access-management unit independent from current address Site or organizational ownership.}
+  - {term_id: TERM-ORGANIZATIONAL-OWNER, term: OrganizationalUnitRef, definition: Exactly one current administrative owner of a Resource inside the Resource's Organization; ownership may move within that Organization without changing Resource identity.}
+  - {term_id: TERM-OWNERSHIP-HISTORY, term: ResourceOwnership, definition: Historical fact recording one OrganizationalUnit ownership interval for a Resource.}
   - {term_id: TERM-ENDPOINT, term: ResourceEndpoint, definition: Stable logical network presence inside one Resource lifecycle; it may exist without a current address.}
   - {term_id: TERM-ADDRESS-REALIZATION, term: AddressRealization, definition: Zero-or-one current HOST or PREFIX for one Endpoint.}
   - {term_id: TERM-SITE, term: Site, definition: Reusable descriptive Resource location identity.}
-  - {term_id: TERM-RESPONSIBILITY, term: Resource Responsibility, definition: Singular current OWNER or ADMINISTRATOR organizational responsibility with history; never security authority.}
+  - {term_id: TERM-RESPONSIBILITY, term: Resource Responsibility, definition: Singular current OWNER or ADMINISTRATOR descriptive responsibility with history; never security authority.}
 
 external_term_refs:
-  - {term: Effective Authority, owner_context_ref: BC-AUTHORITY-MANAGEMENT, note: Authority Management evaluates authenticated grants for exact action scope and time.}
+  - {term: OrganizationalUnit, owner_context_ref: BC-ORGANIZATION-STRUCTURE, note: Organization Structure owns Unit identity hierarchy and lifecycle.}
+  - {term: ScopeTarget, owner_context_ref: BC-AUTHORITY-MANAGEMENT, note: Authority Management derives protected-action scope from System Organization or OrganizationalUnit semantics; Resource ownership itself never grants authority.}
+  - {term: Effective Authority, owner_context_ref: BC-AUTHORITY-MANAGEMENT, note: Authority Management reevaluates current principal action scope and time authority fail-closed.}

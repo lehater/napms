@@ -6,12 +6,50 @@ security:
   - OIDCBearer: []
 
 paths:
+  /v1/organization:
+    get:
+      operationId: getOrganization
+      responses:
+        '200': {description: Current Organization, content: {application/json: {schema: {$ref: '#/components/schemas/OrganizationView'}}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+  /v1/organizational-units:
+    get:
+      operationId: listOrganizationalUnits
+      responses:
+        '200': {description: Organizational Unit collection, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/OrganizationalUnitView'}}}}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+    post:
+      operationId: createOrganizationalUnit
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CreateOrganizationalUnitRequest'}}}}
+      responses: {'201': {description: Created}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/organizational-units/{organizationalUnitRef}:
+    get:
+      operationId: getOrganizationalUnit
+      parameters: [{$ref: '#/components/parameters/OrganizationalUnitRef'}]
+      responses: {'200': {description: Organizational Unit, content: {application/json: {schema: {$ref: '#/components/schemas/OrganizationalUnitView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/organizational-units/{organizationalUnitRef}/parent:
+    put:
+      operationId: reparentOrganizationalUnit
+      parameters: [{$ref: '#/components/parameters/OrganizationalUnitRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ReparentOrganizationalUnitRequest'}}}}
+      responses: {'200': {description: Reparented}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/organizational-units/{organizationalUnitRef}/retirement:
+    post:
+      operationId: retireOrganizationalUnit
+      parameters: [{$ref: '#/components/parameters/OrganizationalUnitRef'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      responses: {'200': {description: Retired}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+
   /v1/resources:
     get:
       operationId: listResources
       parameters:
         - {$ref: '#/components/parameters/CatalogueSearch'}
-        - {$ref: '#/components/parameters/ResourceAuthorityScopeFilter'}
+        - {$ref: '#/components/parameters/ResourceOrganizationalUnitFilter'}
         - {$ref: '#/components/parameters/ResourceSiteFilter'}
         - {$ref: '#/components/parameters/ResourceSortBy'}
         - {$ref: '#/components/parameters/CatalogueSortDirection'}
@@ -33,6 +71,12 @@ paths:
       operationId: getResource
       parameters: [{$ref: '#/components/parameters/ResourceRef'}]
       responses: {'200': {description: Resource, content: {application/json: {schema: {$ref: '#/components/schemas/ResourceView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/resources/{resourceRef}/organizational-owner:
+    put:
+      operationId: moveResourceOrganizationalOwner
+      parameters: [{$ref: '#/components/parameters/ResourceRef'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/MoveResourceOrganizationalOwnerRequest'}}}}
+      responses: {'200': {description: Organizational owner moved}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/resources/{resourceRef}/endpoints:
     post:
       operationId: addResourceEndpoint
@@ -187,6 +231,17 @@ paths:
       operationId: retireConnectivityNeed
       parameters: [{$ref: '#/components/parameters/ProcessRef'}, {$ref: '#/components/parameters/NeedRef'}, {$ref: '#/components/parameters/IfMatch'}]
       responses: {'200': {description: Retired}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/approval-policies/{organizationRef}:
+    get:
+      operationId: getApprovalPolicy
+      parameters: [{$ref: '#/components/parameters/OrganizationRef'}]
+      responses: {'200': {description: Approval Policy, content: {application/json: {schema: {$ref: '#/components/schemas/ApprovalPolicyView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/approval-policies/{organizationRef}/revisions:
+    post:
+      operationId: publishApprovalPolicyRevision
+      parameters: [{$ref: '#/components/parameters/OrganizationRef'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/PublishApprovalPolicyRevisionRequest'}}}}
+      responses: {'201': {description: Revision published}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
   /v1/access-requests:
     get:
       operationId: listAccessRequests
@@ -194,7 +249,7 @@ paths:
         - {$ref: '#/components/parameters/CatalogueSearch'}
         - {$ref: '#/components/parameters/AccessRequestSourceDeploymentFilter'}
         - {$ref: '#/components/parameters/AccessRequestDestinationDeploymentFilter'}
-        - {$ref: '#/components/parameters/AccessRequestDecisionFilter'}
+        - {$ref: '#/components/parameters/AccessRequestStatusFilter'}
         - {$ref: '#/components/parameters/AccessRequestSortBy'}
         - {$ref: '#/components/parameters/CatalogueSortDirection'}
         - {$ref: '#/components/parameters/CataloguePage'}
@@ -214,12 +269,18 @@ paths:
       operationId: getAccessRequest
       parameters: [{$ref: '#/components/parameters/RequestRef'}]
       responses: {'200': {description: Access Request, content: {application/json: {schema: {$ref: '#/components/schemas/AccessRequestView'}}}}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}, '503': {$ref: '#/components/responses/Unavailable'}}
-  /v1/access-requests/{requestRef}/decision:
+  /v1/access-requests/{requestRef}/approval-decisions:
     post:
-      operationId: decideAccessRequest
+      operationId: recordAccessRequestApprovalDecision
       parameters: [{$ref: '#/components/parameters/RequestRef'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/IdempotencyKey'}]
-      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/DecideAccessRequestRequest'}}}}
-      responses: {'200': {description: Decision recorded}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '503': {$ref: '#/components/responses/Unavailable'}}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RecordApprovalDecisionRequest'}}}}
+      responses: {'200': {description: Approval decision recorded and request state reevaluated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/access-requests/{requestRef}/cancellation:
+    post:
+      operationId: cancelAccessRequest
+      parameters: [{$ref: '#/components/parameters/RequestRef'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      responses: {'200': {description: Request cancelled}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/policy-rules:
   /v1/policy-rules:
     get:
       operationId: listPolicyRules
@@ -227,7 +288,7 @@ paths:
         - {$ref: '#/components/parameters/CatalogueSearch'}
         - {$ref: '#/components/parameters/PolicyRuleSourceDeploymentFilter'}
         - {$ref: '#/components/parameters/PolicyRuleDestinationDeploymentFilter'}
-        - {$ref: '#/components/parameters/PolicyRuleEffectStateFilter'}
+        - {$ref: '#/components/parameters/PolicyRuleRevocationStateFilter'}
         - {$ref: '#/components/parameters/PolicyRuleSortBy'}
         - {$ref: '#/components/parameters/CatalogueSortDirection'}
         - {$ref: '#/components/parameters/CataloguePage'}
@@ -237,12 +298,13 @@ paths:
         '401': {$ref: '#/components/responses/Unauthenticated'}
         '403': {$ref: '#/components/responses/Forbidden'}
         '503': {$ref: '#/components/responses/Unavailable'}
-  /v1/policy-rules/{policyRuleRef}/operational-state:
-    put:
-      operationId: setPolicyRuleOperationalState
-      parameters: [{$ref: '#/components/parameters/PolicyRuleRef'}, {$ref: '#/components/parameters/IfMatch'}]
-      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SetPolicyRuleOperationalStateRequest'}}}}
-      responses: {'200': {description: Updated}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/policy-rules/{policyRuleRef}/revocation:
+    post:
+      operationId: revokePolicyRule
+      parameters: [{$ref: '#/components/parameters/PolicyRuleRef'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: false, content: {application/json: {schema: {$ref: '#/components/schemas/RevokePolicyRuleRequest'}}}}
+      responses: {'200': {description: Authorization episode revoked}, '401': {$ref: '#/components/responses/Unauthenticated'}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/Conflict'}, '413': {$ref: '#/components/responses/PayloadTooLarge'}, '422': {$ref: '#/components/responses/Rejected'}, '503': {$ref: '#/components/responses/Unavailable'}}
+  /v1/policy-rules/{policyRuleRef}/justifications:
   /v1/policy-rules/{policyRuleRef}/justifications:
     post:
       operationId: attachPolicyRuleJustification
@@ -280,9 +342,9 @@ components:
     CatalogueSortDirection: {name: sortDirection, in: query, required: false, schema: {type: string, enum: [asc, desc], default: asc}}
     CataloguePage: {name: page, in: query, required: false, schema: {type: integer, minimum: 1, default: 1}}
     CataloguePageSize: {name: pageSize, in: query, required: false, schema: {type: integer, minimum: 1, maximum: 100, default: 25}}
-    ResourceAuthorityScopeFilter: {name: authorityScopeRef, in: query, required: false, schema: {type: string, minLength: 1}}
+    ResourceOrganizationalUnitFilter: {name: organizationalUnitRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
     ResourceSiteFilter: {name: siteRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
-    ResourceSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [displayName, resourceRef, authorityScopeRef], default: displayName}}
+    ResourceSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [displayName, resourceRef, organizationalUnitRef], default: displayName}}
     ApplicationComponentFilter: {name: componentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
     ApplicationSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [name, applicationRef], default: name}}
     DeploymentComponentFilter: {name: componentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
@@ -293,12 +355,12 @@ components:
     ProcessSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [name, processRef, criticalityLabel], default: name}}
     AccessRequestSourceDeploymentFilter: {name: sourceDeploymentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
     AccessRequestDestinationDeploymentFilter: {name: destinationDeploymentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
-    AccessRequestDecisionFilter: {name: decisionResult, in: query, required: false, schema: {type: string, enum: [ALLOWED, DENIED]}}
-    AccessRequestSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [submittedAt, requestRef, decisionResult], default: submittedAt}}
+    AccessRequestStatusFilter: {name: status, in: query, required: false, schema: {type: string, enum: [PENDING, ALLOWED, DENIED, CANCELLED, EXPIRED, INVALIDATED]}}
+    AccessRequestSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [submittedAt, requestRef, status], default: submittedAt}}
     PolicyRuleSourceDeploymentFilter: {name: sourceDeploymentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
     PolicyRuleDestinationDeploymentFilter: {name: destinationDeploymentRef, in: query, required: false, schema: {$ref: '#/components/schemas/StableId'}}
-    PolicyRuleEffectStateFilter: {name: effectState, in: query, required: false, schema: {type: string, enum: [ACTIVE, INACTIVE]}}
-    PolicyRuleSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [policyRuleRef, effectState], default: policyRuleRef}}
+    PolicyRuleRevocationStateFilter: {name: revocationState, in: query, required: false, schema: {type: string, enum: [CURRENT, REVOKED]}}
+    PolicyRuleSortBy: {name: sortBy, in: query, required: false, schema: {type: string, enum: [policyRuleRef, createdAt, revokedAt], default: policyRuleRef}}
     ResourceRef: {name: resourceRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     EndpointRef: {name: endpointRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     ResponsibilityRole: {name: role, in: path, required: true, schema: {type: string, enum: [OWNER, ADMINISTRATOR]}}
@@ -307,6 +369,8 @@ components:
     DeploymentRef: {name: deploymentRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     ProcessRef: {name: processRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     NeedRef: {name: needRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    OrganizationRef: {name: organizationRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
+    OrganizationalUnitRef: {name: organizationalUnitRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     RequestRef: {name: requestRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     PolicyRuleRef: {name: policyRuleRef, in: path, required: true, schema: {$ref: '#/components/schemas/StableId'}}
     IfMatch: {name: If-Match, in: header, required: true, schema: {type: string}}
@@ -340,14 +404,65 @@ components:
         - {$ref: '#/components/schemas/HostAddress'}
         - {$ref: '#/components/schemas/Prefix'}
 
+    OrganizationView:
+      type: object
+      required: [organizationRef, displayName, lifecycleState, version]
+      properties:
+        organizationRef: {$ref: '#/components/schemas/StableId'}
+        displayName: {type: string}
+        lifecycleState: {type: string, enum: [ACTIVE, RETIRED]}
+        version: {type: integer, minimum: 0}
+
+    OrganizationalUnitView:
+      type: object
+      required: [organizationalUnitRef, organizationRef, displayName, lifecycleState, version]
+      properties:
+        organizationalUnitRef: {$ref: '#/components/schemas/StableId'}
+        organizationRef: {$ref: '#/components/schemas/StableId'}
+        parentUnitRef:
+          oneOf:
+            - {$ref: '#/components/schemas/StableId'}
+            - {type: 'null'}
+        displayName: {type: string}
+        lifecycleState: {type: string, enum: [ACTIVE, RETIRED]}
+        version: {type: integer, minimum: 0}
+
+    CreateOrganizationalUnitRequest:
+      type: object
+      additionalProperties: false
+      required: [displayName]
+      properties:
+        displayName: {type: string, minLength: 1}
+        parentUnitRef:
+          oneOf:
+            - {$ref: '#/components/schemas/StableId'}
+            - {type: 'null'}
+
+    ReparentOrganizationalUnitRequest:
+      type: object
+      additionalProperties: false
+      required: [parentUnitRef]
+      properties:
+        parentUnitRef:
+          oneOf:
+            - {$ref: '#/components/schemas/StableId'}
+            - {type: 'null'}
+
     CreateResourceRequest:
       type: object
       additionalProperties: false
-      required: [displayName, authorityScopeRef]
+      required: [displayName, organizationalUnitRef]
       properties:
         displayName: {type: string, minLength: 1}
-        authorityScopeRef: {type: string, minLength: 1}
+        organizationalUnitRef: {$ref: '#/components/schemas/StableId'}
         siteRef: {$ref: '#/components/schemas/StableId'}
+
+    MoveResourceOrganizationalOwnerRequest:
+      type: object
+      additionalProperties: false
+      required: [organizationalUnitRef]
+      properties:
+        organizationalUnitRef: {$ref: '#/components/schemas/StableId'}
     ResourceCataloguePage:
       type: object
       additionalProperties: false
@@ -360,11 +475,11 @@ components:
 
     ResourceView:
       type: object
-      required: [resourceRef, displayName, authorityScopeRef, version, current, history]
+      required: [resourceRef, displayName, organizationalUnitRef, version, current, history]
       properties:
         resourceRef: {$ref: '#/components/schemas/StableId'}
         displayName: {type: string}
-        authorityScopeRef: {type: string}
+        organizationalUnitRef: {$ref: '#/components/schemas/StableId'}
         version: {type: integer, minimum: 0}
         current: {$ref: '#/components/schemas/ResourceCurrentFacts'}
         history: {$ref: '#/components/schemas/ResourceHistory'}
@@ -401,8 +516,9 @@ components:
 
     ResourceHistory:
       type: object
-      required: [endpointAddresses, sites, responsibilities]
+      required: [organizationalOwnership, endpointAddresses, sites, responsibilities]
       properties:
+        organizationalOwnership: {type: array, items: {$ref: '#/components/schemas/ResourceHistoryFact'}}
         endpointAddresses: {type: array, items: {$ref: '#/components/schemas/ResourceHistoryFact'}}
         sites: {type: array, items: {$ref: '#/components/schemas/ResourceHistoryFact'}}
         responsibilities: {type: array, items: {$ref: '#/components/schemas/ResourceHistoryFact'}}
@@ -612,6 +728,38 @@ components:
         participantComponentRef: {$ref: '#/components/schemas/StableId'}
         businessBasis: {type: string, minLength: 1}
 
+    ApprovalPolicyRevisionView:
+      type: object
+      required: [revisionRef, revisionNo, selfApprovalAllowed, publishedAt]
+      properties:
+        revisionRef: {$ref: '#/components/schemas/StableId'}
+        revisionNo: {type: integer, minimum: 1}
+        selfApprovalAllowed: {type: boolean}
+        requestTtlSeconds:
+          oneOf:
+            - {type: integer, minimum: 1}
+            - {type: 'null'}
+        publishedAt: {$ref: '#/components/schemas/Timestamp'}
+
+    ApprovalPolicyView:
+      type: object
+      required: [policyRef, organizationRef, currentRevision]
+      properties:
+        policyRef: {$ref: '#/components/schemas/StableId'}
+        organizationRef: {$ref: '#/components/schemas/StableId'}
+        currentRevision: {$ref: '#/components/schemas/ApprovalPolicyRevisionView'}
+
+    PublishApprovalPolicyRevisionRequest:
+      type: object
+      additionalProperties: false
+      required: [selfApprovalAllowed]
+      properties:
+        selfApprovalAllowed: {type: boolean}
+        requestTtlSeconds:
+          oneOf:
+            - {type: integer, minimum: 1}
+            - {type: 'null'}
+
     SubmitAccessRequestRequest:
       type: object
       additionalProperties: false
@@ -632,9 +780,39 @@ components:
         page: {type: integer, minimum: 1}
         pageSize: {type: integer, minimum: 1, maximum: 100}
 
+    ApprovalBasisSide:
+      type: object
+      required: [basisSideRef, approvalPolicyRevisionRef, scopeKind, scopeRef, coversSource, coversDestination]
+      properties:
+        basisSideRef: {$ref: '#/components/schemas/StableId'}
+        approvalPolicyRevisionRef: {$ref: '#/components/schemas/StableId'}
+        scopeKind: {type: string, enum: [ORGANIZATION, ORGANIZATIONAL_UNIT]}
+        scopeRef: {$ref: '#/components/schemas/StableId'}
+        coversSource: {type: boolean}
+        coversDestination: {type: boolean}
+
+    ApprovalObligationView:
+      type: object
+      required: [obligationRef, basisSideRef, status]
+      properties:
+        obligationRef: {$ref: '#/components/schemas/StableId'}
+        basisSideRef: {$ref: '#/components/schemas/StableId'}
+        status: {type: string, enum: [PENDING, APPROVED, DENIED]}
+
+    ApprovalDecisionView:
+      type: object
+      required: [decisionRef, obligationRef, result, decidedByActorRef, decidedAt, authorityEvidence]
+      properties:
+        decisionRef: {$ref: '#/components/schemas/StableId'}
+        obligationRef: {$ref: '#/components/schemas/StableId'}
+        result: {type: string, enum: [APPROVED, DENIED]}
+        decidedByActorRef: {type: string}
+        decidedAt: {$ref: '#/components/schemas/Timestamp'}
+        authorityEvidence: {$ref: '#/components/schemas/AuthorityEvidence'}
+
     AccessRequestView:
       type: object
-      required: [requestRef, version, sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, needRef, submittedAt, decisionResult]
+      required: [requestRef, version, sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, needRef, submittedAt, status, approvalBasis, approvalObligations, approvalDecisions]
       properties:
         requestRef: {$ref: '#/components/schemas/StableId'}
         version: {type: integer, minimum: 0}
@@ -643,30 +821,34 @@ components:
         interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
         needRef: {$ref: '#/components/schemas/StableId'}
         submittedAt: {$ref: '#/components/schemas/Timestamp'}
-        decisionResult:
-          oneOf:
-            - {type: string, enum: [ALLOWED, DENIED]}
-            - {type: 'null'}
-        externalDecisionRef:
-          oneOf:
-            - {type: string}
-            - {type: 'null'}
-        decidedBySubject:
-          oneOf:
-            - {type: string}
-            - {type: 'null'}
-        decidedAt:
+        expiresAt:
           oneOf:
             - {$ref: '#/components/schemas/Timestamp'}
             - {type: 'null'}
+        status: {type: string, enum: [PENDING, ALLOWED, DENIED, CANCELLED, EXPIRED, INVALIDATED]}
+        approvalBasis: {type: array, items: {$ref: '#/components/schemas/ApprovalBasisSide'}}
+        approvalObligations: {type: array, items: {$ref: '#/components/schemas/ApprovalObligationView'}}
+        approvalDecisions: {type: array, items: {$ref: '#/components/schemas/ApprovalDecisionView'}}
+        terminalReason:
+          oneOf:
+            - {type: string}
+            - {type: 'null'}
+        terminalAt:
+          oneOf:
+            - {$ref: '#/components/schemas/Timestamp'}
+            - {type: 'null'}
+        resultingPolicyRuleRef:
+          oneOf:
+            - {$ref: '#/components/schemas/StableId'}
+            - {type: 'null'}
 
-    DecideAccessRequestRequest:
+    RecordApprovalDecisionRequest:
       type: object
       additionalProperties: false
-      required: [result]
+      required: [obligationRef, result]
       properties:
-        result: {type: string, enum: [ALLOWED, DENIED]}
-        externalDecisionRef: {type: string}
+        obligationRef: {$ref: '#/components/schemas/StableId'}
+        result: {type: string, enum: [APPROVED, DENIED]}
 
     EffectiveWindow:
       type: object
@@ -674,16 +856,12 @@ components:
       properties:
         effectiveFrom: {$ref: '#/components/schemas/Timestamp'}
         effectiveUntil: {$ref: '#/components/schemas/Timestamp'}
-    SetPolicyRuleOperationalStateRequest:
+    RevokePolicyRuleRequest:
       type: object
       additionalProperties: false
-      required: [effectState]
       properties:
-        effectState: {type: string, enum: [ACTIVE, INACTIVE]}
-        effectiveWindow:
-          oneOf:
-            - {$ref: '#/components/schemas/EffectiveWindow'}
-            - {type: 'null'}
+        reason: {type: string, minLength: 1}
+
     AttachJustificationRequest:
       type: object
       additionalProperties: false
@@ -700,20 +878,44 @@ components:
         page: {type: integer, minimum: 1}
         pageSize: {type: integer, minimum: 1, maximum: 100}
 
+    RevocationEvidence:
+      type: object
+      required: [actorRef, participatingSide, scopeKind, scopeRef, revokedAt, authorityEvidence]
+      properties:
+        actorRef: {type: string}
+        participatingSide: {type: string, enum: [SOURCE, DESTINATION]}
+        scopeKind: {type: string, enum: [ORGANIZATION, ORGANIZATIONAL_UNIT]}
+        scopeRef: {$ref: '#/components/schemas/StableId'}
+        revokedAt: {$ref: '#/components/schemas/Timestamp'}
+        reason:
+          oneOf:
+            - {type: string}
+            - {type: 'null'}
+        authorityEvidence: {$ref: '#/components/schemas/AuthorityEvidence'}
+
     PolicyRuleView:
       type: object
-      required: [policyRuleRef, version, effectState, effectiveWindow, sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, authorizationEvidence, justifications, operationalHistory]
+      required: [policyRuleRef, accessRequestRef, version, revocationState, effectiveWindow, sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef, createdAt, authorizationEvidence, justifications]
       properties:
         policyRuleRef: {$ref: '#/components/schemas/StableId'}
+        accessRequestRef: {$ref: '#/components/schemas/StableId'}
         version: {type: integer, minimum: 0}
-        effectState: {type: string, enum: [ACTIVE, INACTIVE]}
+        revocationState: {type: string, enum: [CURRENT, REVOKED]}
         effectiveWindow: {$ref: '#/components/schemas/EffectiveWindow'}
         sourceDeploymentRef: {$ref: '#/components/schemas/StableId'}
         destinationDeploymentRef: {$ref: '#/components/schemas/StableId'}
         interactionRevisionRef: {$ref: '#/components/schemas/StableId'}
+        createdAt: {$ref: '#/components/schemas/Timestamp'}
+        revokedAt:
+          oneOf:
+            - {$ref: '#/components/schemas/Timestamp'}
+            - {type: 'null'}
         authorizationEvidence: {type: array, items: {type: object}}
+        revocationEvidence:
+          oneOf:
+            - {$ref: '#/components/schemas/RevocationEvidence'}
+            - {type: 'null'}
         justifications: {type: array, items: {type: object}}
-        operationalHistory: {type: array, items: {type: object}}
 
     PolicyMaterializationRequest:
       type: object
@@ -727,22 +929,17 @@ components:
 
     AuthorityEvidence:
       type: object
-      required: [action, scopeRef, evaluatedAt]
+      required: [principalRef, action, scopeKind, evaluatedAt]
       properties:
-        actorSubject: {type: string}
+        principalRef: {type: string}
         action: {type: string}
-        scopeRef: {type: string}
-        effectiveFrom: {$ref: '#/components/schemas/Timestamp'}
-        effectiveUntil: {$ref: '#/components/schemas/Timestamp'}
+        scopeKind: {type: string, enum: [SYSTEM, ORGANIZATION, ORGANIZATIONAL_UNIT]}
+        scopeRef:
+          oneOf:
+            - {$ref: '#/components/schemas/StableId'}
+            - {type: 'null'}
         evaluatedAt: {$ref: '#/components/schemas/Timestamp'}
-
-    MaterializedPortRange:
-      type: object
-      additionalProperties: false
-      required: [start, end]
-      properties:
-        start: {type: integer, minimum: 0, maximum: 65535}
-        end: {type: integer, minimum: 0, maximum: 65535}
+        evidence: {type: object}
 
     PolicyMaterializationRow:
       type: object

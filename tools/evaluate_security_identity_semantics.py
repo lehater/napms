@@ -55,7 +55,7 @@ def require_fields(
             )
 
 
-def evaluate_identity(security: dict[str, Any]) -> list[dict[str, Any]]:
+def evaluate_core_identity(security: dict[str, Any]) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
 
     require_fields(
@@ -67,11 +67,16 @@ def evaluate_identity(security: dict[str, Any]) -> list[dict[str, Any]]:
     )
     require_fields(
         security.get("principal"),
-        ("subject", "instance_permissions_claim", "authority_claim", "rules"),
+        ("subject", "instance_permissions_claim", "group_membership_claim", "rules"),
         code="IDENTITY_PRINCIPAL_INCOMPLETE",
         context="principal",
         findings=findings,
     )
+    return findings
+
+
+def evaluate_browser_identity(security: dict[str, Any]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
 
     development = security.get("development_authentication")
     require_fields(
@@ -189,13 +194,16 @@ def evaluate_identity(security: dict[str, Any]) -> list[dict[str, Any]]:
     return findings
 
 
-def semantic_evaluation(findings: list[dict[str, Any]]) -> dict[str, Any]:
+def semantic_evaluation(
+    capability: str,
+    findings: list[dict[str, Any]],
+) -> dict[str, Any]:
     accepted = not findings
     return {
         "version": 1,
         "kind": "harness-artifact-semantic-evaluation",
         "artifact": "SECURITY-ARCHITECTURE",
-        "capability": "engineering.security.browser-credential-lifecycle",
+        "capability": capability,
         "status": "ACCEPTED" if accepted else "REJECTED",
         "findings": findings,
         "semantic_claims": {
@@ -210,7 +218,14 @@ def evaluate() -> dict[str, Any]:
         "version": 1,
         "kind": "harness-semantic-evaluation-set",
         "semantic_evaluations": [
-            semantic_evaluation(evaluate_identity(security)),
+            semantic_evaluation(
+                "engineering.security.identity",
+                evaluate_core_identity(security),
+            ),
+            semantic_evaluation(
+                "engineering.security.browser-credential-lifecycle",
+                evaluate_browser_identity(security),
+            ),
         ],
     }
 

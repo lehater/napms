@@ -34,17 +34,25 @@ bindings:
   - {artifact: STRATEGIC-CONTEXTS, authority: STRATEGIC-DOMAIN-DESIGN, provides: []}
   - {artifact: STRATEGIC-RELATIONSHIPS, authority: STRATEGIC-DOMAIN-DESIGN, provides: [engineering.domain.strategic-model]}
 
-  - {artifact: RC-CURATION, authority: DOMAIN-USE-CASE-DESIGN, provides: [engineering.domain.use-case-model]}
+  - {artifact: ORG-STRUCTURE-USE-CASES, authority: DOMAIN-USE-CASE-DESIGN, provides: [engineering.domain.use-case.organization-structure]}
+  - {artifact: RC-CURATION, authority: DOMAIN-USE-CASE-DESIGN, provides: [engineering.domain.use-case.resource-catalogue]}
+  - {artifact: AM-AUTHORITY-USE-CASES, authority: DOMAIN-USE-CASE-DESIGN, provides: [engineering.domain.use-case.authority-management]}
+  - {artifact: ACC-COMMUNICATION-USE-CASES, authority: DOMAIN-USE-CASE-DESIGN, provides: [engineering.domain.use-case.application-communication]}
+  - {artifact: AD-DEPLOYMENT-USE-CASES, authority: DOMAIN-USE-CASE-DESIGN, provides: [engineering.domain.use-case.application-deployment]}
+  - {artifact: BC-CONNECTIVITY-USE-CASES, authority: DOMAIN-USE-CASE-DESIGN, provides: [engineering.domain.use-case.business-connectivity]}
+  - {artifact: AP-ACCESS-USE-CASES, authority: DOMAIN-USE-CASE-DESIGN, provides: [engineering.domain.use-case.access-policy]}
 
+  - {artifact: ORG-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical.organization-structure]}
   - {artifact: RC-LANGUAGE, authority: TACTICAL-DOMAIN-DESIGN, provides: []}
   - {artifact: RC-DECISIONS, authority: TACTICAL-DOMAIN-DESIGN, provides: []}
   - {artifact: RC-PROCESS, authority: TACTICAL-DOMAIN-DESIGN, provides: []}
-  - {artifact: RC-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
-  - {artifact: AM-LANGUAGE, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
-  - {artifact: ACC-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
-  - {artifact: AD-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
-  - {artifact: BC-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
-  - {artifact: AP-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical-model]}
+  - {artifact: RC-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical.resource-catalogue]}
+  - {artifact: AM-LANGUAGE, authority: TACTICAL-DOMAIN-DESIGN, provides: []}
+  - {artifact: AM-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical.authority-management]}
+  - {artifact: ACC-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical.application-communication]}
+  - {artifact: AD-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical.application-deployment]}
+  - {artifact: BC-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical.business-connectivity]}
+  - {artifact: AP-DOMAIN, authority: TACTICAL-DOMAIN-DESIGN, provides: [engineering.domain.tactical.access-policy]}
 
   - {artifact: HCD-APPLICATION-COMPONENTS-TASK-MODEL, authority: APPLICATION-JOURNEY-DESIGN, provides: [engineering.hcd.application-components.task-model]}
   - {artifact: HCD-APPLICATION-COMPONENTS-JOURNEY, authority: APPLICATION-JOURNEY-DESIGN, provides: [engineering.hcd.application-components.user-journey]}
@@ -58,7 +66,7 @@ bindings:
   - {artifact: SYSTEM-RULES, authority: SYSTEM-ARCHITECTURE, provides: [engineering.architecture.rules, engineering.architecture.async-messaging-not-applicable]}
   - {artifact: MODULE-CONTRACTS, authority: SYSTEM-ARCHITECTURE, provides: [engineering.architecture.module-contracts]}
 
-  - {artifact: SECURITY-ARCHITECTURE, authority: SECURITY-ARCHITECTURE-DESIGN, provides: [engineering.architecture.security, engineering.security.browser-credential-lifecycle]}
+  - {artifact: SECURITY-ARCHITECTURE, authority: SECURITY-ARCHITECTURE-DESIGN, provides: [engineering.security.identity, engineering.architecture.security, engineering.security.browser-credential-lifecycle]}
 
   - {artifact: TECH-REPRESENTATION, authority: INTERFACE-DESIGN, provides: [engineering.interface.shared-representations]}
   - {artifact: HTTP-REQUIREMENTS, authority: INTERFACE-DESIGN, provides: []}
@@ -84,4 +92,24 @@ bindings:
   - {artifact: FRONTEND-TEST-DESIGN, authority: TEST-DESIGN, provides: [engineering.frontend.test-design]}
   - {artifact: FRONTEND-IMPLEMENTATION-DESIGN, authority: IMPLEMENTATION-DESIGN, provides: [engineering.frontend.implementation-design]}
 
-questions: []
+questions:
+  - id: Q-HCD-FIRST-MVP-ACTOR-MAP
+    authority: DISCOVERY
+    text: "Which distinct human task actors exist across the first MVP, including at least Application Communication Profile curator, Resource owner/curator, Organization Structure administrator, connectivity requester, connectivity approver/decision maker and policy/network user; which of these are truly distinct user populations versus the same person performing several authorized tasks?"
+    blocks: [FRONTEND-HUMAN-INTERFACE]
+  - id: Q-HCD-FIRST-MVP-GOAL-MAP
+    authority: DISCOVERY
+    text: "What user goals motivate the first-MVP human work independently from screens and CRUD operations, including maintaining the global reusable Application Communication Profile catalogue and maintaining organization-scoped Resource truth; which additional goals such as approval, deployment or business-connectivity curation require their own HCD task branches?"
+    blocks: [FRONTEND-HUMAN-INTERFACE]
+  - id: Q-HCD-RESOURCE-ENTRY-CONTEXT
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: "From which working context should Resource-management tasks naturally begin: organization hierarchy, Resource catalogue/search, a known Resource deep link, downstream deployment/request work, or multiple task-specific entry points?"
+    blocks: [MVP-UI-NAVIGATION, FRONTEND-SCREEN-VIEW-DESIGN]
+  - id: Q-HCD-ORGANIZATION-WORKSPACE-ROLE
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: "Is Organization/OrganizationalUnit hierarchy administration a primary standalone user workspace, contextual ownership/navigation support inside Resource work, or both for distinct tasks?"
+    blocks: [MVP-UI-NAVIGATION, FRONTEND-SCREEN-VIEW-DESIGN]
+  - id: Q-HCD-RESOURCE-HISTORY-USE
+    authority: APPLICATION-JOURNEY-DESIGN
+    text: "Which concrete user decisions or investigations require Resource ownership/address/Site/responsibility history, and should history be contextual within Resource work or a separate navigation destination?"
+    blocks: [RESOURCE-DETAIL-UI, FRONTEND-SCREEN-VIEW-DESIGN]

@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: test-design
 id: NAPMS-MVP-FRONTEND-TEST-DESIGN
 status: CURRENT
@@ -13,15 +13,15 @@ basis:
 
 tests:
   - {id: UI-DEV-AUTH, subject: shared, oracle: Local-dev gates unauthenticated browser access; admin/admin acquires the accepted bearer identity; invalid credentials remain rejected; reload clears the runtime-only identity and returns to sign-in.}
-  - {id: UI-RESOURCE, subject: Resource management, oracle: Resource current/history and admitted mutations preserve accepted distinctions.}
+  - {id: UI-RESOURCE, subject: Resource management, oracle: Organization/Unit hierarchy and Resource current organizational owner/history remain distinct; same-Organization owner move preserves Resource identity and visibility never grants management authority.}
   - {id: UI-APPLICATION, subject: Application management, oracle: Reusable Application description remains independent from deployment realization.}
   - {id: UI-COMPONENT, subject: Component management, oracle: Component authoring preserves participant semantics.}
   - {id: UI-INTERACTION, subject: Interaction management, oracle: Directed Interactions preserve distinct reasons and traffic semantics.}
   - {id: UI-DEPLOYMENT, subject: Deployment management, oracle: ComponentDeployment identity is independent from Resource current address.}
   - {id: UI-BUSINESS-CONNECTIVITY, subject: Business process and connectivity need, oracle: Business justification remains independent from permission and concrete request identity.}
-  - {id: UI-ACCESS-REQUEST, subject: Access request, oracle: Submission/decision distinguishes authority rejection, NotAllowed and Allowed outcomes.}
-  - {id: UI-POLICY-RULE, subject: Policy rule, oracle: Active/Inactive changes preserve rule identity/history/provenance.}
-  - {id: UI-POLICY-EXPORT, subject: Policy export, oracle: Complete export and unresolved/degraded diagnostics are never conflated.}
+  - {id: UI-ACCESS-REQUEST, subject: Access request, oracle: Submission ApprovalBasis side approval/denial cancellation and terminal outcomes remain distinct; UI cannot directly set ALLOWED and exact duplicate PENDING submission does not create a parallel request.}
+  - {id: UI-POLICY-RULE, subject: Policy rule, oracle: CURRENT versus REVOKED authorization episodes and revocation provenance are explicit; revoke is terminal and no reactivation action exists.}
+  - {id: UI-POLICY-EXPORT, subject: Policy export, oracle: One complete export preserves READY versus row-level INCOMPLETE diagnostics and never presents missing address realization as global unresolved policy.}
   - {id: UI-ACCESSIBILITY, subject: shared, oracle: Required actions, labels, focus and status/error information remain available without color-only meaning.}
   - {id: UI-RESPONSIVE, subject: shared, oracle: Required information/actions remain available across supported viewport classes.}
   - {id: UI-PRESENTATION-INHERITANCE, subject: shared, oracle: Every canonical workspace inherits shared presentation rules and has no unexplained local presentation deviation.}

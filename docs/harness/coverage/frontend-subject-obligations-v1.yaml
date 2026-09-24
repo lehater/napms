@@ -10,7 +10,7 @@ source:
 subjects:
   - subject: Resource management
     concerns: [interface.human.journeys]
-    requirement_refs: [REQ-MVP-001, REQ-RES-001, REQ-RES-002, REQ-RES-003, REQ-RES-004, REQ-RES-005, REQ-RES-006]
+    requirement_refs: [REQ-MVP-001, REQ-RES-001, REQ-RES-002, REQ-RES-003, REQ-RES-004, REQ-RES-005, REQ-RES-006, REQ-ORG-001, REQ-ORG-002]
 
   - subject: Application management
     concerns: [interface.human.journeys]
@@ -34,11 +34,11 @@ subjects:
 
   - subject: Access request
     concerns: [interface.human.journeys]
-    requirement_refs: [REQ-MVP-001, REQ-AUTH-001, REQ-PERM-001, REQ-PERM-002, REQ-PERM-003]
+    requirement_refs: [REQ-MVP-001, REQ-AUTH-001, REQ-PERM-001, REQ-PERM-002, REQ-PERM-003, REQ-PERM-004, REQ-PERM-005, REQ-PERM-006, REQ-PERM-007, REQ-PERM-008, REQ-PERM-009, REQ-PERM-010]
 
   - subject: Policy rule
     concerns: [interface.human.journeys]
-    requirement_refs: [REQ-MVP-001, REQ-RULE-001, REQ-RULE-002, REQ-RULE-003, REQ-RULE-004, REQ-RULE-005]
+    requirement_refs: [REQ-MVP-001, REQ-RULE-002, REQ-RULE-004, REQ-RULE-005, REQ-RULE-006, REQ-RULE-007, REQ-RULE-008]
 
   - subject: Policy export
     concerns: [interface.human.journeys]

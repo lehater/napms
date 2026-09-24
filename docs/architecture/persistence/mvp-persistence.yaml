@@ -1,4 +1,4 @@
-version: 3
+version: 4
 kind: physical-persistence-model
 id: NAPMS-MVP-PERSISTENCE
 status: CURRENT
@@ -8,16 +8,75 @@ ownership_rule: One physical database; every table has one module/technical owne
 cross_owner_reference_rule: Cross-owner refs are opaque values validated through owner contracts.
 
 schemas:
+  organization_structure:
+    tables:
+      organization:
+        columns:
+          - {name: organization_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: display_name, type: text, nullable: false}
+          - {name: lifecycle_state, type: text, nullable: false}
+          - {name: version, type: bigint, nullable: false}
+          - {name: created_at, type: timestamptz, nullable: false}
+          - {name: retired_at, type: timestamptz, nullable: true}
+        indexes: []
+        checks:
+          - {name: ck_organization_lifecycle, expression: "lifecycle_state IN ('ACTIVE','RETIRED')"}
+      organizational_unit:
+        columns:
+          - {name: organizational_unit_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: organization_ref, type: uuid, nullable: false}
+          - {name: parent_unit_ref, type: uuid, nullable: true}
+          - {name: display_name, type: text, nullable: false}
+          - {name: lifecycle_state, type: text, nullable: false}
+          - {name: version, type: bigint, nullable: false}
+          - {name: created_at, type: timestamptz, nullable: false}
+          - {name: retired_at, type: timestamptz, nullable: true}
+        local_foreign_keys:
+          - {columns: [organization_ref], references: organization_structure.organization, target_columns: [organization_ref], on_delete: restrict}
+          - {columns: [parent_unit_ref], references: organization_structure.organizational_unit, target_columns: [organizational_unit_ref], on_delete: restrict}
+        indexes:
+          - {name: ix_unit_organization_parent, unique: false, columns: [organization_ref, parent_unit_ref]}
+        checks:
+          - {name: ck_unit_lifecycle, expression: "lifecycle_state IN ('ACTIVE','RETIRED')"}
+      organizational_unit_parent_history:
+        columns:
+          - {name: history_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: organizational_unit_ref, type: uuid, nullable: false}
+          - {name: parent_unit_ref, type: uuid, nullable: true}
+          - {name: effective_from, type: timestamptz, nullable: false}
+          - {name: effective_to, type: timestamptz, nullable: true}
+          - {name: changed_by_actor_ref, type: text, nullable: false}
+        local_foreign_keys:
+          - {columns: [organizational_unit_ref], references: organization_structure.organizational_unit, target_columns: [organizational_unit_ref], on_delete: restrict}
+          - {columns: [parent_unit_ref], references: organization_structure.organizational_unit, target_columns: [organizational_unit_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_unit_current_parent_fact, unique: true, columns: [organizational_unit_ref], where: effective_to IS NULL}
+        checks: []
+
   resource_catalogue:
     tables:
       resource:
         columns:
           - {name: resource_ref, type: uuid, nullable: false, primary_key: true}
           - {name: display_name, type: text, nullable: false}
-          - {name: authority_scope_ref, type: text, nullable: false}
+          - {name: organizational_unit_ref, type: uuid, nullable: false, external_owner: organization_structure}
           - {name: version, type: bigint, nullable: false}
           - {name: created_at, type: timestamptz, nullable: false}
-        indexes: []
+        indexes:
+          - {name: ix_resource_current_owner, unique: false, columns: [organizational_unit_ref]}
+        checks: []
+      resource_ownership_history:
+        columns:
+          - {name: history_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: resource_ref, type: uuid, nullable: false}
+          - {name: organizational_unit_ref, type: uuid, nullable: false, external_owner: organization_structure}
+          - {name: effective_from, type: timestamptz, nullable: false}
+          - {name: effective_to, type: timestamptz, nullable: true}
+          - {name: changed_by_actor_ref, type: text, nullable: false}
+        local_foreign_keys:
+          - {columns: [resource_ref], references: resource_catalogue.resource, target_columns: [resource_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_resource_current_owner_fact, unique: true, columns: [resource_ref], where: effective_to IS NULL}
         checks: []
       site:
         columns:
@@ -205,8 +264,95 @@ schemas:
         checks:
           - {name: ck_need_status, expression: "status IN ('ACTIVE','RETIRED')"}
 
+  authority_management:
+    tables:
+      role:
+        columns:
+          - {name: role_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: name, type: text, nullable: false}
+          - {name: lifecycle_state, type: text, nullable: false}
+          - {name: version, type: bigint, nullable: false}
+          - {name: created_at, type: timestamptz, nullable: false}
+          - {name: retired_at, type: timestamptz, nullable: true}
+        indexes: []
+        checks:
+          - {name: ck_role_lifecycle, expression: "lifecycle_state IN ('ACTIVE','RETIRED')"}
+      role_action:
+        columns:
+          - {name: role_action_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: role_ref, type: uuid, nullable: false}
+          - {name: action, type: text, nullable: false}
+        local_foreign_keys:
+          - {columns: [role_ref], references: authority_management.role, target_columns: [role_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_role_action, unique: true, columns: [role_ref, action]}
+        checks: []
+      role_assignment:
+        columns:
+          - {name: assignment_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: principal_kind, type: text, nullable: false}
+          - {name: principal_ref, type: text, nullable: false}
+          - {name: role_ref, type: uuid, nullable: false}
+          - {name: scope_kind, type: text, nullable: false}
+          - {name: scope_ref, type: uuid, nullable: true, external_owner: organization_structure}
+          - {name: effect, type: text, nullable: false}
+          - {name: effective_from, type: timestamptz, nullable: true}
+          - {name: effective_until, type: timestamptz, nullable: true}
+          - {name: version, type: bigint, nullable: false}
+          - {name: created_at, type: timestamptz, nullable: false}
+        local_foreign_keys:
+          - {columns: [role_ref], references: authority_management.role, target_columns: [role_ref], on_delete: restrict}
+        indexes:
+          - {name: ix_assignment_principal, unique: false, columns: [principal_kind, principal_ref]}
+          - {name: ix_assignment_scope, unique: false, columns: [scope_kind, scope_ref]}
+        checks:
+          - {name: ck_assignment_principal_kind, expression: "principal_kind IN ('ACTOR','GROUP')"}
+          - {name: ck_assignment_scope_kind, expression: "scope_kind IN ('SYSTEM','ORGANIZATION','ORGANIZATIONAL_UNIT')"}
+          - {name: ck_assignment_scope_ref, expression: "(scope_kind = 'SYSTEM' AND scope_ref IS NULL) OR (scope_kind <> 'SYSTEM' AND scope_ref IS NOT NULL)"}
+          - {name: ck_assignment_effect, expression: "effect IN ('ALLOW','DENY')"}
+          - {name: ck_assignment_window, expression: "effective_until IS NULL OR effective_from IS NULL OR effective_until > effective_from"}
+
   access_policy:
     tables:
+      approval_policy:
+        columns:
+          - {name: policy_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: organization_ref, type: uuid, nullable: false, external_owner: organization_structure}
+          - {name: current_revision_ref, type: uuid, nullable: true}
+          - {name: version, type: bigint, nullable: false}
+          - {name: created_at, type: timestamptz, nullable: false}
+        indexes:
+          - {name: uq_approval_policy_organization, unique: true, columns: [organization_ref]}
+        checks: []
+      approval_policy_revision:
+        columns:
+          - {name: revision_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: policy_ref, type: uuid, nullable: false}
+          - {name: revision_no, type: bigint, nullable: false}
+          - {name: self_approval_allowed, type: boolean, nullable: false}
+          - {name: request_ttl_seconds, type: bigint, nullable: true}
+          - {name: published_at, type: timestamptz, nullable: false}
+          - {name: published_by_actor_ref, type: text, nullable: false}
+        local_foreign_keys:
+          - {columns: [policy_ref], references: access_policy.approval_policy, target_columns: [policy_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_approval_policy_revision_no, unique: true, columns: [policy_ref, revision_no]}
+        checks:
+          - {name: ck_approval_request_ttl, expression: "request_ttl_seconds IS NULL OR request_ttl_seconds > 0"}
+      authority_evidence:
+        columns:
+          - {name: evidence_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: principal_ref, type: text, nullable: false}
+          - {name: action, type: text, nullable: false}
+          - {name: scope_kind, type: text, nullable: false}
+          - {name: scope_ref, type: uuid, nullable: true, external_owner: organization_structure}
+          - {name: evaluated_at, type: timestamptz, nullable: false}
+          - {name: decision, type: text, nullable: false}
+          - {name: evidence_json, type: jsonb, nullable: false}
+        indexes: []
+        checks:
+          - {name: ck_authority_evidence_decision, expression: "decision = 'ALLOW'"}
+          - {name: ck_authority_evidence_scope, expression: "(scope_kind = 'SYSTEM' AND scope_ref IS NULL) OR (scope_kind IN ('ORGANIZATION','ORGANIZATIONAL_UNIT') AND scope_ref IS NOT NULL)"}
       access_request:
         columns:
           - {name: request_ref, type: uuid, nullable: false, primary_key: true}
@@ -215,60 +361,119 @@ schemas:
           - {name: interaction_revision_ref, type: uuid, nullable: false, external_owner: application_communication_catalogue}
           - {name: initial_need_ref, type: uuid, nullable: false, external_owner: business_connectivity}
           - {name: validated_business_process_version, type: bigint, nullable: false}
-          - {name: submitter_subject, type: text, nullable: false}
+          - {name: submitter_actor_ref, type: text, nullable: false}
           - {name: submitted_at, type: timestamptz, nullable: false}
-          - {name: decision_result, type: text, nullable: true}
-          - {name: external_decision_ref, type: text, nullable: true}
-          - {name: decided_by_subject, type: text, nullable: true}
-          - {name: decided_at, type: timestamptz, nullable: true}
+          - {name: expires_at, type: timestamptz, nullable: true}
+          - {name: status, type: text, nullable: false}
+          - {name: terminal_reason, type: text, nullable: true}
+          - {name: terminal_actor_ref, type: text, nullable: true}
+          - {name: terminal_at, type: timestamptz, nullable: true}
+          - {name: submission_authority_evidence_ref, type: uuid, nullable: false}
           - {name: version, type: bigint, nullable: false}
-        indexes: []
+        local_foreign_keys:
+          - {columns: [submission_authority_evidence_ref], references: access_policy.authority_evidence, target_columns: [evidence_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_pending_access_subject, unique: true, columns: [source_deployment_ref, destination_deployment_ref, interaction_revision_ref], where: "status = 'PENDING'"}
         checks:
-          - {name: ck_request_decision, expression: "decision_result IS NULL OR decision_result IN ('ALLOWED','DENIED')"}
-      access_request_authority_evidence:
+          - {name: ck_request_status, expression: "status IN ('PENDING','ALLOWED','DENIED','CANCELLED','EXPIRED','INVALIDATED')"}
+      access_request_approval_basis_side:
         columns:
-          - {name: evidence_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: basis_side_ref, type: uuid, nullable: false, primary_key: true}
           - {name: request_ref, type: uuid, nullable: false}
-          - {name: scope_ref, type: text, nullable: false}
-          - {name: action, type: text, nullable: false}
-          - {name: grant_effective_from, type: timestamptz, nullable: true}
-          - {name: grant_effective_until, type: timestamptz, nullable: true}
-          - {name: evaluated_at, type: timestamptz, nullable: false}
+          - {name: approval_policy_revision_ref, type: uuid, nullable: false}
+          - {name: scope_kind, type: text, nullable: false}
+          - {name: scope_ref, type: uuid, nullable: false, external_owner: organization_structure}
+          - {name: covers_source, type: boolean, nullable: false}
+          - {name: covers_destination, type: boolean, nullable: false}
         local_foreign_keys:
           - {columns: [request_ref], references: access_policy.access_request, target_columns: [request_ref], on_delete: restrict}
+          - {columns: [approval_policy_revision_ref], references: access_policy.approval_policy_revision, target_columns: [revision_ref], on_delete: restrict}
         indexes:
-          - {name: uq_request_authority_scope, unique: true, columns: [request_ref, scope_ref, action]}
+          - {name: uq_request_approval_side_scope, unique: true, columns: [request_ref, scope_kind, scope_ref]}
         checks:
-          - {name: ck_request_authority_action, expression: "action = 'access.request'"}
+          - {name: ck_approval_side_scope_kind, expression: "scope_kind IN ('ORGANIZATION','ORGANIZATIONAL_UNIT')"}
+          - {name: ck_approval_side_coverage, expression: "covers_source OR covers_destination"}
+      access_request_approval_obligation:
+        columns:
+          - {name: obligation_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: request_ref, type: uuid, nullable: false}
+          - {name: basis_side_ref, type: uuid, nullable: false}
+          - {name: status, type: text, nullable: false}
+        local_foreign_keys:
+          - {columns: [request_ref], references: access_policy.access_request, target_columns: [request_ref], on_delete: restrict}
+          - {columns: [basis_side_ref], references: access_policy.access_request_approval_basis_side, target_columns: [basis_side_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_request_approval_obligation_side, unique: true, columns: [request_ref, basis_side_ref]}
+        checks:
+          - {name: ck_approval_obligation_status, expression: "status IN ('PENDING','APPROVED','DENIED')"}
+      access_request_approval_decision:
+        columns:
+          - {name: decision_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: request_ref, type: uuid, nullable: false}
+          - {name: obligation_ref, type: uuid, nullable: false}
+          - {name: result, type: text, nullable: false}
+          - {name: decided_by_actor_ref, type: text, nullable: false}
+          - {name: decided_at, type: timestamptz, nullable: false}
+          - {name: authority_evidence_ref, type: uuid, nullable: false}
+        local_foreign_keys:
+          - {columns: [request_ref], references: access_policy.access_request, target_columns: [request_ref], on_delete: restrict}
+          - {columns: [obligation_ref], references: access_policy.access_request_approval_obligation, target_columns: [obligation_ref], on_delete: restrict}
+          - {columns: [authority_evidence_ref], references: access_policy.authority_evidence, target_columns: [evidence_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_approval_decision_obligation, unique: true, columns: [obligation_ref]}
+        checks:
+          - {name: ck_approval_decision_result, expression: "result IN ('APPROVED','DENIED')"}
       policy_rule:
         columns:
           - {name: rule_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: access_request_ref, type: uuid, nullable: false}
           - {name: source_deployment_ref, type: uuid, nullable: false, external_owner: application_deployment}
           - {name: destination_deployment_ref, type: uuid, nullable: false, external_owner: application_deployment}
           - {name: interaction_revision_ref, type: uuid, nullable: false, external_owner: application_communication_catalogue}
-          - {name: effect_state, type: text, nullable: false}
           - {name: effective_from, type: timestamptz, nullable: true}
           - {name: effective_until, type: timestamptz, nullable: true}
+          - {name: revoked_at, type: timestamptz, nullable: true}
           - {name: version, type: bigint, nullable: false}
           - {name: created_at, type: timestamptz, nullable: false}
+        local_foreign_keys:
+          - {columns: [access_request_ref], references: access_policy.access_request, target_columns: [request_ref], on_delete: restrict}
         indexes:
-          - {name: uq_policy_rule_access_subject, unique: true, columns: [source_deployment_ref, destination_deployment_ref, interaction_revision_ref]}
+          - {name: uq_policy_rule_access_request, unique: true, columns: [access_request_ref]}
+          - {name: uq_current_policy_rule_access_subject, unique: true, columns: [source_deployment_ref, destination_deployment_ref, interaction_revision_ref], where: revoked_at IS NULL}
         checks:
-          - {name: ck_rule_effect_state, expression: "effect_state IN ('ACTIVE','INACTIVE')"}
+          - {name: ck_policy_rule_window, expression: "effective_until IS NULL OR effective_from IS NULL OR effective_until > effective_from"}
       policy_rule_authorization_evidence:
         columns:
           - {name: evidence_ref, type: uuid, nullable: false, primary_key: true}
           - {name: rule_ref, type: uuid, nullable: false}
           - {name: access_request_ref, type: uuid, nullable: false}
-          - {name: external_decision_ref, type: text, nullable: true}
-          - {name: decided_by_subject, type: text, nullable: false}
-          - {name: decided_at, type: timestamptz, nullable: false}
+          - {name: finalized_at, type: timestamptz, nullable: false}
+          - {name: evidence_json, type: jsonb, nullable: false}
         local_foreign_keys:
           - {columns: [rule_ref], references: access_policy.policy_rule, target_columns: [rule_ref], on_delete: restrict}
           - {columns: [access_request_ref], references: access_policy.access_request, target_columns: [request_ref], on_delete: restrict}
         indexes:
           - {name: uq_authorization_request, unique: true, columns: [access_request_ref]}
         checks: []
+      policy_rule_revocation:
+        columns:
+          - {name: revocation_ref, type: uuid, nullable: false, primary_key: true}
+          - {name: rule_ref, type: uuid, nullable: false}
+          - {name: revoked_by_actor_ref, type: text, nullable: false}
+          - {name: participating_side, type: text, nullable: false}
+          - {name: scope_kind, type: text, nullable: false}
+          - {name: scope_ref, type: uuid, nullable: false, external_owner: organization_structure}
+          - {name: revoked_at, type: timestamptz, nullable: false}
+          - {name: authority_evidence_ref, type: uuid, nullable: false}
+          - {name: reason, type: text, nullable: true}
+        local_foreign_keys:
+          - {columns: [rule_ref], references: access_policy.policy_rule, target_columns: [rule_ref], on_delete: restrict}
+          - {columns: [authority_evidence_ref], references: access_policy.authority_evidence, target_columns: [evidence_ref], on_delete: restrict}
+        indexes:
+          - {name: uq_policy_rule_revocation, unique: true, columns: [rule_ref]}
+        checks:
+          - {name: ck_revocation_side, expression: "participating_side IN ('SOURCE','DESTINATION')"}
+          - {name: ck_revocation_scope_kind, expression: "scope_kind IN ('ORGANIZATION','ORGANIZATIONAL_UNIT')"}
       policy_rule_justification:
         columns:
           - {name: association_ref, type: uuid, nullable: false, primary_key: true}
@@ -281,21 +486,6 @@ schemas:
           - {columns: [rule_ref], references: access_policy.policy_rule, target_columns: [rule_ref], on_delete: restrict}
         indexes:
           - {name: uq_rule_need_justification, unique: true, columns: [rule_ref, need_ref]}
-        checks: []
-      policy_rule_operational_history:
-        columns:
-          - {name: history_ref, type: uuid, nullable: false, primary_key: true}
-          - {name: rule_ref, type: uuid, nullable: false}
-          - {name: rule_version, type: bigint, nullable: false}
-          - {name: effect_state, type: text, nullable: false}
-          - {name: effective_from, type: timestamptz, nullable: true}
-          - {name: effective_until, type: timestamptz, nullable: true}
-          - {name: changed_by_subject, type: text, nullable: false}
-          - {name: changed_at, type: timestamptz, nullable: false}
-        local_foreign_keys:
-          - {columns: [rule_ref], references: access_policy.policy_rule, target_columns: [rule_ref], on_delete: restrict}
-        indexes:
-          - {name: uq_rule_operational_version, unique: true, columns: [rule_ref, rule_version]}
         checks: []
 
   application_edge:
@@ -320,7 +510,10 @@ schemas:
 
 transaction_rules:
   - ordinary owner writes use READ COMMITTED and owner optimistic versioning where declared
-  - AccessRequest submission and justification attachment use Business Connectivity owner-provided current-Need lock held through Access Policy commit
+  - AccessRequest submission and justification attachment use Business Connectivity owner-provided current-Need lock held through Access Policy commit; exact-PENDING uniqueness and immutable ApprovalBasis commit with the request
+  - approval decision plus current AuthorityEvidence and request version commit atomically
+  - ALLOWED finalization plus a new PolicyRule episode and current-authorization uniqueness commit atomically
+  - PolicyRule revocation plus RevocationEvidence commit atomically; a revoked episode is never reactivated
   - policy materialization uses read-only REPEATABLE READ; first statement transaction_timestamp() is evaluationAt for the whole preflight and emit
   - no automatic mutation retry
   - no cross-owner database foreign keys
@@ -337,11 +530,11 @@ erd_projection: docs-generated/architecture/mvp-persistence-erd.puml
 
 data_classification:
   security_sensitive:
-    - authenticated subject identifiers and scoped authority evidence
+    - authenticated ActorRef/GroupRef identifiers, Role/RoleAssignment truth and authority evidence
     - permission/decision provenance
     - desired-access and exported policy data that reveals protected connectivity intent
   internal_domain:
-    - Resource/Application/Component/Deployment/Business Process and current/history facts
+    - Organization/OrganizationalUnit/Resource/Application/Component/Deployment/Business Process and current/history facts
   operational:
     - idempotency response records and migration metadata
   prohibited_persistence:
