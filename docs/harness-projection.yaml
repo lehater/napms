@@ -90,4 +90,24 @@ bindings:
   - {artifact: FRONTEND-TEST-DESIGN, authority: TEST-DESIGN, provides: [engineering.frontend.test-design]}
   - {artifact: FRONTEND-IMPLEMENTATION-DESIGN, authority: IMPLEMENTATION-DESIGN, provides: [engineering.frontend.implementation-design]}
 
-questions: []
+questions:
+  - id: Q-TACTICAL-ORGANIZATION-AGGREGATES
+    authority: TACTICAL-DOMAIN-DESIGN
+    text: Which aggregate boundaries enforce Organization and OrganizationalUnit identity, hierarchy, reparenting and retirement without creating one unbounded hierarchy aggregate?
+    blocks: [RC-DOMAIN, AM-LANGUAGE]
+  - id: Q-TACTICAL-RESOURCE-OWNERSHIP
+    authority: TACTICAL-DOMAIN-DESIGN
+    text: How does the Resource aggregate represent exactly one current OrganizationalUnit owner plus ownership history while keeping cross-Organization transfer outside ordinary ownership mutation?
+    blocks: [RC-DOMAIN]
+  - id: Q-TACTICAL-AUTHORITY-DENY
+    authority: TACTICAL-DOMAIN-DESIGN
+    text: Which tactical construct represents explicit deny or exclusion so deny-overrides remains composable with Role Actions, Principal assignments, scope inheritance and time bounds?
+    blocks: [AM-LANGUAGE]
+  - id: Q-TACTICAL-AUTHORITY-AGGREGATES
+    authority: TACTICAL-DOMAIN-DESIGN
+    text: Which aggregate roots own Role and RoleAssignment lifecycle, and where does cross-aggregate Effective Authority evaluation belong?
+    blocks: [AM-LANGUAGE]
+  - id: Q-TACTICAL-ACCESS-POLICY-AGGREGATES
+    authority: TACTICAL-DOMAIN-DESIGN
+    text: Which aggregate boundaries own ApprovalPolicy revisions, AccessRequest ApprovalBasis and decisions, and one PolicyRule authorization episode without conflating their independent lifecycles?
+    blocks: [AP-DOMAIN]
