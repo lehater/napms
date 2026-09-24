@@ -52,7 +52,7 @@ screens:
     semantic_contract:
       reads:
         - {id: organization, operation_id: getOrganization, projection: OrganizationView}
-        - {id: units, operation_id: listOrganizationalUnits, projection: OrganizationalUnitView[]}
+        - {id: units, operation_id: listOrganizationalUnits, projection: "OrganizationalUnitView[]"}
         - {id: selected-unit, operation_id: getOrganizationalUnit, projection: OrganizationalUnitView}
       commands:
         - {id: create-unit, operation_id: createOrganizationalUnit}

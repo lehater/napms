@@ -92,6 +92,6 @@ access_policy_contract:
   RevokePolicyRule:
     input: [policyRuleRef, actor PrincipalRef, current AuthorityEvidence for one participating side]
     output: terminally revoked authorization episode preserving original request/decision/evidence history
-  - RevokePolicyRule accepts current AuthorityEvidence for either participating administrative side; source and destination are alternative revoke-authority paths rather than joint obligations.
+    invariant: Current AuthorityEvidence for either participating administrative side is sufficient; source and destination are alternative revoke-authority paths rather than joint obligations.
 
 basis_refs: [FIRST-MVP-JOURNEY, SYSTEM-RULES, STRATEGIC-RELATIONSHIPS]
