@@ -1,47 +1,60 @@
-version: 2
+version: 3
 kind: module-contract-design
 id: NAPMS-FIRST-MVP-MODULE-CONTRACTS
 status: CURRENT
 
-purpose: Define explicit in-process contracts required to realize the corrected first-MVP design without table coupling or internal HTTP.
+purpose: Define explicit in-process contracts required to realize the revalidated first-MVP design without table coupling internal HTTP or cross-owner semantic invention.
 
 contracts:
-  Resource Catalogue: [RegisterResource, AddEndpoint, SetEndpointAddress, ClearEndpointAddress, SetSite, SetResponsibility, ResolveResource, ReadResourceDetail, ResolveAuthorityScope, CurrentEndpointAddresses]
+  Organization Structure: [CreateOrganizationalUnit, ReparentOrganizationalUnit, RetireOrganizationalUnit, ResolveOrganizationalUnit, ResolveOrganizationHierarchy]
+  Resource Catalogue: [RegisterResource, MoveResourceOrganizationalOwner, AddEndpoint, SetEndpointAddress, ClearEndpointAddress, SetSite, SetResponsibility, ResolveResource, ReadResourceDetail, CurrentEndpointAddresses]
   Application Communication Catalogue: [CreateApplication, AddComponent, CreateInteraction, PublishInteractionRevision, ResolveComponent, ResolveInteraction, ResolveInteractionRevision]
   Application Deployment: [RegisterComponentDeployment, ResolveComponentDeployment]
   Business Connectivity: [RegisterBusinessProcess, SetResponsibleOrganization, SetCriticalityLabel, DeclareNeed, RetireNeed, LockAndResolveCurrentNeed, ResolveNeedCurrentOrHistory]
-  Access Policy: [SubmitAccessRequest, RecordPermissionDecision, SetPolicyRuleOperationalState, AttachPolicyRuleJustification, ReadPolicyRule, PageCurrentPolicyRules]
-  Authority Management: [RequireScopedAuthority]
+  Access Policy: [PublishApprovalPolicyRevision, SubmitAccessRequest, RecordApprovalDecision, CancelAccessRequest, ExpireAccessRequest, RevalidateAndAllowAccessRequest, RevokePolicyRule, AttachPolicyRuleJustification, ReadAccessRequest, ReadPolicyRule, PageCurrentPolicyRules]
+  Authority Management: [CreateRole, RetireRole, AssignRole, EndRoleAssignment, RequireEffectiveAuthority]
   Policy Materialization: [MaterializeCurrentPolicy]
 
 rules:
   - Tables are private persistence of owners and never module integration contracts.
   - Internal HTTP is forbidden between modules in the modular monolith.
-  - Resource Catalogue owns Resource AuthorityScopeRef and Endpoint/address truth.
-  - Authority Management evaluates authenticated grants but never manufactures Resource scope.
+  - Organization Structure owns Organization and OrganizationalUnit hierarchy and lifecycle.
+  - Resource Catalogue owns Resource current OrganizationalUnitRef ownership history and Endpoint/address truth; ownership never grants authority.
+  - Authority Management owns Role and RoleAssignment lifecycle and evaluates current authority; external IdP owns Group membership truth.
   - Business Connectivity owns Need currentness; Access Policy may validate or associate Need but does not copy currentness.
-  - Access Policy owns AccessRequest PolicyRule evidence and operational history.
+  - Access Policy owns ApprovalPolicyRevision AccessRequest approval/permission evidence distinct PolicyRule authorization episodes revocation and justification history.
   - Policy Materialization uses owner read ports in one shared snapshot and writes no peer truth.
   - Missing owner semantics must be routed to that owner instead of invented in a consumer.
 
+organization_structure_query_contracts:
+  ResolveOrganizationalUnit:
+    input: [organizationalUnitRef]
+    output: [organizationalUnitRef, organizationRef, parentUnitRef, lifecycleState]
+  ResolveOrganizationHierarchy:
+    input: [organizationRef or organizationalUnitRef]
+    output: stable Organization/Unit ancestry needed for same-Organization validation and authority inheritance
+    invariant: Resolution never manufactures cross-Organization ancestry and RETIRED lifecycle remains historically explainable.
+
 resource_catalogue_query_contracts:
   ResolveResource:
-    output: [resourceRef, authorityScopeRef, siteRef, current responsibilities, endpointCount]
+    output: [resourceRef, organizationalUnitRef, siteRef, current responsibilities, endpointCount]
   ReadResourceDetail:
     purpose: Supply the complete current-and-history Resource read model required by the accepted Resource workspace without leaking persistence representation.
     output:
-      identity: [resourceRef, displayName, authorityScopeRef, version]
+      identity: [resourceRef, displayName, version]
       current:
+        - exactly one organizationalUnitRef
         - endpoints with stable endpointRef and zero-or-one current AddressRealization
         - zero-or-one current siteRef
-        - zero-or-one current OWNER responsibility
-        - zero-or-one current ADMINISTRATOR responsibility
+        - zero-or-one current OWNER descriptive responsibility
+        - zero-or-one current ADMINISTRATOR descriptive responsibility
       history:
+        - ended/replaced ResourceOwnership facts with organizationalUnitRef validity interval and provenance
         - ended/replaced endpoint AddressRealization facts with validity interval and provenance
         - ended/replaced SiteAssignment facts with validity interval and provenance
         - ended/replaced ResourceResponsibility facts with role validity interval and provenance
     invariants:
-      - AuthorityScopeRef is immutable Resource identity context and is not a historical affiliation.
+      - Organizational owner may change only within the same Organization as an ordinary Resource mutation; cross-Organization transfer uses separate migration semantics.
       - Empty current Site/responsibility/address is explicit and does not erase history.
   CurrentEndpointAddresses:
     output: all current addressed Endpoints for one Resource with EndpointRef AddressRealization effectiveFrom changedBySubject
@@ -56,8 +69,28 @@ application_communication_query_contracts:
     output: immutable InteractionRevision with canonical TrafficClauses and owning Interaction identity.
 
 authority_contract:
-  RequireScopedAuthority:
-    input: [Principal, action, distinct AuthorityScopeRefs, evaluatedAt]
-    output: exact immutable authority evidence for each required scope or FORBIDDEN
+  RequireEffectiveAuthority:
+    input: [PrincipalRef, Action, ScopeTarget, evaluatedAt]
+    dependencies: [current Role, current RoleAssignment, OrganizationHierarchy, external Group membership]
+    output: immutable AuthorityEvidence with ALLOW or FORBIDDEN
+    invariants:
+      - applicable DENY overrides matching ALLOW
+      - hierarchy inheritance never crosses Organization boundary
+      - unresolved current Group membership or required hierarchy truth fails closed
+      - prior successful AuthorityEvidence is historical evidence and never standing authority for a later protected action
+
+access_policy_contract:
+  SubmitAccessRequest:
+    input: [exact AccessSubject, requester PrincipalRef, current business basis, applicable source and destination administrative sides]
+    output: existing exact PENDING AccessRequest or newly created PENDING AccessRequest with immutable ApprovalBasis
+  RecordApprovalDecision:
+    input: [requestRef, required side, APPROVE or DENY, current AuthorityEvidence]
+    output: updated PENDING request or terminal DENIED
+  RevalidateAndAllowAccessRequest:
+    input: [requestRef, current submitted-meaning/resource/deployment/business-basis truth]
+    output: terminal INVALIDATED or terminal ALLOWED plus one new PolicyRule authorization episode
+  RevokePolicyRule:
+    input: [policyRuleRef, current AuthorityEvidence]
+    output: terminally revoked authorization episode preserving original request/decision/evidence history
 
 basis_refs: [FIRST-MVP-JOURNEY, SYSTEM-RULES, STRATEGIC-RELATIONSHIPS]

@@ -3,13 +3,13 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
 
     model {
         user = person "NAPMS User" "Uses NAPMS backend capabilities through supported clients."
-        oidc = softwareSystem "OIDC Identity Provider" "External trusted issuer used for bearer-token authentication and scoped authority claims." "External"
+        oidc = softwareSystem "OIDC Identity Provider" "External trusted issuer used for bearer-token authentication and external Group membership evidence." "External"
 
         napms = softwareSystem "NAPMS" "Network Access Policy Management System" {
             web = container "Web Application" "Separate browser client consuming the backend API." "Web application"
 
             backend = container "Backend" "Stateless modular monolith exposing the NAPMS HTTP/JSON application API." "Application" {
-                rc = component "Resource Catalogue" "Owns Resource identity, immutable AuthorityScopeRef, logical Endpoints, current address realization, Site/responsibility and history."
+                org = component "Organization Structure" "Owns Organization and OrganizationalUnit identity, hierarchy, reparenting and non-destructive lifecycle."\n                rc = component "Resource Catalogue" "Owns Resource identity, exactly one current OrganizationalUnit owner with ownership history, logical Endpoints, current address realization, Site/responsibility and history."
                 acc = component "Application Communication Catalogue" "Owns Application, Component, independent directed Interaction and immutable InteractionRevision traffic semantics."
                 ad = component "Application Deployment" "Owns immutable ComponentDeployment placement."
                 bc = component "Business Connectivity" "Owns BusinessProcess, criticality attribution and participant-side ConnectivityNeed currentness/history."
@@ -26,14 +26,14 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
         napms.backend -> oidc "Fetches OIDC discovery/JWKS and validates bearer JWT" "HTTPS"
         napms.backend -> napms.db "Uses module-owned persistence" "PostgreSQL protocol"
 
-        napms.backend.rc -> napms.db "Reads/writes Resource Catalogue-owned schema"
+        napms.backend.org -> napms.db "Reads/writes Organization Structure-owned schema"\n        napms.backend.rc -> napms.db "Reads/writes Resource Catalogue-owned schema"
         napms.backend.acc -> napms.db "Reads/writes Application Communication Catalogue-owned schema"
         napms.backend.ad -> napms.db "Reads/writes Application Deployment-owned schema"
         napms.backend.bc -> napms.db "Reads/writes Business Connectivity-owned schema"
-        napms.backend.ap -> napms.db "Reads/writes Access Policy-owned schema"
+        napms.backend.ap -> napms.db "Reads/writes Access Policy-owned schema"\n        napms.backend.am -> napms.db "Reads/writes Authority Management-owned schema"
         napms.backend -> napms.db "Reads/writes technical idempotency records"
 
-        napms.backend.ad -> napms.backend.acc "Resolves Component identity"
+        napms.backend.rc -> napms.backend.org "Resolves current Unit Organization membership and lifecycle"\n        napms.backend.am -> napms.backend.org "Resolves Organization/Unit ancestry for scope inheritance"\n        napms.backend.am -> oidc "Resolves external Group membership evidence" "OIDC/provider integration"\n        napms.backend.ad -> napms.backend.acc "Resolves Component identity"
         napms.backend.ad -> napms.backend.rc "Resolves Resource identity"
         napms.backend.ap -> napms.backend.ad "Resolves exact deployments"
         napms.backend.ap -> napms.backend.acc "Validates exact immutable InteractionRevision"
@@ -43,7 +43,7 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
         napms.backend.export -> napms.backend.ap "Reads selected PolicyRules and provenance"
         napms.backend.export -> napms.backend.acc "Resolves traffic semantics"
         napms.backend.export -> napms.backend.ad "Resolves deployment-to-Resource facts"
-        napms.backend.export -> napms.backend.rc "Resolves AuthorityScopeRefs and current addressed Endpoints"
+        napms.backend.export -> napms.backend.rc "Resolves current organizational owners and addressed Endpoints"\n        napms.backend.export -> napms.backend.org "Resolves selected Organization/Unit scope targets"
         napms.backend.export -> napms.backend.bc "Resolves Need currentness/history"
         napms.backend.export -> napms.backend.am "Requires scoped policy.export authority at evaluationAt"
 
