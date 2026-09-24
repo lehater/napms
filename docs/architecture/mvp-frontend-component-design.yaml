@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: component-design
 id: NAPMS-MVP-FRONTEND-COMPONENT-DESIGN
 status: CURRENT
@@ -19,18 +19,22 @@ components:
     owns: local-dev sign-in state, credential submission and runtime bearer bootstrap before product-shell entry
   api_boundary:
     owns: OpenAPI DTO/request mapping and transport/error translation
+  organization_structure_feature:
+    owns: Organization and OrganizationalUnit hierarchy inspection/create/reparent/retirement workflows
   resource_feature:
-    owns: Resource catalogue/detail/current/history workflows
+    owns: Resource catalogue/detail/current organizational-owner and history workflows
   application_feature:
     owns: Application, Component and Interaction authoring workflows
   deployment_feature:
     owns: ComponentDeployment workflows
   business_connectivity_feature:
     owns: Business Process and Connectivity Need workflows
+  approval_policy_feature:
+    owns: current Organization ApprovalPolicy inspection and immutable revision publication workflows
   access_request_feature:
-    owns: Access Request submission/outcome workflows
+    owns: exact Access Request submission ApprovalBasis/progress side-decision cancellation and terminal-outcome workflows
   policy_rule_feature:
-    owns: authoritative desired-access inspection and operational-state workflows
+    owns: authorization-episode inspection revocation provenance and business-justification workflows
   policy_export_feature:
     owns: selection/export/completeness-diagnostic workflows
   screen_application:
@@ -45,7 +49,7 @@ presentation_provider:
   provider: mui-material
   version: 9.4.0
   feature_policy: {default: deny}
-  coverage_screens: [RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, APPLICATION-DETAIL, DEPLOYMENTS, BUSINESS-CONNECTIVITY, ACCESS-REQUESTS, POLICY-RULES, POLICY-EXPORT]
+  coverage_screens: [ORGANIZATION-STRUCTURE, RESOURCE-CATALOGUE, RESOURCE-DETAIL, APPLICATION-CATALOGUE, APPLICATION-DETAIL, DEPLOYMENTS, BUSINESS-CONNECTIVITY, APPROVAL-POLICY, ACCESS-REQUESTS, POLICY-RULES, POLICY-EXPORT]
   required_patterns: [APP-SHELL]
   theme_tokens:
     canonical_source: docs/contracts/ui/mvp-design-tokens.json

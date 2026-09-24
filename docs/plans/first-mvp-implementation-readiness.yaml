@@ -1,9 +1,9 @@
-version: 5
+version: 6
 kind: implementation-readiness
 id: NAPMS-FIRST-MVP-IMPLEMENTATION-READINESS
 status: CURRENT
 
-goal: Implement the corrected first-MVP backend without reopening product domain architecture interface data security operability or verification decisions.
+goal: Implement the revalidated first-MVP backend without reopening product domain architecture interface data security operability or verification decisions.
 
 design_refs:
   requirements: docs/requirements/first-mvp-product-requirements.yaml
@@ -21,33 +21,39 @@ design_refs:
   backend_component_design: docs/architecture/mvp-backend-component-design.yaml
 
 implementation_boundary:
-  includes: [backend HTTP/JSON API, modular-monolith modules, PostgreSQL persistence, OIDC authentication, scoped/time authority admission, vendor-neutral policy materialization]
+  includes: [backend HTTP/JSON API, modular-monolith owner modules, PostgreSQL persistence, OIDC authentication and external Group-membership evidence, persisted Role/RoleAssignment authority, Organization hierarchy, approval/request/authorization lifecycle, vendor-neutral policy materialization]
   excludes: [frontend implementation, provider-specific rendering, firewall/provider mutation, configured-state reconciliation, historical export, distributed services]
   rule: Implement only accepted backend design; codebase structure and dependencies must satisfy the backend component design; unexpected semantic gaps route upstream.
 
 vertical_sequence:
-  - foundation: migrate and serve modes, exact schema verification, PostgreSQL pool, OIDC/JWKS initialization, health and correlation
-  - resource: Site ResponsibilityGroup Resource AuthorityScopeRef Endpoint address history and responsibility history
+  - foundation: migrate and serve modes exact schema verification PostgreSQL pool OIDC/JWKS initialization health correlation and ActorRef/group-membership identity mapping
+  - organization_authority: Organization/OrganizationalUnit hierarchy Role/Action temporal RoleAssignments same-Organization inheritance deny-overrides and current EffectiveAuthority evaluation
+  - resource: Resource current OrganizationalUnit ownership/history Site ResponsibilityGroup Endpoints address history and descriptive responsibility history
   - application: Application Component independent Interaction immutable InteractionRevision and canonical TrafficClause
   - deployment_business: ComponentDeployment BusinessProcess criticality participant-attributed ConnectivityNeed
-  - access: AccessRequest scoped request authority final ALLOWED/DENIED PolicyRule evidence justification Active/Inactive EffectiveWindow
-  - materialization: all-or-subset selection scoped export authority one snapshot evaluationAt provenance and normalized rows
-  - closure: security operability migrations idempotency cancellation and fresh-database end-to-end verification
+  - access: ApprovalPolicy immutable revisions exact-PENDING AccessRequest ApprovalBasis side decisions cancellation expiration invalidation ALLOWED finalization PolicyRule authorization episodes and terminal revocation
+  - materialization: current non-revoked/effective Rule all-or-subset selection current scoped export authority one snapshot evaluationAt provenance and normalized rows
+  - closure: security operability migrations idempotency fresh-database end-to-end verification and revalidation of changed frontend/backend contracts
 
 completion_definition:
-  - Application is treated as a reusable network communication profile; cross-Application Interaction is rejected while multiple independent Interactions for the same intra-Application Component pair remain supported.
-  - Resource has immutable AuthorityScopeRef and explicit logical Endpoint membership; no automatic grouping by address Site responsibility or name occurs.
-  - BusinessProcess criticalityLabel is representable without score ordering taxonomy or propagation.
-  - AccessRequest requires a current participant-attributed Need plus effective scoped access.request authority for the source Resource scope at admissionAt; destination scope authority is not required merely to submit.
-  - DENIED creates no PolicyRule; ALLOWED converges one PolicyRule per exact AccessSubject including immutable InteractionRevision.
-  - PolicyRule supports reversible ACTIVE/INACTIVE and absolute EffectiveWindow without new permission decision.
-  - Additional Needs attach without duplicate Rule; zero current Needs yields reconciliation and no automatic revoke.
-  - Materialization supports ALL or explicit Rule subset and requires scoped policy.export authority for every selected Resource scope at evaluationAt.
-  - One read-only REPEATABLE READ snapshot and database transaction_timestamp() govern materialization.
-  - Export is self-contained for request authority permission business and technical provenance; each selected effective Rule remains represented even when a current source/destination address is absent, with row-level technical readiness distinguishing deployable tuples from incomplete realization.
+  - Organization is the root security boundary; OrganizationalUnit identity/history is non-destructive, reparenting is same-Organization and acyclic, and retirement respects active-child/current-Resource preconditions.
+  - Role owns Actions; temporal RoleAssignments target ActorRef or external GroupRef plus SYSTEM/ORGANIZATION/ORGANIZATIONAL_UNIT ScopeTarget with ALLOW or DENY; current evaluation uses same-Organization inheritance and deny-overrides.
+  - OIDC bearer JWT establishes ActorRef and bounded-freshness external Group membership only; NAPMS authority is persisted Role/RoleAssignment truth and is reevaluated for every protected action.
+  - Resource has exactly one current OrganizationalUnit owner; same-Organization owner change preserves Resource identity/history and cross-Organization transfer is not an ordinary mutation.
+  - Application is a reusable network communication profile; cross-Application Interaction is rejected while multiple independent Interactions for the same intra-Application Component pair remain supported.
+  - BusinessProcess criticalityLabel is representable without score ordering taxonomy or propagation; ConnectivityNeed remains business justification rather than permission.
+  - AccessRequest submission requires current source-side access.request authority, current business basis and immutable ApprovalBasis; destination-side request authority is not required merely to submit and exact duplicate PENDING submission does not create a parallel request.
+  - Approval actions reevaluate current access.decide authority for the immutable required side; self-approval policy is enforced; PENDING terminates only as ALLOWED DENIED CANCELLED EXPIRED or INVALIDATED and terminal requests never reopen.
+  - ALLOWED creates one distinct PolicyRule authorization episode only after all required approvals plus semantic revalidation; other terminal request outcomes create none.
+  - At most one current non-revoked PolicyRule exists per exact AccessSubject while historical episodes remain distinct.
+  - Revocation requires current policy.revoke authority for either participating administrative side independently, is terminal for that episode and preserves earlier request/approval/provenance; regrant requires a new request and decision.
+  - EffectiveWindow controls current contribution without an ACTIVE/INACTIVE toggle; technical realization changes never redefine access identity.
+  - Additional Needs attach without duplicate current authorization; zero current Needs yields reconciliation and no automatic revoke.
+  - Materialization supports ALL or explicit current Rule subset and requires current policy.export authority for every applicable selected Organization/OrganizationalUnit scope at one evaluationAt.
+  - One read-only REPEATABLE READ snapshot and database transaction_timestamp() govern materialization; missing current addresses remain row-level INCOMPLETE data in a complete policy result.
   - Idempotency replays exact persisted response and has no first-MVP TTL.
-  - migrate owns DDL and advisory serialization; serve verifies exact migration IDs/checksums and never auto-migrates.
-  - OIDC HTTPS issuer/discovery/JWKS algorithm kid audience time subject permission and authority-claim semantics are proven.
+  - migrate owns DDL/advisory serialization; serve verifies exact migration IDs/checksums and never auto-migrates.
+  - OIDC HTTPS issuer/discovery/JWKS algorithm kid audience time subject permission and Group-membership claim semantics are proven fail-closed.
   - Numeric latency throughput availability and scale targets are explicitly NOT_REQUIRED for first MVP.
   - Every required verification scenario has executable evidence before implementation is COMPLETE.
 
@@ -56,16 +62,17 @@ implementation_authorization: DESIGN_COMPLETE_BACKEND
 
 delivery_contract:
   release:
-    - Release one coherent backend baseline: locked runtime/dependencies, application package, migration set and matching verification baseline.
-    - Authorize release only when BACKEND-IMPLEMENTATION Coverage/Engineering Graph target is complete, required verification passes and no blocking Question remains.
+    - Release one coherent backend baseline: locked runtime/dependencies application package migration set and matching verification baseline.
+    - Authorize release only when BACKEND-IMPLEMENTATION Coverage/Engineering Graph target is complete required verification passes and no blocking Question remains.
     - Serve refuses a schema whose applied migration ids/checksums do not match the release expectation.
   rollback:
     - Code rollback is allowed only when current schema and public contracts remain compatible with the previous baseline.
     - An incompatible migration requires an explicitly tested reverse/repair migration or restoration of a compatible pre-migration database state; code must not reinterpret a newer incompatible schema.
     - A destructive or semantics-changing migration without an accepted recovery path blocks release.
+
 error_handling_contract:
-  - Domain rejection, invalid export selection, authentication/authorization denial, concurrency conflict and technical dependency failure remain distinct through application and HTTP mapping; missing current address is normal enriched export data, not an application failure.
+  - Domain rejection invalid export selection authentication/authorization denial concurrency conflict and technical dependency failure remain distinct through application and HTTP mapping; missing current address is normal enriched export data not an application failure.
   - Infrastructure/library exceptions are translated at their owning adapter boundary; framework/database/OIDC exception types do not cross into domain contracts.
-  - Catch-all handling must not convert unknown commit outcome, dependency inability or internal failure into an accepted domain result.
+  - Catch-all handling must not convert unknown commit outcome dependency inability or internal failure into an accepted domain result.
   - Errors exposed externally use the accepted HTTP status/representation contract; diagnostic detail remains safe and correlation-friendly without leaking secrets.
   - Retry is never invented by a generic error wrapper; retry/idempotency behavior follows the owning system/interface contract.

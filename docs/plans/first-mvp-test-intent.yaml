@@ -1,4 +1,4 @@
-version: 5
+version: 6
 kind: test-intent
 id: NAPMS-FIRST-MVP-TEST-INTENT
 status: CURRENT
@@ -58,7 +58,7 @@ required_scenarios:
     expect: Effective conditions and technical realization changes do not rewrite historical permission meaning; revocation ends current effective access without rewriting the Allowed history, and restoring the same connectivity requires a new request and permission decision.
   - id: MVP-REQ-EXPORT-AUTHORITY
     verifies: [REQ-AUTH-002, REQ-EXP-001]
-    expect: ALL or explicit subset materialization fails before result exposure unless policy.export is effective for every selected Resource scope at evaluationAt.
+    expect: ALL or explicit subset materialization fails before result exposure unless policy.export is currently effective for every applicable selected Organization or OrganizationalUnit scope at evaluationAt.
   - id: MVP-REQ-MATERIALIZATION
     verifies: [REQ-EXP-002, REQ-EXP-003, REQ-EXP-004, REQ-EXP-005, REQ-EXP-006, REQ-EXP-007]
     expect: One REPEATABLE READ snapshot and one evaluationAt produce one complete enriched selected-policy result; effective Rules with complete current addresses emit READY rows, effective Rules with missing current addresses remain represented by INCOMPLETE rows with Resource identity/name and null address fields, non-effective Rules emit no effective rows, and traffic semantics/provenance are never merged away.
@@ -75,7 +75,7 @@ required_scenarios:
     expect: Architecture Driver Closure and system topology preserve the accepted first-MVP scale, single-organization boundary, no-growth assumption and no heavy asynchronous runtime requirement; listed reopen conditions remain explicit.
   - id: MVP-OIDC
     verifies: [REQ-AUTH-001, REQ-AUTH-002]
-    expect: HTTPS-only issuer/discovery/JWKS asymmetric algorithm allow-list required kid exact issuer/audience/exp/nbf/sub and malformed permission/authority claims have accepted 401 versus 503 behavior.
+    expect: HTTPS-only issuer/discovery/JWKS asymmetric algorithm allow-list required kid exact issuer/audience/exp/nbf/sub and malformed permission/group-membership claims have accepted 401 versus 503 behavior; current Role/RoleAssignment evaluation remains server-owned and fail-closed.
   - id: MVP-IDEMPOTENCY
     verifies: [REQ-MVP-001]
     expect: Same key and fingerprint replays exact persisted response before current If-Match; different fingerprint conflicts; concurrent commit/rollback/unknown outcomes follow the accepted semantics.

@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: verification-design
 id: NAPMS-MVP-FRONTEND-VERIFICATION
 status: CURRENT
@@ -41,6 +41,9 @@ presentation_evidence:
       required:
         - Resource Catalogue accepted presentation state
         - Resource Detail accepted presentation state
+        - Organization Structure accepted presentation state
+        - Access Request approval/terminal state
+        - Policy Rule current/revoked state
         - AppShell shared presentation
       baseline_governance: >-
         A baseline is derived from accepted reference intent or explicitly reviewed output.
@@ -63,15 +66,16 @@ presentation_evidence:
         Screen/View reference_adaptation contract.
 
 required_subject_evidence:
-  - Resource management can locate/inspect/author current facts and inspect history.
+  - Resource management can inspect/administer Organization/OrganizationalUnit hierarchy, locate Resources, author current same-Organization ownership and technical/descriptive facts, and inspect ownership/fact history.
   - Application management preserves reusable description independent from deployment.
   - Component management treats Components as communication participants, not network devices.
   - Interaction management supports distinct directed reasons and complete traffic semantics.
   - Deployment management binds Component to Resource independent from current address.
   - Business Process/Connectivity Need workflows preserve justification independently from permission.
-  - Access Request submission exposes backend authority rejection and immutable permission outcome.
-  - Policy Rule workflow preserves authoritative identity/history and Active/Inactive semantics.
-  - Policy Export distinguishes complete success from unresolved/degraded output and preserves provenance.
+  - Access Request workflow exposes source-side submission authority, immutable ApprovalBasis, current-authority side decisions, requester cancellation and terminal ALLOWED/DENIED/CANCELLED/EXPIRED/INVALIDATED outcomes without direct client finalization.
+  - Approval Policy workflow publishes immutable revisions for future requests and never rewrites an existing request basis.
+  - Policy Rule workflow distinguishes current versus revoked authorization episodes, requires backend-confirmed unilateral participating-side revoke authority and never reactivates a revoked episode.
+  - Policy Export returns one complete current-policy result with READY/INCOMPLETE row diagnostics and preserves provenance; missing address realization is not a global unresolved outcome.
 
 shared_evidence:
   - local-dev without a bearer token renders the development sign-in gate before any protected product workspace request.
