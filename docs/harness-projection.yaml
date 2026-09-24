@@ -95,21 +95,21 @@ bindings:
 questions:
   - id: Q-HCD-RESOURCE-ACTORS
     authority: DISCOVERY
-    text: Which distinct human roles perform Resource-management work in the first MVP: organization-associated Resource discoverer, Resource catalogue curator, organizational-structure administrator, or some smaller accepted set?
+    text: "Which distinct human roles perform Resource-management work in the first MVP: organization-associated Resource discoverer, Resource catalogue curator, organizational-structure administrator, or some smaller accepted set?"
     blocks: [FRONTEND-HUMAN-INTERFACE]
   - id: Q-HCD-RESOURCE-GOALS
     authority: DISCOVERY
-    text: What user goals motivate Resource-management interaction independently from screens and CRUD operations: discover/understand a Resource, establish a new Resource, maintain current technical/organizational facts, explain prior state, or another accepted goal set?
+    text: "What user goals motivate Resource-management interaction independently from screens and CRUD operations: discover/understand a Resource, establish a new Resource, maintain current technical/organizational facts, explain prior state, or another accepted goal set?"
     blocks: [FRONTEND-HUMAN-INTERFACE]
   - id: Q-HCD-RESOURCE-ENTRY-CONTEXT
     authority: APPLICATION-JOURNEY-DESIGN
-    text: From which working context should Resource-management tasks naturally begin: organization hierarchy, Resource catalogue/search, a known Resource deep link, downstream deployment/request work, or multiple task-specific entry points?
+    text: "From which working context should Resource-management tasks naturally begin: organization hierarchy, Resource catalogue/search, a known Resource deep link, downstream deployment/request work, or multiple task-specific entry points?"
     blocks: [MVP-UI-NAVIGATION, FRONTEND-SCREEN-VIEW-DESIGN]
   - id: Q-HCD-ORGANIZATION-WORKSPACE-ROLE
     authority: APPLICATION-JOURNEY-DESIGN
-    text: Is Organization/OrganizationalUnit hierarchy administration a primary standalone user workspace, contextual ownership/navigation support inside Resource work, or both for distinct tasks?
+    text: "Is Organization/OrganizationalUnit hierarchy administration a primary standalone user workspace, contextual ownership/navigation support inside Resource work, or both for distinct tasks?"
     blocks: [MVP-UI-NAVIGATION, FRONTEND-SCREEN-VIEW-DESIGN]
   - id: Q-HCD-RESOURCE-HISTORY-USE
     authority: APPLICATION-JOURNEY-DESIGN
-    text: Which concrete user decisions or investigations require Resource ownership/address/Site/responsibility history, and should history be contextual within Resource work or a separate navigation destination?
+    text: "Which concrete user decisions or investigations require Resource ownership/address/Site/responsibility history, and should history be contextual within Resource work or a separate navigation destination?"
     blocks: [RESOURCE-DETAIL-UI, FRONTEND-SCREEN-VIEW-DESIGN]
