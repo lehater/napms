@@ -84,4 +84,24 @@ bindings:
   - {artifact: FRONTEND-TEST-DESIGN, authority: TEST-DESIGN, provides: [engineering.frontend.test-design]}
   - {artifact: FRONTEND-IMPLEMENTATION-DESIGN, authority: IMPLEMENTATION-DESIGN, provides: [engineering.frontend.implementation-design]}
 
-questions: []
+questions:
+  - id: Q-STRATEGIC-APPROVAL-BASIS-SNAPSHOT
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: What exact submission-time approval basis is preserved for same-Organization and cross-Organization AccessRequests, and what remains dynamically reevaluated at approval time?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-DUPLICATE-PENDING-REQUEST
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: What semantic identity prevents duplicate still-pending AccessRequests for the same exact connectivity meaning while preserving submission audit evidence?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-AUTHORIZATION-EPISODE-IDENTITY
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: Does PolicyRule identify one authorization episode or a stable connectivity identity spanning multiple grant/revoke/regrant episodes?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-INTERACTION-REVISION-REPLACEMENT
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: What happens to pending requests and current effective access when a newer immutable InteractionRevision replaces the revision referenced by their AccessSubject?
+    blocks: [STRATEGIC-CAPABILITIES]
+  - id: Q-STRATEGIC-REVOKE-REGRANT
+    authority: STRATEGIC-DOMAIN-DESIGN
+    text: What identity and lifecycle boundaries separate revocation of current effective access from a later regrant of the same exact connectivity meaning?
+    blocks: [STRATEGIC-CAPABILITIES]
