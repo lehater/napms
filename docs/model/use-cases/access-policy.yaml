@@ -1,0 +1,23 @@
+version: 1
+kind: use-case-model
+id: NAPMS-UC-ACCESS-POLICY
+knowledge_coverage:
+  subject: BC-ACCESS-POLICY
+  knowledge: domain-use-case
+requirement_refs: [REQ-AUTH-001, REQ-PERM-001, REQ-PERM-002, REQ-PERM-003, REQ-PERM-004, REQ-PERM-005, REQ-PERM-006, REQ-PERM-007, REQ-PERM-008, REQ-PERM-009, REQ-PERM-010, REQ-RULE-002, REQ-RULE-004, REQ-RULE-005, REQ-RULE-006, REQ-RULE-007, REQ-RULE-008]
+bounded_context_refs: [BC-ACCESS-POLICY, BC-AUTHORITY-MANAGEMENT, BC-ORGANIZATION-STRUCTURE, BC-APPLICATION-DEPLOYMENT, BC-APPLICATION-COMMUNICATION-CATALOGUE, BC-BUSINESS-CONNECTIVITY]
+
+submission: |-
+  Submission accepts one exact AccessSubject only from an actor currently authorized to initiate connectivity for the source administrative side; destination-side request authority is not required merely to submit. The request requires applicable Process-backed business basis, resolves cross-Organization eligibility, applicable per-Organization immutable ApprovalPolicyRevisions, approval obligations, self-approval rule and expiration into an immutable ApprovalBasis, and remains distinct from the later permission decision.
+
+pending_lifecycle: |-
+  For one exact AccessSubject there is at most one PENDING AccessRequest. A repeated exact submission does not create an independent parallel request. While PENDING, the requester may cancel; accepted policy may expire it; any currently authorized actor for a required administrative side may approve or deny that side; forbidden self-approval changes no outcome. Any required denial produces DENIED. Completed approval evidence remains historical after later authority loss.
+
+decision: |-
+  Before ALLOWED, the request revalidates exact submitted connectivity meaning, participating Resources/deployments and business basis. Material loss produces INVALIDATED rather than granting changed access. All required approvals plus successful semantic revalidation are necessary for ALLOWED. PENDING transitions only to ALLOWED, DENIED, CANCELLED, EXPIRED or INVALIDATED; terminal outcomes never reopen.
+
+authorization_episode: |-
+  DENIED, CANCELLED, EXPIRED and INVALIDATED create no current effective access authorization. Each ALLOWED request creates one distinct PolicyRule authorization episode for the exact AccessSubject; at most one current episode exists for that subject while earlier episodes remain historical. Supported EffectiveWindow/conditions determine whether a non-revoked episode contributes at evaluation time without redefining its decided meaning. Technical realization change does not redefine the episode.
+
+revision_and_revocation: |-
+  A newer immutable InteractionRevision is new AccessSubject meaning. A still-pending request for the superseded revision becomes INVALIDATED at pre-Allow semantic revalidation; an existing authorization for the older revision never silently migrates to the newer revision. Revocation terminates only the current authorization episode while preserving the earlier Allowed request, approvals and evidence. Regrant of the same exact connectivity after revocation requires a new AccessRequest, new permission decision and new PolicyRule episode.

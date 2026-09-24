@@ -1,0 +1,17 @@
+version: 1
+kind: use-case-model
+id: NAPMS-UC-APPLICATION-DEPLOYMENT
+knowledge_coverage:
+  subject: BC-APPLICATION-DEPLOYMENT
+  knowledge: domain-use-case
+requirement_refs: [REQ-DEP-001, REQ-DEP-002]
+bounded_context_refs: [BC-APPLICATION-DEPLOYMENT, BC-APPLICATION-COMMUNICATION-CATALOGUE, BC-RESOURCE-CATALOGUE]
+
+behavior: |-
+  Users shall be able to identify a concrete deployment of one Application Component on one Resource independently from that Resource's current network address. Deployment meaning references stable Component and Resource identities and does not absorb their independently owned semantics.
+
+materialization_semantics: |-
+  Authorized connectivity concerning a deployment resolves the participating Resource's current applicable network realization at evaluation/materialization time. Address, Endpoint realization, virtual-machine or provider changes do not create a new connectivity permission and do not silently alter the exact Application communication meaning.
+
+integrity: |-
+  Deployment identity remains stable across Resource address changes. Invalid Component or Resource references fail rather than creating implicit catalogue truth.

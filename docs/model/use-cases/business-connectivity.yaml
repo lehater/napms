@@ -1,0 +1,17 @@
+version: 1
+kind: use-case-model
+id: NAPMS-UC-BUSINESS-CONNECTIVITY
+knowledge_coverage:
+  subject: BC-BUSINESS-CONNECTIVITY
+  knowledge: domain-use-case
+requirement_refs: [REQ-BUS-001, REQ-BUS-002, REQ-BUS-003, REQ-BUS-004, REQ-BUS-005, REQ-BUS-006, REQ-BUS-007, REQ-BUS-008, REQ-BUS-009]
+bounded_context_refs: [BC-BUSINESS-CONNECTIVITY, BC-APPLICATION-COMMUNICATION-CATALOGUE]
+
+behavior: |-
+  Users shall be able to identify and describe a BusinessProcess, record descriptive organizational responsibility and criticalityLabel, and maintain participant-attributed ConnectivityNeeds that state why one Interaction is needed from a dependent Component perspective. A Need remains independent from a concrete AccessRequest, deployment, Resource endpoint or IP address.
+
+lifecycle: |-
+  Source-side and destination-side participants may contribute Needs for the same Interaction independently. One Need may justify multiple concrete requests over time or deployments, and one Interaction may support Needs from multiple BusinessProcesses. Need currentness/retirement preserves history.
+
+relationship_to_permission: |-
+  Business justification is never permission. Additional matching current Needs may be associated with already authorized exact connectivity without creating duplicate authoritative access or new permission evidence solely for the added justification. Retirement or loss of all current known Needs never rewrites historical requests/decisions and does not automatically revoke current access; the absence remains distinguishable for reconciliation.

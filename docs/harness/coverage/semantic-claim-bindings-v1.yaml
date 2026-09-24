@@ -13,8 +13,27 @@ bindings:
     semantic_claims: [engineering.domain.model, engineering.domain.boundaries]
   - capability: engineering.domain.tactical-model
     semantic_claims: [engineering.domain.model, engineering.domain.invariants]
-  - capability: engineering.domain.use-case-model
-    semantic_claims: [engineering.application.use-cases]
+  - capability: engineering.domain.use-case.organization-structure
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-ORGANIZATION-STRUCTURE}
+  - capability: engineering.domain.use-case.resource-catalogue
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-RESOURCE-CATALOGUE}
+  - capability: engineering.domain.use-case.authority-management
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-AUTHORITY-MANAGEMENT}
+  - capability: engineering.domain.use-case.application-communication
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-APPLICATION-COMMUNICATION-CATALOGUE}
+  - capability: engineering.domain.use-case.application-deployment
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-APPLICATION-DEPLOYMENT}
+  - capability: engineering.domain.use-case.business-connectivity
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-BUSINESS-CONNECTIVITY}
+  - capability: engineering.domain.use-case.access-policy
+    semantic_claims:
+      - {claim: engineering.application.use-cases, subject: BC-ACCESS-POLICY}
   - capability: engineering.application.journey
     semantic_claims:
       - engineering.application.use-cases

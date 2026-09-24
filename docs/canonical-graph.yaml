@@ -12,16 +12,22 @@ nodes:
   - {id: STRATEGIC-CAPABILITIES, kind: strategic-model, path: docs/model/strategic/capabilities.yaml, depends_on: [FIRST-MVP-REQUIREMENTS]}
   - {id: STRATEGIC-CONTEXTS, kind: strategic-model, path: docs/model/strategic/bounded-contexts.yaml, depends_on: [STRATEGIC-CAPABILITIES]}
   - {id: STRATEGIC-RELATIONSHIPS, kind: strategic-model, path: docs/model/strategic/context-relationships.yaml, depends_on: [STRATEGIC-CONTEXTS]}
-  - {id: RC-CURATION, kind: use-case, path: docs/model/use-cases/resource-catalogue-curation.yaml, depends_on: [RC-DISCOVERY, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
+  - {id: ORG-STRUCTURE-USE-CASES, kind: use-case, path: docs/model/use-cases/organization-structure-administration.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
+  - {id: RC-CURATION, kind: use-case, path: docs/model/use-cases/resource-catalogue-curation.yaml, depends_on: [RC-DISCOVERY, FIRST-MVP-REQUIREMENTS, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
+  - {id: AM-AUTHORITY-USE-CASES, kind: use-case, path: docs/model/use-cases/authority-management.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
+  - {id: ACC-COMMUNICATION-USE-CASES, kind: use-case, path: docs/model/use-cases/application-communication-catalogue.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
+  - {id: AD-DEPLOYMENT-USE-CASES, kind: use-case, path: docs/model/use-cases/application-deployment.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
+  - {id: BC-CONNECTIVITY-USE-CASES, kind: use-case, path: docs/model/use-cases/business-connectivity.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
+  - {id: AP-ACCESS-USE-CASES, kind: use-case, path: docs/model/use-cases/access-policy.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, STRATEGIC-CONTEXTS, STRATEGIC-RELATIONSHIPS]}
   - {id: RC-LANGUAGE, kind: domain-language, path: docs/model/contexts/resource-catalogue/language.yaml, depends_on: [STRATEGIC-CONTEXTS]}
   - {id: RC-DECISIONS, kind: domain-decisions, path: docs/model/contexts/resource-catalogue/decisions.yaml, depends_on: [RC-CURATION]}
   - {id: RC-PROCESS, kind: domain-process, path: docs/model/contexts/resource-catalogue/process-model.yaml, depends_on: [RC-CURATION, RC-LANGUAGE, RC-DECISIONS, STRATEGIC-RELATIONSHIPS]}
   - {id: RC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/resource-catalogue/domain-model.yaml, depends_on: [RC-PROCESS, RC-LANGUAGE]}
-  - {id: AM-LANGUAGE, kind: domain-language, path: docs/model/contexts/authority-management/language.yaml, depends_on: [STRATEGIC-CONTEXTS]}
-  - {id: ACC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/application-communication-catalogue/domain-model.yaml, depends_on: [STRATEGIC-CONTEXTS]}
-  - {id: AD-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/application-deployment/domain-model.yaml, depends_on: [ACC-DOMAIN, RC-DOMAIN, STRATEGIC-CONTEXTS]}
-  - {id: BC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/business-connectivity/domain-model.yaml, depends_on: [ACC-DOMAIN, STRATEGIC-CONTEXTS]}
-  - {id: AP-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/access-policy/domain-model.yaml, depends_on: [ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, STRATEGIC-CONTEXTS]}
+  - {id: AM-LANGUAGE, kind: domain-language, path: docs/model/contexts/authority-management/language.yaml, depends_on: [AM-AUTHORITY-USE-CASES, STRATEGIC-CONTEXTS]}
+  - {id: ACC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/application-communication-catalogue/domain-model.yaml, depends_on: [ACC-COMMUNICATION-USE-CASES, STRATEGIC-CONTEXTS]}
+  - {id: AD-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/application-deployment/domain-model.yaml, depends_on: [AD-DEPLOYMENT-USE-CASES, ACC-DOMAIN, RC-DOMAIN, STRATEGIC-CONTEXTS]}
+  - {id: BC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/business-connectivity/domain-model.yaml, depends_on: [BC-CONNECTIVITY-USE-CASES, ACC-DOMAIN, STRATEGIC-CONTEXTS]}
+  - {id: AP-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/access-policy/domain-model.yaml, depends_on: [AP-ACCESS-USE-CASES, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, STRATEGIC-CONTEXTS]}
   - {id: HCD-APPLICATION-COMPONENTS-TASK-MODEL, kind: task-model, path: docs/model/tasks/application-components-task-model.yaml, depends_on: [FIRST-MVP-HCD-USER-NEEDS, FIRST-MVP-REQUIREMENTS, ACC-DOMAIN]}
   - {id: HCD-APPLICATION-COMPONENTS-JOURNEY, kind: user-journey-design, path: docs/model/use-cases/application-components-human-journey.yaml, depends_on: [HCD-APPLICATION-COMPONENTS-TASK-MODEL, FIRST-MVP-REQUIREMENTS, ACC-DOMAIN]}
   - {id: HCD-ACCESS-REQUEST-TASK-MODEL, kind: task-model, path: docs/model/tasks/access-request-task-model.yaml, depends_on: [FIRST-MVP-HCD-USER-NEEDS, FIRST-MVP-REQUIREMENTS, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN]}

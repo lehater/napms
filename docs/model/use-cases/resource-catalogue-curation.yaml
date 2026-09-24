@@ -1,19 +1,22 @@
-version: 2
+version: 3
 kind: use-case-model
 id: NAPMS-UC-RC-CURATION
 knowledge_coverage:
   subject: BC-RESOURCE-CATALOGUE
   knowledge: domain-use-case
-depends_on: [NAPMS-DISCOVERY-RC-CURATION]
-bounded_context_refs: [BC-RESOURCE-CATALOGUE, BC-AUTHORITY-MANAGEMENT]
+requirement_refs: [REQ-RES-001, REQ-RES-002, REQ-RES-003, REQ-RES-004, REQ-RES-005, REQ-RES-006, REQ-ORG-001, REQ-ORG-002]
+bounded_context_refs: [BC-RESOURCE-CATALOGUE, BC-ORGANIZATION-STRUCTURE, BC-AUTHORITY-MANAGEMENT]
 
 behavior: |-
-  Resource Catalogue curation shall allow an authenticated admitted actor to register a Resource with stable identity and required immutable AuthorityScopeRef; explicitly add logical Endpoints to that Resource access-management unit; set replace or clear one current HostAddress-or-Prefix per Endpoint while preserving Endpoint identity/history; maintain Site and singular OWNER/ADMINISTRATOR responsibility with history; and inspect current Resource truth without direct database edits.
+  Resource Catalogue curation shall allow an authenticated actor with current authority for the applicable organizational scope to register a Resource with stable identity and exactly one current OrganizationalUnit owner; explicitly add logical Endpoints to that Resource access-management unit; set, replace or clear one current HostAddress-or-Prefix per Endpoint while preserving Endpoint identity/history; maintain Site and descriptive OWNER/ADMINISTRATOR responsibility with history; move current ownership between OrganizationalUnits inside the same Organization without changing Resource identity; and inspect current Resource truth without direct database edits.
 
-  Resource identity is independent from address. Endpoint identity is independent from current address. Multiple Endpoints may belong to one Resource only by explicit caller choice that they are one logical access-management unit; no automatic grouping by address, Site, responsibility or name is permitted.
+  A cross-Organization Resource transfer is not an ordinary ownership edit and requires separate migration semantics. Resource identity is independent from current address, Site, organizational ownership and descriptive responsibility. Endpoint identity is independent from current address. Multiple Endpoints may belong to one Resource only by explicit caller choice that they are one logical access-management unit; no automatic grouping by address, Site, responsibility or name is permitted.
+
+visibility: |-
+  An authenticated user associated with the Organization may discover Resources belonging to that Organization without receiving Resource-management authority merely from visibility.
 
 authorization: |-
-  Resource Catalogue mutation uses authenticated identity and the accepted security admission contract. Resource AuthorityScopeRef is catalogue truth used by scoped request/export authorization, but Site OWNER ADMINISTRATOR and address facts never grant authority. Caller-supplied actor/permission/authority fields are not trusted.
+  Resource mutation reevaluates current Authority Management truth for the protected action and the Resource's applicable Organization/OrganizationalUnit scope. Organizational ownership, Site, descriptive OWNER/ADMINISTRATOR responsibility and address facts never grant authority. Caller-supplied actor, role, permission or authority fields are not trusted.
 
 integrity: |-
-  Address Site and responsibility mutation preserves explanatory history. Prefix input is canonical and host bits may not be silently masked. Aggregate versioning prevents lost updates. Missing current address does not invalidate Resource or Endpoint identity.
+  Address, Site, organizational ownership and responsibility mutation preserves explanatory history. Prefix input is canonical and host bits may not be silently masked. Aggregate versioning prevents lost updates. Missing current address does not invalidate Resource or Endpoint identity.

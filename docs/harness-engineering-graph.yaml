@@ -78,13 +78,44 @@ authorities:
     responsibility: Own context-focused use-case behavior used to drive tactical domain modeling.
     boundary:
       semantic_cohesion: Decisions describe observable domain behavior for a bounded problem/use-case slice.
-      independent_change: Use-case behavior can be refined before tactical structures or persistence representations are chosen.
-      public_contract: Provides accepted domain use-case behavior.
+      independent_change: Each bounded-context use-case model can be refined before tactical structures or persistence representations are chosen.
+      public_contract: Provides independently provable accepted domain use-case behavior for every selected Bounded Context.
     produces:
-      - capability: engineering.domain.use-case-model
+      - capability: engineering.domain.use-case.organization-structure
+        knowledge_kind: domain-use-case
+        requires:
+          - engineering.requirements.product-intent
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.use-case.resource-catalogue
         knowledge_kind: domain-use-case
         requires:
           - engineering.discovery.problem-evidence
+          - engineering.requirements.product-intent
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.use-case.authority-management
+        knowledge_kind: domain-use-case
+        requires:
+          - engineering.requirements.product-intent
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.use-case.application-communication
+        knowledge_kind: domain-use-case
+        requires:
+          - engineering.requirements.product-intent
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.use-case.application-deployment
+        knowledge_kind: domain-use-case
+        requires:
+          - engineering.requirements.product-intent
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.use-case.business-connectivity
+        knowledge_kind: domain-use-case
+        requires:
+          - engineering.requirements.product-intent
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.use-case.access-policy
+        knowledge_kind: domain-use-case
+        requires:
+          - engineering.requirements.product-intent
           - engineering.domain.strategic-model
 
   - id: TACTICAL-DOMAIN-DESIGN
@@ -97,7 +128,13 @@ authorities:
       - capability: engineering.domain.tactical-model
         knowledge_kind: domain-model
         requires:
-          - engineering.domain.use-case-model
+          - engineering.domain.use-case.organization-structure
+          - engineering.domain.use-case.resource-catalogue
+          - engineering.domain.use-case.authority-management
+          - engineering.domain.use-case.application-communication
+          - engineering.domain.use-case.application-deployment
+          - engineering.domain.use-case.business-connectivity
+          - engineering.domain.use-case.access-policy
           - engineering.domain.strategic-model
 
   - id: APPLICATION-JOURNEY-DESIGN
@@ -181,7 +218,13 @@ authorities:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
           - engineering.domain.tactical-model
-          - engineering.domain.use-case-model
+          - engineering.domain.use-case.organization-structure
+          - engineering.domain.use-case.resource-catalogue
+          - engineering.domain.use-case.authority-management
+          - engineering.domain.use-case.application-communication
+          - engineering.domain.use-case.application-deployment
+          - engineering.domain.use-case.business-connectivity
+          - engineering.domain.use-case.access-policy
           - engineering.application.journey
       - capability: engineering.architecture.async-messaging-not-applicable
         knowledge_kind: system-architecture
