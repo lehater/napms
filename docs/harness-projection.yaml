@@ -93,13 +93,13 @@ bindings:
   - {artifact: FRONTEND-IMPLEMENTATION-DESIGN, authority: IMPLEMENTATION-DESIGN, provides: [engineering.frontend.implementation-design]}
 
 questions:
-  - id: Q-HCD-RESOURCE-ACTORS
+  - id: Q-HCD-FIRST-MVP-ACTOR-MAP
     authority: DISCOVERY
-    text: "Which distinct human roles perform Resource-management work in the first MVP: organization-associated Resource discoverer, Resource catalogue curator, organizational-structure administrator, or some smaller accepted set?"
+    text: "Which distinct human task actors exist across the first MVP, including at least Application Communication Profile curator, Resource owner/curator, Organization Structure administrator, connectivity requester, connectivity approver/decision maker and policy/network user; which of these are truly distinct user populations versus the same person performing several authorized tasks?"
     blocks: [FRONTEND-HUMAN-INTERFACE]
-  - id: Q-HCD-RESOURCE-GOALS
+  - id: Q-HCD-FIRST-MVP-GOAL-MAP
     authority: DISCOVERY
-    text: "What user goals motivate Resource-management interaction independently from screens and CRUD operations: discover/understand a Resource, establish a new Resource, maintain current technical/organizational facts, explain prior state, or another accepted goal set?"
+    text: "What user goals motivate the first-MVP human work independently from screens and CRUD operations, including maintaining the global reusable Application Communication Profile catalogue and maintaining organization-scoped Resource truth; which additional goals such as approval, deployment or business-connectivity curation require their own HCD task branches?"
     blocks: [FRONTEND-HUMAN-INTERFACE]
   - id: Q-HCD-RESOURCE-ENTRY-CONTEXT
     authority: APPLICATION-JOURNEY-DESIGN
