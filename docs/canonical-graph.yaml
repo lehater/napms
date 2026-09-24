@@ -25,7 +25,7 @@ nodes:
   - {id: RC-PROCESS, kind: domain-process, path: docs/model/contexts/resource-catalogue/process-model.yaml, depends_on: [RC-CURATION, RC-LANGUAGE, RC-DECISIONS, ORG-DOMAIN, STRATEGIC-RELATIONSHIPS]}
   - {id: RC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/resource-catalogue/domain-model.yaml, depends_on: [RC-PROCESS, RC-LANGUAGE, ORG-DOMAIN]}
   - {id: AM-LANGUAGE, kind: domain-language, path: docs/model/contexts/authority-management/language.yaml, depends_on: [AM-AUTHORITY-USE-CASES, STRATEGIC-CONTEXTS]}
-  - {id: AM-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/authority-management/domain-model.yaml, depends_on: [AM-AUTHORITY-USE-CASES, ORG-DOMAIN, AM-DOMAIN, ORG-DOMAIN, STRATEGIC-RELATIONSHIPS]}
+  - {id: AM-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/authority-management/domain-model.yaml, depends_on: [AM-AUTHORITY-USE-CASES, AM-LANGUAGE, ORG-DOMAIN, STRATEGIC-RELATIONSHIPS]}
   - {id: ACC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/application-communication-catalogue/domain-model.yaml, depends_on: [ACC-COMMUNICATION-USE-CASES, STRATEGIC-CONTEXTS]}
   - {id: AD-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/application-deployment/domain-model.yaml, depends_on: [AD-DEPLOYMENT-USE-CASES, ACC-DOMAIN, RC-DOMAIN, STRATEGIC-CONTEXTS]}
   - {id: BC-DOMAIN, kind: tactical-domain-model, path: docs/model/contexts/business-connectivity/domain-model.yaml, depends_on: [BC-CONNECTIVITY-USE-CASES, ACC-DOMAIN, STRATEGIC-CONTEXTS]}
@@ -46,7 +46,7 @@ nodes:
   - {id: OPENAPI, kind: http-contract, path: docs/contracts/http/napms.openapi.yaml, depends_on: [HTTP-REQUIREMENTS, TECH-REPRESENTATION]}
   - {id: MVP-UI-NAVIGATION, kind: ui-navigation-model, path: docs/contracts/ui/mvp-navigation.yaml, depends_on: [FIRST-MVP-JOURNEY, MODULE-CONTRACTS, OPENAPI]}
   - {id: RESOURCE-DETAIL-UI, kind: ui-screen-contract, path: docs/contracts/ui/resource-detail.yaml, depends_on: [MVP-UI-NAVIGATION, MODULE-CONTRACTS, OPENAPI]}
-  - {id: PERSISTENCE, kind: physical-persistence-model, path: docs/architecture/persistence/mvp-persistence.yaml, depends_on: [SYSTEM-RULES, TECH-REPRESENTATION, RC-DOMAIN, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN, AM-LANGUAGE]}
+  - {id: PERSISTENCE, kind: physical-persistence-model, path: docs/architecture/persistence/mvp-persistence.yaml, depends_on: [SYSTEM-RULES, TECH-REPRESENTATION, ORG-DOMAIN, RC-DOMAIN, AM-DOMAIN, ACC-DOMAIN, AD-DOMAIN, BC-DOMAIN, AP-DOMAIN]}
   - {id: QUALITY-REQUIREMENTS, kind: quality-requirements, path: docs/architecture/mvp-quality-requirements.yaml, depends_on: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY, SYSTEM-RULES, SECURITY-ARCHITECTURE, MODULE-CONTRACTS, OPENAPI, PERSISTENCE]}
   - {id: MVP-QUALITY-TARGETS, kind: requirements-evidence, path: docs/requirements/first-mvp-quality-targets.yaml, depends_on: []}
   - {id: THREAT-MODEL, kind: threat-model, path: docs/architecture/mvp-threat-model.yaml, depends_on: [SYSTEM-RULES, SECURITY-ARCHITECTURE, MODULE-CONTRACTS, HTTP-REQUIREMENTS, TECH-REPRESENTATION, PERSISTENCE]}
