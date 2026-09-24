@@ -85,12 +85,14 @@ bindings:
       - engineering.verification.data
       - engineering.transition.revalidation
 
+  - capability: engineering.security.identity
+    semantic_claims:
+      - engineering.security.identity
   - capability: engineering.architecture.security
     semantic_claims:
       - engineering.security.boundaries
       - engineering.security.confidentiality
       - engineering.security.integrity
-      - engineering.security.identity
       - engineering.security.authorization
       - engineering.security.accountability
   - capability: engineering.security.browser-credential-lifecycle

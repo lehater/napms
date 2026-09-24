@@ -252,6 +252,12 @@ authorities:
       independent_change: Security architecture can evolve independently from tactical domain modeling and later threat analysis.
       public_contract: Provides security architecture constraints to downstream design.
     produces:
+      - capability: engineering.security.identity
+        knowledge_kind: security-architecture
+        requires:
+          - engineering.requirements.product-intent
+          - engineering.domain.tactical-model
+          - engineering.architecture.rules
       - capability: engineering.architecture.security
         knowledge_kind: security-architecture
         requires:
@@ -261,9 +267,7 @@ authorities:
       - capability: engineering.security.browser-credential-lifecycle
         knowledge_kind: security-architecture
         requires:
-          - engineering.requirements.product-intent
-          - engineering.domain.tactical-model
-          - engineering.architecture.rules
+          - engineering.security.identity
 
   - id: INTERFACE-DESIGN
     responsibility: Own shared technical representations and supported external interface contracts including machine and human interaction contracts.
@@ -591,6 +595,7 @@ consumers:
       - engineering.architecture.rules
       - engineering.architecture.module-contracts
       - engineering.architecture.security
+      - engineering.security.identity
       - engineering.interface.shared-representations
       - engineering.interface.http-contract
       - engineering.interface.ui-navigation

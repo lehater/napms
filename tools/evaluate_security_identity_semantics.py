@@ -219,7 +219,7 @@ def evaluate() -> dict[str, Any]:
         "kind": "harness-semantic-evaluation-set",
         "semantic_evaluations": [
             semantic_evaluation(
-                "engineering.architecture.security",
+                "engineering.security.identity",
                 evaluate_core_identity(security),
             ),
             semantic_evaluation(
