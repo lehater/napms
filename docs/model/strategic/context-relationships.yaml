@@ -1,4 +1,4 @@
-version: 5
+version: 6
 kind: strategic-context-relationship-model
 id: NAPMS-STRATEGIC-CONTEXT-RELATIONSHIPS
 
@@ -46,17 +46,26 @@ strategic_invariants:
   - OrganizationalUnit reparenting is explicit, preserves Unit identity/history, stays inside one Organization and cannot create cycles
   - OrganizationalUnit retirement is terminal for current use and requires no active child Units and no currently owned Resources
   - Organization is the root security boundary for its OrganizationalUnit hierarchy
+  - Organization and OrganizationalUnit identity/history are never physically deleted as ordinary lifecycle operations
+  - Resource ownership change within one Organization preserves Resource identity; cross-Organization transfer is separate migration semantics
   - OrganizationalUnit hierarchy never crosses an Organization boundary
   - Resource organizational ownership is current mutable truth with preserved history and does not change Resource identity
   - organizational ownership and descriptive responsibility are not authority
   - System authority is distinct from Organization and OrganizationalUnit authority
-  - RoleAssignments may target Actor or Group principals
+  - Authority scope is a semantic target over System Organization or OrganizationalUnit rather than an independently mutable CRUD Scope entity
+  - Role contains Actions; RoleAssignments are temporal and may target Actor or Group principals
+  - explicit deny/exclusion uses deny-overrides when allow and deny authority both match
+  - effective authority is reevaluated fail-closed for every protected action; historical AuthorityEvidence remains preserved even when current authority later changes
   - Group membership is external IdP truth; missing or unresolved membership fails closed for current authority without destroying historical evidence
   - authority inheritance flows parent to descendants inside one Organization
   - retired Roles confer no current authority while historical evidence remains explainable
   - cross-Organization access eligibility is an Access Policy decision and is never implied by organizational structure
   - each administrative side uses the ApprovalPolicyRevision accepted for its Organization
   - submission preserves immutable ApprovalBasis and resolved ApprovalObligations; Actor Group and RoleAssignment membership are reevaluated at each approval action rather than frozen into that basis
+  - completed approval evidence remains valid historical input after the approving actor later loses authority; only a new approval action reevaluates current authority
+  - any required denial terminates the request as DENIED; all required approvals plus successful semantic revalidation are necessary before ALLOWED
+  - requester cancellation, policy-driven expiration and semantic invalidation are distinct terminal outcomes and terminal AccessRequests are never reopened
+  - ApprovalPolicyRevision defines whether self-approval is permitted; a forbidden self-approval attempt changes no request outcome
   - for one exact AccessSubject there is at most one pending AccessRequest; repeated submission does not create an independent parallel approval process
   - ApprovalPolicy revisions are immutable; a submitted AccessRequest preserves the resolved approval basis and later revisions govern later requests
   - request expiration semantics are Access Policy truth and are resolved from the applicable policy basis at submission

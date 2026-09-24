@@ -1,4 +1,4 @@
-version: 5
+version: 6
 kind: bounded-context-model
 id: NAPMS-BOUNDED-CONTEXTS
 
@@ -7,7 +7,7 @@ contexts:
     capability_ref: CAP-ORGANIZATION-STRUCTURE
     name: Organization Structure
     purpose: Own administrative organizational identity and hierarchy.
-    responsibility: [Organization identity and lifecycle, OrganizationalUnit identity and ACTIVE/RETIRED lifecycle, explicit same-Organization reparenting, parent-child hierarchy inside one Organization, Organization as root security boundary]
+    responsibility: [stable Organization identity and non-destructive lifecycle/history, stable OrganizationalUnit identity and ACTIVE/RETIRED lifecycle/history, explicit same-Organization reparenting, parent-child hierarchy inside one Organization, Organization as root security boundary]
     boundary_basis:
       cohesion_rationale: Organization and OrganizationalUnit identity, hierarchy and lifecycle form one administrative structure with one root boundary.
       separation_rationale: Resource ownership, actor/group membership, role assignment, permission decisions and technical realization remain external.
@@ -19,7 +19,7 @@ contexts:
     capability_ref: CAP-RESOURCE-CATALOGUE
     name: Resource Catalogue
     purpose: Own logical Resource identity and access-relevant Resource truth.
-    responsibility: [Resource identity, one current OrganizationalUnitRef with ownership history, logical Endpoint membership, current HostAddress-or-Prefix realization, Site, OWNER and ADMINISTRATOR descriptive responsibility, basic history]
+    responsibility: [Resource identity, exactly one current OrganizationalUnitRef within the same Organization with ownership history, cross-Organization transfer as separate migration semantics, logical Endpoint membership, current HostAddress-or-Prefix realization, Site, OWNER and ADMINISTRATOR descriptive responsibility, basic history]
     boundary_basis:
       cohesion_rationale: Resource identity, organizational ownership, logical network presence, realization and descriptive responsibility change together as Resource catalogue truth.
       separation_rationale: Organization hierarchy, application meaning, deployment placement, business need, permission and actor authority remain external.
@@ -31,12 +31,12 @@ contexts:
     capability_ref: CAP-AUTHORITY-MANAGEMENT
     name: Authority Management
     purpose: Own effective principal/action/scope/time authority semantics.
-    responsibility: [ActorRef and GroupRef principals, Role and Action semantics, temporal RoleAssignments, System Organization and OrganizationalUnit scope targets, parent-to-descendant inheritance, Role retirement, fail-closed current effective authority evaluation]
+    responsibility: [stable ActorRef and GroupRef principals, Role containing Actions, temporal RoleAssignments, System Organization and OrganizationalUnit scope targets, parent-to-descendant inheritance, explicit deny/exclusion with deny-overrides, Role retirement, fail-closed current effective authority reevaluation for every protected action, historical AuthorityEvidence]
     boundary_basis:
       cohesion_rationale: Principal, role/action, scope target, inheritance, assignment time and role lifecycle jointly determine reusable current authority.
       separation_rationale: Organization Structure owns Organization/OrganizationalUnit hierarchy; Resource Catalogue owns current Resource organizational affiliation; authentication and external IdP membership are inputs; domain responsibility metadata never manufactures authority.
     model_language_ownership:
-      owned_terms_or_model_scope: [ActorRef, GroupRef, PrincipalRef, Role, Action, RoleAssignment, System Scope, Organization Scope, OrganizationalUnit Scope, Effective Authority]
+      owned_terms_or_model_scope: [ActorRef, GroupRef, PrincipalRef, Role, Action, RoleAssignment, Explicit Deny, System Scope, Organization Scope, OrganizationalUnit Scope, Effective Authority, AuthorityEvidence]
       explicitly_external_terms: [Organization, OrganizationalUnit, Resource, Site, ResponsibilityGroup, BusinessProcess, Group membership]
 
   - context_id: BC-APPLICATION-COMMUNICATION-CATALOGUE
@@ -79,7 +79,7 @@ contexts:
     capability_ref: CAP-ACCESS-POLICY
     name: Access Policy
     purpose: Own deliberate access requests, permission outcomes/history and authoritative current effective access.
-    responsibility: [AccessRequest lifecycle, exact AccessSubject, at most one pending request per exact AccessSubject, cross-Organization access eligibility, per-Organization ApprovalPolicy and immutable ApprovalPolicyRevision, immutable submission-time ApprovalBasis and ApprovalObligations, request-expiration policy, approval and permission outcomes, AuthorizationEvidence, one PolicyRule authorization episode per Allowed decision, at most one current authorization episode per exact AccessSubject, declarative EffectiveWindow, terminal revocation, regrant only through a new request and decision, justification associations, audit history]
+    responsibility: [terminal AccessRequest lifecycle PENDING to ALLOWED DENIED CANCELLED EXPIRED or INVALIDATED with no reopen, exact AccessSubject, at most one pending request per exact AccessSubject, cross-Organization access eligibility, per-Organization ApprovalPolicy and immutable ApprovalPolicyRevision including self-approval and request-expiration policy, immutable submission-time ApprovalBasis and ApprovalObligations, current-authority evaluation for each approval action, preservation of completed approvals after later authority loss, pre-Allow semantic revalidation with INVALIDATED on material loss, approval and permission outcomes, AuthorizationEvidence, one PolicyRule authorization episode per Allowed decision, at most one current authorization episode per exact AccessSubject, declarative EffectiveWindow, terminal revocation, regrant only through a new request and decision, justification associations, audit history]
     boundary_basis:
       cohesion_rationale: Cross-boundary eligibility, approval policy, request identity/lifecycle, approval basis, approval/permission evidence and authorization-episode history form one access-governance lifecycle owner.
       separation_rationale: Organization hierarchy, Resource ownership, Need currentness, Resource realization, communication semantics and current authority evaluation remain independently owned.
