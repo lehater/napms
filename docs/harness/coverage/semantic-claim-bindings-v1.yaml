@@ -90,6 +90,8 @@ bindings:
       - engineering.security.boundaries
       - engineering.security.confidentiality
       - engineering.security.integrity
+      - engineering.security.authorization
+      - engineering.security.accountability
   - capability: engineering.security.browser-credential-lifecycle
     semantic_claims:
       - engineering.security.identity
