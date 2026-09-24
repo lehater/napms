@@ -67,7 +67,7 @@ def evaluate_core_identity(security: dict[str, Any]) -> list[dict[str, Any]]:
     )
     require_fields(
         security.get("principal"),
-        ("subject", "instance_permissions_claim", "authority_claim", "rules"),
+        ("subject", "instance_permissions_claim", "group_membership_claim", "rules"),
         code="IDENTITY_PRINCIPAL_INCOMPLETE",
         context="principal",
         findings=findings,

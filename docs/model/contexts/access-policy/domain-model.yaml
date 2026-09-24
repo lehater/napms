@@ -1,4 +1,4 @@
-version: 3
+version: 4
 kind: tactical-domain-model
 id: NAPMS-AP-DOMAIN-MODEL
 bounded_context_ref: BC-ACCESS-POLICY
@@ -8,7 +8,7 @@ knowledge_coverage:
 depends_on: [NAPMS-UC-ACCESS-POLICY]
 
 aggregates: [ApprovalPolicy, ApprovalPolicyRevision, AccessRequest, PolicyRule]
-entities: [ApprovalObligation, ApprovalDecision, AuthorizationEvidence, JustificationAssociation, OperationalHistory]
+entities: [ApprovalObligation, ApprovalDecision, AuthorizationEvidence, RevocationEvidence, JustificationAssociation, OperationalHistory]
 access_subject: [sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef]
 
 aggregate_semantics:
@@ -24,6 +24,8 @@ cross_aggregate_services:
     rule: At most one non-revoked current PolicyRule authorization episode exists for one exact AccessSubject while earlier episodes remain historical.
   - service: AccessRequestDecisionCoordinator
     rule: Before ALLOWED, require all immutable ApprovalObligations approved and revalidate current submitted meaning Resources deployments and business basis; material loss produces INVALIDATED.
+  - service: PolicyRuleRevocationCoordinator
+    rule: Resolve source and destination administrative sides for the PolicyRule AccessSubject and accept revocation when the actor has current policy.revoke authority for at least one participating side; no approval from the other side is required.
 
 invariants:
   - AccessSubject equality requires exact sourceDeploymentRef destinationDeploymentRef and immutable interactionRevisionRef.
@@ -38,6 +40,8 @@ invariants:
   - Every ALLOWED AccessRequest creates one distinct PolicyRule authorization episode for the exact AccessSubject.
   - At most one current non-revoked PolicyRule exists per AccessSubject while older PolicyRules remain historical episodes.
   - EffectiveWindow uses optional inclusive effectiveFrom and exclusive effectiveUntil and affects current contribution without redefining PolicyRule identity.
+  - Revocation requires current policy.revoke authority for either source or destination administrative side; one participating side is sufficient and the other side cannot veto revocation.
+  - Revocation records immutable RevocationEvidence identifying actor side ScopeTarget evaluation time and AuthorityEvidence.
   - Revocation is terminal for one PolicyRule episode and preserves the Allowed request approval decisions AuthorizationEvidence and history.
   - Regrant after revocation requires a new AccessRequest new permission decision and new PolicyRule episode.
   - A newer immutable InteractionRevision is new AccessSubject meaning; pending old-revision requests fail pre-Allow revalidation as INVALIDATED and existing PolicyRules never silently migrate revision.
@@ -61,6 +65,7 @@ public_semantics:
   - INVALIDATED
   - PolicyRuleRef
   - AuthorizationEvidence
+  - RevocationEvidence
   - JustificationAssociation
   - EffectiveWindow
   - Revocation

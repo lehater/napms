@@ -92,8 +92,4 @@ bindings:
   - {artifact: FRONTEND-TEST-DESIGN, authority: TEST-DESIGN, provides: [engineering.frontend.test-design]}
   - {artifact: FRONTEND-IMPLEMENTATION-DESIGN, authority: IMPLEMENTATION-DESIGN, provides: [engineering.frontend.implementation-design]}
 
-questions:
-  - id: Q-ACCESS-REVOCATION-AUTHORITY-SIDE
-    authority: DOMAIN-USE-CASE-DESIGN
-    text: For a current PolicyRule authorization episode spanning source and destination administrative sides, which side authority is sufficient for policy.revoke: either participating side independently, source only, destination only, or all participating sides together?
-    blocks: [AP-ACCESS-USE-CASES]
+questions: []

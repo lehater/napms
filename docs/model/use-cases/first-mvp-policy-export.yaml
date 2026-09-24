@@ -37,6 +37,7 @@ required_semantics:
   - PENDING transitions only to ALLOWED, DENIED, CANCELLED, EXPIRED or INVALIDATED and terminal requests never reopen.
   - Every ALLOWED request creates one distinct PolicyRule authorization episode; DENIED CANCELLED EXPIRED and INVALIDATED create none.
   - At most one current non-revoked authorization episode exists per exact AccessSubject; revocation is terminal for that episode and regrant requires a new request, decision and PolicyRule.
+  - Either participating administrative side may independently revoke a current authorization episode when the actor has current policy.revoke authority for that side; revocation never requires approval from the other side.
   - EffectiveWindow may control whether a non-revoked authorization episode contributes at evaluation time without changing decided meaning.
   - Resource address or Endpoint realization changes do not redefine access identity or historical permission evidence.
   - Additional current Needs add justification without duplicating current authorization; zero current Needs is reconciliation and not automatic revocation.

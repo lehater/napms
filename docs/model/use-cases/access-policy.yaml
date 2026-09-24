@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: use-case-model
 id: NAPMS-UC-ACCESS-POLICY
 knowledge_coverage:
@@ -20,4 +20,6 @@ authorization_episode: |-
   DENIED, CANCELLED, EXPIRED and INVALIDATED create no current effective access authorization. Each ALLOWED request creates one distinct PolicyRule authorization episode for the exact AccessSubject; at most one current episode exists for that subject while earlier episodes remain historical. Supported EffectiveWindow/conditions determine whether a non-revoked episode contributes at evaluation time without redefining its decided meaning. Technical realization change does not redefine the episode.
 
 revision_and_revocation: |-
-  A newer immutable InteractionRevision is new AccessSubject meaning. A still-pending request for the superseded revision becomes INVALIDATED at pre-Allow semantic revalidation; an existing authorization for the older revision never silently migrates to the newer revision. Revocation terminates only the current authorization episode while preserving the earlier Allowed request, approvals and evidence. Regrant of the same exact connectivity after revocation requires a new AccessRequest, new permission decision and new PolicyRule episode.
+  A newer immutable InteractionRevision is new AccessSubject meaning. A still-pending request for the superseded revision becomes INVALIDATED at pre-Allow semantic revalidation; an existing authorization for the older revision never silently migrates to the newer revision.
+
+  Either participating administrative side may independently revoke a current PolicyRule authorization episode. The revoking actor must have current policy.revoke authority for that side's applicable Organization or OrganizationalUnit scope at the time of the revoke action; source-side and destination-side revocation authority are alternatives rather than joint approval obligations. When both sides are the same administrative side, that one side is sufficient. Revocation is terminal for only the current authorization episode and preserves the earlier Allowed request, approvals and evidence. Regrant of the same exact connectivity after revocation requires a new AccessRequest, new permission decision and new PolicyRule episode.

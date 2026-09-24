@@ -34,6 +34,7 @@ interaction_rules:
   - DENIED CANCELLED EXPIRED and INVALIDATED finalization mutate only AccessRequest-owned state/evidence and create no PolicyRule.
   - ALLOWED finalization creates one new PolicyRule authorization episode for the exact AccessSubject only after all required approvals and semantic revalidation; an existing historical episode is never reactivated or reused as the new episode.
   - PolicyRule revocation is terminal for that authorization episode and never rewrites the earlier Allowed request or approval evidence; regrant requires a new request decision and PolicyRule.
+  - PolicyRule revocation evaluates current policy.revoke authority for the source and destination administrative sides and succeeds when either participating side independently authorizes the actor; the other side cannot veto revocation.
   - Policy materialization is read-only composition and owns no domain truth.
   - Materialization uses one read-only REPEATABLE READ snapshot and database transaction_timestamp() as evaluationAt.
   - Export authority for every applicable selected current Organization or OrganizationalUnit scope is evaluated at the same evaluationAt before result exposure.
