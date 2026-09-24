@@ -1,37 +1,67 @@
-version: 2
+version: 3
 kind: tactical-domain-model
 id: NAPMS-AP-DOMAIN-MODEL
 bounded_context_ref: BC-ACCESS-POLICY
 knowledge_coverage:
   subject: BC-ACCESS-POLICY
   knowledge: tactical-domain-model
+depends_on: [NAPMS-UC-ACCESS-POLICY]
 
-aggregates: [AccessRequest, PolicyRule]
-entities: [AuthorizationEvidence, JustificationAssociation, OperationalHistory]
+aggregates: [ApprovalPolicy, ApprovalPolicyRevision, AccessRequest, PolicyRule]
+entities: [ApprovalObligation, ApprovalDecision, AuthorizationEvidence, JustificationAssociation, OperationalHistory]
 access_subject: [sourceDeploymentRef, destinationDeploymentRef, interactionRevisionRef]
+
+aggregate_semantics:
+  ApprovalPolicy: Stable policy identity and currentRevisionRef only; publishing a change creates another immutable ApprovalPolicyRevision.
+  ApprovalPolicyRevision: Immutable historical approval semantics including side obligations self-approval rule and request-expiration policy.
+  AccessRequest: One submitted exact AccessSubject with immutable ApprovalBasis plus approval evidence and one-way request lifecycle.
+  PolicyRule: One authorization episode created from one Allowed AccessRequest and terminally revocable without rewriting the request or earlier episodes.
+
+cross_aggregate_services:
+  - service: PendingAccessRequestUniqueness
+    rule: At most one PENDING AccessRequest exists for one exact AccessSubject; repeated exact submission returns or identifies the existing pending process instead of creating a parallel request.
+  - service: CurrentAuthorizationUniqueness
+    rule: At most one non-revoked current PolicyRule authorization episode exists for one exact AccessSubject while earlier episodes remain historical.
+  - service: AccessRequestDecisionCoordinator
+    rule: Before ALLOWED, require all immutable ApprovalObligations approved and revalidate current submitted meaning Resources deployments and business basis; material loss produces INVALIDATED.
+
 invariants:
   - AccessSubject equality requires exact sourceDeploymentRef destinationDeploymentRef and immutable interactionRevisionRef.
   - NeedRef and current technical realization are not AccessSubject identity.
-  - AccessRequest is immutable after submission except one final ALLOWED or DENIED decision.
-  - AccessRequest stores submitter/time initialNeedRef and immutable RequestAuthorityEvidence covering every participating Resource AuthorityScopeRef.
-  - DENIED creates no PolicyRule and no authorization evidence.
-  - Exactly one PolicyRule exists per AccessSubject.
-  - First ALLOWED creation starts PolicyRule ACTIVE with unbounded EffectiveWindow.
-  - Repeated ALLOWED requests for the same AccessSubject converge on one PolicyRule and append AuthorizationEvidence.
-  - Additional current matching Needs attach as justification without duplicating PolicyRule or creating permission evidence.
-  - PolicyRule ACTIVE and INACTIVE are reversible without a new permission decision.
-  - EffectiveWindow uses optional inclusive effectiveFrom and exclusive effectiveUntil and does not redefine Rule identity.
-  - Need retirement/currentness never mutates PolicyRule; zero current Needs does not automatically deactivate it.
+  - ApprovalPolicyRevision is immutable after publication and remains historically resolvable.
+  - AccessRequest stores immutable submitter submission time AccessSubject ApprovalBasis and resolved ApprovalObligations.
+  - Approval authority is reevaluated when each approval action occurs; completed approval evidence remains historical after later authority loss.
+  - ApprovalPolicyRevision determines whether requester self-approval is permitted; forbidden self-approval leaves the request unchanged.
+  - PENDING transitions only to ALLOWED DENIED CANCELLED EXPIRED or INVALIDATED and terminal AccessRequest outcomes never reopen.
+  - Any required denial yields DENIED; all required approvals plus successful semantic revalidation are necessary before ALLOWED.
+  - DENIED CANCELLED EXPIRED and INVALIDATED create no PolicyRule authorization episode.
+  - Every ALLOWED AccessRequest creates one distinct PolicyRule authorization episode for the exact AccessSubject.
+  - At most one current non-revoked PolicyRule exists per AccessSubject while older PolicyRules remain historical episodes.
+  - EffectiveWindow uses optional inclusive effectiveFrom and exclusive effectiveUntil and affects current contribution without redefining PolicyRule identity.
+  - Revocation is terminal for one PolicyRule episode and preserves the Allowed request approval decisions AuthorizationEvidence and history.
+  - Regrant after revocation requires a new AccessRequest new permission decision and new PolicyRule episode.
+  - A newer immutable InteractionRevision is new AccessSubject meaning; pending old-revision requests fail pre-Allow revalidation as INVALIDATED and existing PolicyRules never silently migrate revision.
+  - Additional current matching Needs attach as justification without duplicating current authorization or creating permission evidence solely for the added justification.
+  - Need retirement/currentness never rewrites AccessRequest or PolicyRule history and zero current Needs does not automatically revoke access.
   - Resource address or Endpoint realization changes never redefine PolicyRule identity or historical permission evidence.
-  - Operational changes are audited; evidence-only or justification-only changes do not create operational-history entries.
+
 public_semantics:
+  - ApprovalPolicyRef
+  - ApprovalPolicyRevisionRef
+  - ApprovalBasis
+  - ApprovalObligation
+  - ApprovalDecision
   - AccessRequestRef
   - AccessSubject
+  - PENDING
+  - ALLOWED
+  - DENIED
+  - CANCELLED
+  - EXPIRED
+  - INVALIDATED
   - PolicyRuleRef
   - AuthorizationEvidence
-  - RequestAuthorityEvidence
   - JustificationAssociation
-  - Active
-  - Inactive
   - EffectiveWindow
+  - Revocation
   - NO_CURRENT_BUSINESS_JUSTIFICATION

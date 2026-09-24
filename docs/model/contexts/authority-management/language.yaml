@@ -1,23 +1,25 @@
-version: 2
+version: 3
 kind: context-language
 id: NAPMS-AM-LANGUAGE
 bounded_context_ref: BC-AUTHORITY-MANAGEMENT
-knowledge_coverage:
-  subject: BC-AUTHORITY-MANAGEMENT
-  knowledge: tactical-domain-model
+depends_on: [NAPMS-UC-AUTHORITY-MANAGEMENT]
 
 terms:
-  - term_id: TERM-EFFECTIVE-AUTHORITY
-    term: Effective Authority
-    definition: Fail-closed determination that authenticated Actor may perform exact Action for exact AuthorityScopeRef at one effective time.
-  - term_id: TERM-AUTHORITY-GRANT
-    term: AuthorityGrant
-    definition: Authenticated claim with action scope and optional half-open effectiveFrom/effectiveUntil bounds.
-  - term_id: TERM-AUTHORITY-SCOPE
-    term: AuthorityScopeRef
-    definition: Opaque stable scope identity published by Resource Catalogue; Site responsibility Process metadata and addresses do not create it.
+  - {term_id: TERM-ACTOR-REF, term: ActorRef, definition: Stable audit reference to one authenticated human or service actor identity.}
+  - {term_id: TERM-GROUP-REF, term: GroupRef, definition: Stable reference to an external identity-provider Group; current membership remains external truth.}
+  - {term_id: TERM-PRINCIPAL-REF, term: PrincipalRef, definition: ActorRef or GroupRef targeted by a RoleAssignment.}
+  - {term_id: TERM-ACTION, term: Action, definition: Stable protected operation semantic such as access.request or policy.export.}
+  - {term_id: TERM-ROLE, term: Role, definition: Stable named set of Actions with ACTIVE or RETIRED lifecycle.}
+  - {term_id: TERM-ROLE-ASSIGNMENT, term: RoleAssignment, definition: Temporal ALLOW or DENY assignment of one Role to one PrincipalRef at one ScopeTarget.}
+  - {term_id: TERM-SCOPE-TARGET, term: ScopeTarget, definition: Semantic System Organization or OrganizationalUnit target; no separate mutable CRUD Scope entity exists.}
+  - {term_id: TERM-EFFECTIVE-AUTHORITY, term: Effective Authority, definition: Fail-closed current decision for exact Principal Action ScopeTarget and evaluation time after inheritance and deny-overrides.}
+  - {term_id: TERM-AUTHORITY-EVIDENCE, term: AuthorityEvidence, definition: Historical explanation of identity inputs applicable assignments hierarchy membership and decision time used for one protected action.}
 
 rules:
-  - access.request and policy.export are scoped actions and are not granted by instance permission strings.
-  - Every distinct required scope must have an effective matching AuthorityGrant.
-  - Missing malformed unknown or out-of-window authority fails closed.
+  - Role contains Actions while RoleAssignment contains PrincipalRef ScopeTarget Effect and temporal validity.
+  - RoleAssignment Effect is ALLOW or DENY; any applicable DENY overrides applicable ALLOW.
+  - Organization scope applies to descendant OrganizationalUnits and Unit scope applies to descendant Units inside the same Organization.
+  - Every protected action reevaluates current Role lifecycle assignment validity hierarchy and external Group membership.
+  - Unresolved Group membership malformed references unknown Actions or other uncertainty fail closed for current authority.
+  - Historical AuthorityEvidence remains explainable after later Role assignment hierarchy or Group-membership change.
+  - Resource ownership Site descriptive responsibility and business metadata never grant authority.

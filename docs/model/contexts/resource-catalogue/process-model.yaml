@@ -1,25 +1,27 @@
-version: 2
+version: 3
 kind: domain-process-model
 id: NAPMS-RC-CURATION-PROCESS
-bounded_context_refs: [BC-RESOURCE-CATALOGUE, BC-AUTHORITY-MANAGEMENT]
+bounded_context_refs: [BC-RESOURCE-CATALOGUE, BC-ORGANIZATION-STRUCTURE, BC-AUTHORITY-MANAGEMENT]
 depends_on: [NAPMS-UC-RC-CURATION]
 
 name: Resource Catalogue curation lifecycle
 
 actors:
-  - {actor_id: ACTOR-CURATOR, name: Catalogue curator, role: Authenticated actor admitted by the protected-operation security contract.}
-  - {actor_id: ACTOR-READER, name: Catalogue reader, role: Authenticated consumer of Resource projections.}
+  - {actor_id: ACTOR-CURATOR, name: Catalogue curator, role: Authenticated actor whose current protected-action authority is evaluated outside Resource truth.}
+  - {actor_id: ACTOR-READER, name: Catalogue reader, role: Authenticated Organization-associated consumer of Resource projections.}
 
 commands:
-  - {command_id: CMD-REGISTER-RESOURCE, name: Register Resource, intent: Establish stable Resource identity plus immutable AuthorityScopeRef.}
+  - {command_id: CMD-REGISTER-RESOURCE, name: Register Resource, intent: Establish stable Resource identity plus exactly one current OrganizationalUnit owner.}
+  - {command_id: CMD-MOVE-RESOURCE-OWNER, name: Move Resource Owner, intent: Replace current owner with another ACTIVE Unit in the same Organization while preserving Resource identity and ownership history.}
   - {command_id: CMD-ADD-ENDPOINT, name: Add Endpoint, intent: Explicitly assert one logical Endpoint belongs to this Resource access-management unit.}
   - {command_id: CMD-SET-ENDPOINT-ADDRESS, name: Set Endpoint Address, intent: Establish or replace one HostAddress or Prefix while preserving Endpoint identity/history.}
   - {command_id: CMD-CLEAR-ENDPOINT-ADDRESS, name: Clear Endpoint Address, intent: Remove current realization while preserving identity/history.}
   - {command_id: CMD-SET-SITE, name: Set Resource Site, intent: Replace or clear current Site with history.}
-  - {command_id: CMD-SET-RESPONSIBILITY, name: Set Resource Responsibility, intent: Replace or clear OWNER/ADMINISTRATOR with history.}
+  - {command_id: CMD-SET-RESPONSIBILITY, name: Set Resource Responsibility, intent: Replace or clear OWNER/ADMINISTRATOR descriptive responsibility with history.}
 
 domain_events:
   - {event_id: EVT-RESOURCE-REGISTERED, name: Resource Registered, caused_by_command_ref: CMD-REGISTER-RESOURCE}
+  - {event_id: EVT-RESOURCE-OWNER-MOVED, name: Resource Organizational Owner Moved, caused_by_command_ref: CMD-MOVE-RESOURCE-OWNER}
   - {event_id: EVT-ENDPOINT-ADDED, name: Endpoint Added, caused_by_command_ref: CMD-ADD-ENDPOINT}
   - {event_id: EVT-ENDPOINT-ADDRESS-SET, name: Endpoint Address Set, caused_by_command_ref: CMD-SET-ENDPOINT-ADDRESS}
   - {event_id: EVT-ENDPOINT-ADDRESS-CLEARED, name: Endpoint Address Cleared, caused_by_command_ref: CMD-CLEAR-ENDPOINT-ADDRESS}
@@ -27,26 +29,30 @@ domain_events:
   - {event_id: EVT-RESPONSIBILITY-SET, name: Resource Responsibility Set, caused_by_command_ref: CMD-SET-RESPONSIBILITY}
 
 policies:
-  - {policy_id: POLICY-MUTATION-ADMISSION, name: Admit protected mutation, when: mutation attempted, then: Security admission succeeds or Resource truth is unchanged.}
+  - {policy_id: POLICY-MUTATION-ADMISSION, name: Admit protected mutation, when: mutation attempted, then: Current authority for the exact action and applicable Organization or Unit scope succeeds or Resource truth is unchanged.}
+  - {policy_id: POLICY-SAME-ORGANIZATION-OWNER, name: Validate ownership move, when: owner change requested, then: Target Unit is ACTIVE and belongs to the same Organization; cross-Organization change is rejected as an ordinary mutation.}
   - {policy_id: POLICY-EXPLICIT-ENDPOINT-MEMBERSHIP, name: Explicit logical-unit membership, when: Endpoint is added, then: caller explicitly chooses the parent Resource and no automatic grouping inference occurs.}
   - {policy_id: POLICY-ENDPOINT-ADDRESS, name: One current Endpoint address, when: address changes, then: one Endpoint has zero or one HostAddress-or-Prefix and history is preserved.}
-  - {policy_id: POLICY-PRESERVE-HISTORY, name: Preserve history, when: address Site or responsibility changes, then: prior fact remains explainable.}
+  - {policy_id: POLICY-PRESERVE-HISTORY, name: Preserve history, when: ownership address Site or responsibility changes, then: prior fact remains explainable.}
 
 process_flows:
-  - {flow_id: FLOW-REGISTER, name: Establish Resource, sequence: [POLICY-MUTATION-ADMISSION, CMD-REGISTER-RESOURCE, EVT-RESOURCE-REGISTERED]}
+  - {flow_id: FLOW-REGISTER, name: Establish Resource, sequence: [POLICY-MUTATION-ADMISSION, POLICY-SAME-ORGANIZATION-OWNER, CMD-REGISTER-RESOURCE, EVT-RESOURCE-REGISTERED]}
+  - {flow_id: FLOW-OWNERSHIP, name: Move organizational owner, sequence: [POLICY-MUTATION-ADMISSION, POLICY-SAME-ORGANIZATION-OWNER, CMD-MOVE-RESOURCE-OWNER, POLICY-PRESERVE-HISTORY, EVT-RESOURCE-OWNER-MOVED]}
   - {flow_id: FLOW-ENDPOINT, name: Maintain logical Endpoint and realization, alternatives: [[POLICY-MUTATION-ADMISSION, POLICY-EXPLICIT-ENDPOINT-MEMBERSHIP, CMD-ADD-ENDPOINT, EVT-ENDPOINT-ADDED], [POLICY-MUTATION-ADMISSION, POLICY-ENDPOINT-ADDRESS, CMD-SET-ENDPOINT-ADDRESS, POLICY-PRESERVE-HISTORY, EVT-ENDPOINT-ADDRESS-SET], [POLICY-MUTATION-ADMISSION, CMD-CLEAR-ENDPOINT-ADDRESS, POLICY-PRESERVE-HISTORY, EVT-ENDPOINT-ADDRESS-CLEARED]]}
   - {flow_id: FLOW-SITE, name: Maintain Site, sequence: [POLICY-MUTATION-ADMISSION, CMD-SET-SITE, POLICY-PRESERVE-HISTORY, EVT-SITE-SET]}
-  - {flow_id: FLOW-RESPONSIBILITY, name: Maintain responsibility, sequence: [POLICY-MUTATION-ADMISSION, CMD-SET-RESPONSIBILITY, POLICY-PRESERVE-HISTORY, EVT-RESPONSIBILITY-SET]}
+  - {flow_id: FLOW-RESPONSIBILITY, name: Maintain descriptive responsibility, sequence: [POLICY-MUTATION-ADMISSION, CMD-SET-RESPONSIBILITY, POLICY-PRESERVE-HISTORY, EVT-RESPONSIBILITY-SET]}
   - {flow_id: FLOW-INSPECT-AND-HANDOFF, name: Inspect Resource, sequence: [read-resource, derive-current-projection, expose-resource-ref]}
 
 timeline:
   - {step_id: T1, sequence: 1, kind: branch, item_ref: FLOW-REGISTER}
-  - {step_id: T2, sequence: 2, kind: branch, item_ref: FLOW-ENDPOINT}
-  - {step_id: T3, sequence: 3, kind: branch, item_ref: FLOW-SITE}
-  - {step_id: T4, sequence: 4, kind: branch, item_ref: FLOW-RESPONSIBILITY}
-  - {step_id: T5, sequence: 5, kind: read-handoff, item_ref: FLOW-INSPECT-AND-HANDOFF}
+  - {step_id: T2, sequence: 2, kind: branch, item_ref: FLOW-OWNERSHIP}
+  - {step_id: T3, sequence: 3, kind: branch, item_ref: FLOW-ENDPOINT}
+  - {step_id: T4, sequence: 4, kind: branch, item_ref: FLOW-SITE}
+  - {step_id: T5, sequence: 5, kind: branch, item_ref: FLOW-RESPONSIBILITY}
+  - {step_id: T6, sequence: 6, kind: read-handoff, item_ref: FLOW-INSPECT-AND-HANDOFF}
 
 external_systems:
-  - {external_system_id: EXT-AUTHORITY-MANAGEMENT, name: Authority Management, interaction_meaning: Evaluates protected operation admission; it does not own Resource scope affiliation.}
+  - {external_system_id: EXT-ORGANIZATION-STRUCTURE, name: Organization Structure, interaction_meaning: Resolves Unit Organization membership and ACTIVE lifecycle; Resource Catalogue does not own hierarchy.}
+  - {external_system_id: EXT-AUTHORITY-MANAGEMENT, name: Authority Management, interaction_meaning: Evaluates protected operation admission from current principal role scope and time; Resource ownership never grants authority.}
 
 hotspots: []

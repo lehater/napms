@@ -1,0 +1,72 @@
+version: 1
+kind: tactical-domain-model
+id: NAPMS-AM-DOMAIN-MODEL
+bounded_context_ref: BC-AUTHORITY-MANAGEMENT
+knowledge_coverage:
+  subject: BC-AUTHORITY-MANAGEMENT
+  knowledge: tactical-domain-model
+depends_on: [NAPMS-UC-AUTHORITY-MANAGEMENT, NAPMS-AM-LANGUAGE]
+
+aggregates:
+  - aggregate_id: AGG-ROLE
+    name: Role
+    root_entity_ref: ENTITY-ROLE
+    consistency_basis:
+      - Role owns its stable identity current Action set and ACTIVE or RETIRED lifecycle.
+      - RETIRED Role grants no current authority and accepts no new RoleAssignments.
+  - aggregate_id: AGG-ROLE-ASSIGNMENT
+    name: RoleAssignment
+    root_entity_ref: ENTITY-ROLE-ASSIGNMENT
+    consistency_basis:
+      - RoleAssignment owns one PrincipalRef RoleRef ScopeTarget Effect and ValidityInterval.
+      - Assignment identity remains historical after it ceases to be currently effective.
+
+entities:
+  - {entity_id: ENTITY-ROLE, name: Role, identity: RoleId, attributes: [ActionSet, RoleLifecycleState]}
+  - {entity_id: ENTITY-ROLE-ASSIGNMENT, name: RoleAssignment, identity: RoleAssignmentId, attributes: [PrincipalRef, RoleRef, ScopeTarget, AssignmentEffect, ValidityInterval]}
+
+value_objects:
+  - {value_object_id: VO-ROLE-ID, name: RoleId, semantics: Stable opaque Role identity.}
+  - {value_object_id: VO-ROLE-ASSIGNMENT-ID, name: RoleAssignmentId, semantics: Stable opaque assignment identity.}
+  - {value_object_id: VO-PRINCIPAL-REF, name: PrincipalRef, semantics: ActorRef or GroupRef.}
+  - {value_object_id: VO-ACTION-SET, name: ActionSet, semantics: Canonical set of protected Action identifiers.}
+  - {value_object_id: VO-SCOPE-TARGET, name: ScopeTarget, semantics: System OrganizationRef or OrganizationalUnitRef semantic target.}
+  - {value_object_id: VO-ASSIGNMENT-EFFECT, name: AssignmentEffect, semantics: ALLOW or DENY; applicable DENY overrides ALLOW.}
+  - {value_object_id: VO-VALIDITY-INTERVAL, name: ValidityInterval, semantics: Optional half-open effectiveFrom/effectiveUntil interval.}
+  - {value_object_id: VO-ROLE-LIFECYCLE, name: RoleLifecycleState, semantics: ACTIVE or RETIRED.}
+  - {value_object_id: VO-AUTHORITY-EVIDENCE, name: AuthorityEvidence, semantics: Immutable historical explanation of one protected-action authority evaluation.}
+
+domain_services:
+  - service_id: SERVICE-EFFECTIVE-AUTHORITY
+    name: EffectiveAuthorityEvaluator
+    responsibility: Evaluate current protected-action authority across Role and RoleAssignment aggregates plus Organization hierarchy and external Group membership without creating a mutable Authority aggregate.
+    inputs: [PrincipalRef, Action, ScopeTarget, evaluationTime, current Roles, current RoleAssignments, Organization hierarchy, external Group membership]
+    result: [ALLOW, DENY]
+    rules:
+      - collect applicable direct Actor assignments and currently resolved Group assignments
+      - expand Organization and OrganizationalUnit ancestor scopes only inside the same Organization
+      - ignore RETIRED Roles and out-of-window assignments
+      - fail closed when required external Group membership or hierarchy truth cannot be resolved
+      - if any applicable DENY contains the Action return DENY
+      - otherwise return ALLOW only if at least one applicable ALLOW contains the Action
+      - produce immutable AuthorityEvidence for the performed decision
+
+invariants:
+  - {invariant_id: INV-AM-ROLE-OWNS-ACTIONS, rule: Role owns Actions; RoleAssignment never copies an independently editable Action set.}
+  - {invariant_id: INV-AM-ASSIGNMENT-TEMPORAL, rule: RoleAssignment currentness is determined by its lifecycle references and ValidityInterval at evaluation time.}
+  - {invariant_id: INV-AM-DENY-OVERRIDES, rule: Any applicable DENY for the exact Action and ScopeTarget overrides all matching ALLOW assignments.}
+  - {invariant_id: INV-AM-HIERARCHY, rule: Scope inheritance flows parent to descendant only inside one Organization and never across Organization boundaries.}
+  - {invariant_id: INV-AM-REEVALUATE, rule: Every protected action performs a fresh current-authority evaluation; no previous successful result becomes standing authority.}
+  - {invariant_id: INV-AM-FAIL-CLOSED, rule: Missing malformed unresolved or out-of-window current authority grants nothing.}
+  - {invariant_id: INV-AM-HISTORY, rule: Later Role assignment hierarchy or Group-membership changes never rewrite historical AuthorityEvidence.}
+
+public_semantics: [ActorRef, GroupRef, PrincipalRef, RoleRef, RoleAssignmentRef, Action, ScopeTarget, ALLOW, DENY, EffectiveAuthority, AuthorityEvidence]
+
+external_ports:
+  - {port_id: PORT-ORGANIZATION-HIERARCHY, owner_context_ref: BC-ORGANIZATION-STRUCTURE, purpose: Resolve Organization and OrganizationalUnit ancestry and lifecycle.}
+  - {port_id: PORT-IDP-GROUP-MEMBERSHIP, owner: external-identity-provider, purpose: Resolve current Group membership; unresolved current membership fails closed.}
+
+deliberately_not_decided_here:
+  - OIDC transport and token representation
+  - persistence technology
+  - HTTP representation

@@ -1,4 +1,4 @@
-version: 2
+version: 3
 kind: tactical-domain-model
 id: NAPMS-RC-DOMAIN-MODEL
 bounded_context_ref: BC-RESOURCE-CATALOGUE
@@ -12,19 +12,25 @@ aggregates:
     name: Resource
     root_entity_ref: ENTITY-RESOURCE
     consistency_basis:
-      - Resource identity is stable and independent from address realization.
-      - AuthorityScopeRef is required and immutable after Resource registration.
+      - Resource identity is stable and independent from address Site organizational ownership and descriptive responsibility.
+      - Exactly one current OrganizationalUnitRef belongs to the Resource aggregate.
+      - Ownership replacement inside the same Organization preserves Resource identity and appends ownership history.
       - Endpoint membership is explicit membership in one logical access-management unit.
       - Resource nested mutations use one Resource aggregate version.
-    owned_fact_sets: [ResourceEndpoint, SiteAssignment, ResourceResponsibility]
-    external_policy_boundary: Actor authority is evaluated outside Resource truth.
+    owned_fact_sets: [ResourceOwnership, ResourceEndpoint, SiteAssignment, ResourceResponsibility]
+    external_policy_boundary: Organization hierarchy and actor authority are evaluated outside Resource truth.
 
 entities:
   - entity_id: ENTITY-RESOURCE
     name: Resource
     identity: ResourceId
-    continuity: Stable logical access-management unit independent from address realization.
-    attributes: [AuthorityScopeRef]
+    continuity: Stable logical access-management unit independent from current realization and administrative affiliation.
+    attributes: [OrganizationalUnitRef]
+  - entity_id: ENTITY-RESOURCE-OWNERSHIP
+    name: ResourceOwnership
+    identity: StableHistoryFactRef
+    owner_aggregate_ref: AGG-RESOURCE
+    attributes: [OrganizationalUnitRef, ValidityInterval]
   - entity_id: ENTITY-RESOURCE-ENDPOINT
     name: ResourceEndpoint
     identity: EndpointRef
@@ -43,35 +49,41 @@ entities:
 
 value_objects:
   - {value_object_id: VO-RESOURCE-ID, name: ResourceId, semantics: Stable opaque Resource identity.}
+  - {value_object_id: VO-ORGANIZATIONAL-UNIT-REF, name: OrganizationalUnitRef, semantics: Reference to the one current administrative owner; Unit identity and hierarchy remain Organization Structure truth.}
   - {value_object_id: VO-ENDPOINT-REF, name: EndpointRef, semantics: Stable logical endpoint identity inside Resource lifecycle.}
-  - {value_object_id: VO-AUTHORITY-SCOPE-REF, name: AuthorityScopeRef, semantics: Required opaque immutable scope identity used for protected admission; Site/responsibility/address do not imply it.}
   - {value_object_id: VO-ADDRESS-REALIZATION, name: AddressRealization, semantics: Zero-or-one current HostAddress or Prefix for one Endpoint., variants: [HostAddress, Prefix]}
   - {value_object_id: VO-VALIDITY-INTERVAL, name: ValidityInterval, semantics: Half-open interval preserving historical Resource facts.}
-  - {value_object_id: VO-RESPONSIBILITY-ROLE, name: ResponsibilityRole, semantics: OWNER or ADMINISTRATOR for the first MVP.}
+  - {value_object_id: VO-RESPONSIBILITY-ROLE, name: ResponsibilityRole, semantics: OWNER or ADMINISTRATOR descriptive responsibility for the first MVP.}
   - {value_object_id: VO-STABLE-HISTORY-FACT-REF, name: StableHistoryFactRef, semantics: Opaque history identity.}
 
 invariants:
-  - {invariant_id: INV-RC-STABLE-RESOURCE, rule: ResourceRef never derives from current address.}
-  - {invariant_id: INV-RC-SCOPE, rule: Every Resource has one immutable non-empty AuthorityScopeRef independent from Site responsibility and address.}
+  - {invariant_id: INV-RC-STABLE-RESOURCE, rule: ResourceRef never derives from current address Site owner or descriptive responsibility.}
+  - {invariant_id: INV-RC-OWNER, rule: Every Resource has exactly one current OrganizationalUnitRef; changing it within the same Organization preserves identity and history.}
+  - {invariant_id: INV-RC-CROSS-ORG, rule: Cross-Organization transfer is rejected as an ordinary Resource ownership mutation and requires separate migration semantics.}
   - {invariant_id: INV-RC-ENDPOINT-IDENTITY, rule: EndpointRef survives address set change and clear; Endpoint may exist with no address.}
   - {invariant_id: INV-RC-ENDPOINT-ADDRESS, rule: One Endpoint has zero or one current address realization and it is exactly HostAddress or Prefix.}
   - {invariant_id: INV-RC-LOGICAL-UNIT, rule: Multiple Endpoints may share one Resource only as an explicit assertion that they remain one logical access-management unit; no automatic grouping by address Site responsibility or name is allowed.}
   - {invariant_id: INV-RC-PREFIX, rule: Prefix remains Prefix and is never silently expanded or masked from host bits.}
-  - {invariant_id: INV-RC-RESPONSIBILITY, rule: At most one current OWNER and one current ADMINISTRATOR exist; responsibility never grants authority.}
-  - {invariant_id: INV-RC-HISTORY, rule: Address Site and responsibility changes preserve explanatory history.}
+  - {invariant_id: INV-RC-RESPONSIBILITY, rule: At most one current OWNER and one current ADMINISTRATOR descriptive responsibility exist; neither ownership nor responsibility grants authority.}
+  - {invariant_id: INV-RC-HISTORY, rule: Organizational ownership address Site and responsibility changes preserve explanatory history.}
 
-domain_services: []
+domain_services:
+  - service_id: SERVICE-RESOURCE-OWNERSHIP-POLICY
+    name: ResourceOwnershipPolicy
+    responsibility: Validate target Unit is ACTIVE and belongs to the Resource Organization before the Resource aggregate accepts a move; it never owns Unit hierarchy.
 
 command_semantics:
-  register_resource: Create Resource with display name and immutable AuthorityScopeRef.
+  register_resource: Create Resource with display name and exactly one current OrganizationalUnitRef.
+  move_organizational_owner: Replace current owner only with an ACTIVE Unit in the same Organization while appending ResourceOwnership history.
   add_endpoint: Explicitly add one logical Endpoint to the Resource access-management unit.
   set_endpoint_address: Set or replace current HostAddress-or-Prefix while preserving Endpoint identity/history.
   clear_endpoint_address: Remove current realization while preserving Endpoint identity/history.
   set_site: Replace or clear Site with history.
-  set_responsibility: Replace or clear OWNER or ADMINISTRATOR with history.
+  set_responsibility: Replace or clear OWNER or ADMINISTRATOR descriptive responsibility with history.
 
 deliberately_not_decided_here:
   - persistence technology
   - HTTP representation
   - provider or firewall rendering
+  - cross-Organization Resource migration
   - Resource deletion or rename

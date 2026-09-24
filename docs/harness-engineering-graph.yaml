@@ -119,22 +119,56 @@ authorities:
           - engineering.domain.strategic-model
 
   - id: TACTICAL-DOMAIN-DESIGN
-    responsibility: Own tactical DDD engineering knowledge across selected Bounded Contexts.
+    responsibility: Own independently provable tactical DDD engineering knowledge for each selected Bounded Context.
     boundary:
-      semantic_cohesion: Artifacts answer how accepted domain behavior is modeled tactically.
-      independent_change: Tactical modeling can evolve while strategic boundaries and use-case contracts remain stable.
-      public_contract: Provides the selected tactical domain model.
+      semantic_cohesion: Each production contract models accepted behavior inside one Bounded Context while explicit same-Authority prerequisites compose cross-context semantics.
+      independent_change: One context tactical model may be revalidated independently when its prerequisite capabilities remain current.
+      public_contract: Provides subject-scoped tactical domain models for the selected Bounded Context set.
     produces:
-      - capability: engineering.domain.tactical-model
+      - capability: engineering.domain.tactical.organization-structure
         knowledge_kind: domain-model
         requires:
           - engineering.domain.use-case.organization-structure
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.tactical.resource-catalogue
+        knowledge_kind: domain-model
+        requires:
           - engineering.domain.use-case.resource-catalogue
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.tactical.authority-management
+        knowledge_kind: domain-model
+        requires:
           - engineering.domain.use-case.authority-management
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.tactical.application-communication
+        knowledge_kind: domain-model
+        requires:
           - engineering.domain.use-case.application-communication
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.tactical.application-deployment
+        knowledge_kind: domain-model
+        requires:
           - engineering.domain.use-case.application-deployment
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.tactical.business-connectivity
+        knowledge_kind: domain-model
+        requires:
           - engineering.domain.use-case.business-connectivity
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.strategic-model
+      - capability: engineering.domain.tactical.access-policy
+        knowledge_kind: domain-model
+        requires:
           - engineering.domain.use-case.access-policy
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
           - engineering.domain.strategic-model
 
   - id: APPLICATION-JOURNEY-DESIGN
@@ -149,49 +183,97 @@ authorities:
         requires:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
       - capability: engineering.application.materialization-semantics
         knowledge_kind: application-design
         requires:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
       - capability: engineering.hcd.application-components.task-model
         knowledge_kind: task-model
         requires:
           - engineering.hcd.application-components.user-needs
           - engineering.hcd.application-components.requirements
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
       - capability: engineering.hcd.access-request.task-model
         knowledge_kind: task-model
         requires:
           - engineering.hcd.access-request.user-needs
           - engineering.hcd.access-request.requirements
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
       - capability: engineering.hcd.policy-export.task-model
         knowledge_kind: task-model
         requires:
           - engineering.hcd.policy-export.user-needs
           - engineering.hcd.policy-export.requirements
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
       - capability: engineering.hcd.application-components.user-journey
         knowledge_kind: user-journey-design
         requires:
           - engineering.hcd.application-components.task-model
           - engineering.hcd.application-components.requirements
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
       - capability: engineering.hcd.access-request.user-journey
         knowledge_kind: user-journey-design
         requires:
           - engineering.hcd.access-request.task-model
           - engineering.hcd.access-request.requirements
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
       - capability: engineering.hcd.policy-export.user-journey
         knowledge_kind: user-journey-design
         requires:
           - engineering.hcd.policy-export.task-model
           - engineering.hcd.policy-export.requirements
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
 
   - id: SYSTEM-ARCHITECTURE
     responsibility: Own structural/runtime architecture, application-boundary rules, module interaction/consistency rules and in-process module contracts.
@@ -217,7 +299,13 @@ authorities:
         requires:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
           - engineering.domain.use-case.organization-structure
           - engineering.domain.use-case.resource-catalogue
           - engineering.domain.use-case.authority-management
@@ -256,13 +344,25 @@ authorities:
         knowledge_kind: security-architecture
         requires:
           - engineering.requirements.product-intent
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
           - engineering.architecture.rules
       - capability: engineering.architecture.security
         knowledge_kind: security-architecture
         requires:
           - engineering.requirements.product-intent
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
           - engineering.architecture.rules
       - capability: engineering.security.browser-credential-lifecycle
         knowledge_kind: security-architecture
@@ -280,7 +380,13 @@ authorities:
         knowledge_kind: interface-contract
         requires:
           - engineering.requirements.product-intent
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
           - engineering.application.journey
           - engineering.architecture.rules
           - engineering.architecture.module-contracts
@@ -289,7 +395,13 @@ authorities:
         knowledge_kind: interface-contract
         requires:
           - engineering.requirements.product-intent
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
           - engineering.application.journey
           - engineering.architecture.rules
           - engineering.architecture.module-contracts
@@ -298,7 +410,13 @@ authorities:
         knowledge_kind: human-interface-design
         requires:
           - engineering.requirements.product-intent
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
           - engineering.application.journey
           - engineering.architecture.rules
           - engineering.architecture.module-contracts
@@ -307,7 +425,13 @@ authorities:
         knowledge_kind: human-interface-design
         requires:
           - engineering.requirements.product-intent
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
           - engineering.application.journey
           - engineering.architecture.rules
           - engineering.architecture.module-contracts
@@ -316,7 +440,13 @@ authorities:
         knowledge_kind: human-interface-design
         requires:
           - engineering.requirements.product-intent
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
           - engineering.application.journey
           - engineering.architecture.security
           - engineering.security.browser-credential-lifecycle
@@ -381,7 +511,13 @@ authorities:
       - capability: engineering.data.persistence-model
         knowledge_kind: data-design
         requires:
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
           - engineering.architecture.rules
           - engineering.interface.shared-representations
 
@@ -519,7 +655,13 @@ authorities:
         knowledge_kind: verification-strategy
         requires:
           - engineering.requirements.acceptance
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
           - engineering.application.materialization-semantics
           - engineering.architecture.rules
           - engineering.architecture.module-contracts
@@ -536,7 +678,13 @@ authorities:
         knowledge_kind: acceptance-scenarios
         requires:
           - engineering.requirements.acceptance
-          - engineering.domain.tactical-model
+          - engineering.domain.tactical.organization-structure
+          - engineering.domain.tactical.resource-catalogue
+          - engineering.domain.tactical.authority-management
+          - engineering.domain.tactical.application-communication
+          - engineering.domain.tactical.application-deployment
+          - engineering.domain.tactical.business-connectivity
+          - engineering.domain.tactical.access-policy
           - engineering.application.materialization-semantics
           - engineering.architecture.rules
           - engineering.architecture.module-contracts

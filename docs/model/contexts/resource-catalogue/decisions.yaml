@@ -1,17 +1,18 @@
-version: 2
+version: 3
 kind: domain-decision-set
 id: NAPMS-RC-DOMAIN-DECISIONS
 bounded_context_ref: BC-RESOURCE-CATALOGUE
 depends_on: [NAPMS-UC-RC-CURATION]
 
 decisions:
-  - decision_id: DEC-RC-AUTHORITY-SCOPE
-    decision: Every Resource has one immutable AuthorityScopeRef used by protected request/export admission.
-    rationale: Canonical requirements require effective authority for relevant scope/time and Resource owns the domain-policy scope affiliation.
+  - decision_id: DEC-RC-ORGANIZATIONAL-OWNER
+    decision: Every Resource has exactly one current OrganizationalUnitRef; an explicit move to another Unit in the same Organization preserves Resource identity and records ownership history.
+    rationale: Accepted requirements make organizational ownership mutable while preserving Resource identity and distinguish ownership from protected-action authority.
     consequences:
-      - Scope is explicit Resource truth.
-      - Site OWNER ADMINISTRATOR BusinessProcess and address never manufacture scope or authority.
-      - Changing Resource scope identity is outside the first MVP; a materially different scope requires another Resource identity or future accepted migration semantics.
+      - OrganizationalUnit identity and hierarchy remain owned by Organization Structure.
+      - Resource Catalogue owns the current Resource-to-Unit affiliation and its history.
+      - Cross-Organization transfer is not an ordinary ownership edit and requires separate migration semantics.
+      - Site OWNER ADMINISTRATOR BusinessProcess and address never manufacture authority.
 
   - decision_id: DEC-RC-ENDPOINT
     decision: Resource owns stable logical Endpoint identities and each Endpoint has zero or one current HOST-or-PREFIX realization.
@@ -22,8 +23,8 @@ decisions:
       - Prefix remains Prefix and is not expanded to hosts by Resource Catalogue.
 
   - decision_id: DEC-RC-RESPONSIBILITY
-    decision: First MVP Resource responsibility roles are OWNER and ADMINISTRATOR organizational groups, singular per role at one time, with history.
-    rationale: Accepted stakeholder requirements distinguish ownership/administration from security authority.
+    decision: First MVP Resource responsibility roles are OWNER and ADMINISTRATOR descriptive facts, singular per role at one time, with history.
+    rationale: Accepted stakeholder requirements distinguish ownership/administration metadata from security authority.
     consequences:
       - Responsibility assignments do not grant application authority.
       - Replacement or clear preserves history.
