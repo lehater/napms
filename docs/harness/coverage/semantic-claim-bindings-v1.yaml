@@ -90,6 +90,7 @@ bindings:
       - engineering.security.boundaries
       - engineering.security.confidentiality
       - engineering.security.integrity
+      - engineering.security.identity
       - engineering.security.authorization
       - engineering.security.accountability
   - capability: engineering.security.browser-credential-lifecycle
