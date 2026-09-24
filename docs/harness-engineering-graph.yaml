@@ -737,7 +737,13 @@ consumers:
       - engineering.requirements.product-intent
       - engineering.requirements.acceptance
       - engineering.domain.strategic-model
-      - engineering.domain.tactical-model
+      - engineering.domain.tactical.organization-structure
+      - engineering.domain.tactical.resource-catalogue
+      - engineering.domain.tactical.authority-management
+      - engineering.domain.tactical.application-communication
+      - engineering.domain.tactical.application-deployment
+      - engineering.domain.tactical.business-connectivity
+      - engineering.domain.tactical.access-policy
       - engineering.application.journey
       - engineering.architecture.c4-model
       - engineering.architecture.rules
