@@ -47,7 +47,7 @@ completion_definition:
   - ALLOWED creates one distinct PolicyRule authorization episode only after all required approvals plus semantic revalidation; other terminal request outcomes create none.
   - At most one current non-revoked PolicyRule exists per exact AccessSubject while historical episodes remain distinct.
   - Revocation requires current policy.revoke authority for either participating administrative side independently, is terminal for that episode and preserves earlier request/approval/provenance; regrant requires a new request and decision.
-  - EffectiveWindow controls current contribution without an ACTIVE/INACTIVE toggle; technical realization changes never redefine access identity.
+  - EffectiveWindow controls current contribution within one authorization episode; technical realization changes never redefine access identity and episode revocation is terminal.
   - Additional Needs attach without duplicate current authorization; zero current Needs yields reconciliation and no automatic revoke.
   - Materialization supports ALL or explicit current Rule subset and requires current policy.export authority for every applicable selected Organization/OrganizationalUnit scope at one evaluationAt.
   - One read-only REPEATABLE READ snapshot and database transaction_timestamp() govern materialization; missing current addresses remain row-level INCOMPLETE data in a complete policy result.

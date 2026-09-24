@@ -14,8 +14,8 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
                 acc = component "Application Communication Catalogue" "Owns Application, Component, independent directed Interaction and immutable InteractionRevision traffic semantics."
                 ad = component "Application Deployment" "Owns immutable ComponentDeployment placement."
                 bc = component "Business Connectivity" "Owns BusinessProcess, criticality attribution and participant-side ConnectivityNeed currentness/history."
-                ap = component "Access Policy" "Owns AccessRequest, final permission outcomes, PolicyRule identity, evidence, justification and operational/effective state."
-                am = component "Authority Management" "Evaluates authenticated actor/action/scope/time AuthorityGrants; owns no persisted assignments in the MVP."
+                ap = component "Access Policy" "Owns ApprovalPolicy revisions, terminal AccessRequest lifecycle, approval evidence, distinct PolicyRule authorization episodes, effective conditions and terminal revocation."
+                am = component "Authority Management" "Owns Role and temporal RoleAssignment truth and evaluates current Principal/Action/ScopeTarget authority with hierarchy inheritance and deny-overrides."
                 export = component "Policy Materialization" "Read-only shared-snapshot orchestration for scoped complete vendor-neutral policy output; owns no domain truth."
             }
 
@@ -44,15 +44,16 @@ workspace "NAPMS" "C4 architecture model for the first NAPMS MVP" {
         napms.backend.ap -> napms.backend.ad "Resolves exact deployments"
         napms.backend.ap -> napms.backend.acc "Validates exact immutable InteractionRevision"
         napms.backend.ap -> napms.backend.bc "Locks/resolves current Need for request/justification validation"
-        napms.backend.ap -> napms.backend.rc "Resolves participating Resource AuthorityScopeRefs"
-        napms.backend.ap -> napms.backend.am "Requires scoped access.request authority"
+        napms.backend.ap -> napms.backend.rc "Resolves participating Resource current OrganizationalUnit owners"
+        napms.backend.ap -> napms.backend.org "Resolves administrative sides and Organization/Unit scope targets"
+        napms.backend.ap -> napms.backend.am "Requires current access.request and access.decide authority"
         napms.backend.export -> napms.backend.ap "Reads selected PolicyRules and provenance"
         napms.backend.export -> napms.backend.acc "Resolves traffic semantics"
         napms.backend.export -> napms.backend.ad "Resolves deployment-to-Resource facts"
         napms.backend.export -> napms.backend.rc "Resolves current organizational owners and addressed Endpoints"
         napms.backend.export -> napms.backend.org "Resolves selected Organization/Unit scope targets"
         napms.backend.export -> napms.backend.bc "Resolves Need currentness/history"
-        napms.backend.export -> napms.backend.am "Requires scoped policy.export authority at evaluationAt"
+        napms.backend.export -> napms.backend.am "Requires current policy.export authority at evaluationAt"
 
         mvp = deploymentEnvironment "MVP Baseline" {
             client = deploymentNode "Client" "User-side runtime." "Web browser" {

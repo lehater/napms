@@ -100,7 +100,7 @@ rules:
   - Every ALLOWED AccessRequest creates one distinct PolicyRule authorization episode; at most one non-revoked current episode exists for the exact AccessSubject.
   - PolicyRule revocation is terminal and requires current policy.revoke authority for either participating administrative side independently; the other side cannot veto revocation.
   - Regrant after revocation requires a new AccessRequest and permission decision; an old PolicyRule is never reactivated.
-  - EffectiveWindow is declarative authorization-episode state and not an ACTIVE/INACTIVE lifecycle toggle.
+  - EffectiveWindow is a declarative condition on one authorization episode and never serves as a reversible lifecycle switch.
   - policy.export is admitted from current Authority Management evaluation for every applicable selected Organization or OrganizationalUnit scope at database-owned evaluationAt.
   - Interaction creation resolves both Component owners server-side and rejects source/destination Components that belong to different Applications.
   - Idempotent state-creating POST operations require Idempotency-Key; replay returns exact persisted original status/body/Location/ETag before NEW-command If-Match evaluation.
