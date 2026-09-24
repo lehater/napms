@@ -1,23 +1,27 @@
-version: 1
+version: 2
 kind: ui-navigation-model
 id: NAPMS-MVP-UI-NAVIGATION
 status: CURRENT
 
-purpose: Define the first-MVP browser navigation/workspace model for all accepted user-facing product subjects.
+purpose: Define the first-MVP browser navigation/workspace model for all accepted user-facing product subjects after Organization/Authority/Access lifecycle revalidation.
 
 workspaces:
-  - {id: RESOURCE-CATALOGUE, responsibility: Locate/select Resources and start Resource authoring.}
-  - {id: RESOURCE-DETAIL, responsibility: Inspect and author one Resource current state and history.}
+  - {id: ORGANIZATION-STRUCTURE, responsibility: Inspect the Organization/OrganizationalUnit hierarchy and perform supported Unit create reparent and retirement administration.}
+  - {id: RESOURCE-CATALOGUE, responsibility: Locate/select Resources and start Resource authoring using current OrganizationalUnit ownership.}
+  - {id: RESOURCE-DETAIL, responsibility: Inspect and author one Resource current state including organizational owner and history.}
   - {id: APPLICATION-CATALOGUE, responsibility: Locate/select reusable Applications.}
   - {id: APPLICATION-DETAIL, responsibility: Author one Application with Components and directed Interactions.}
   - {id: DEPLOYMENTS, responsibility: Locate/create Component deployments and open one Deployment.}
   - {id: DEPLOYMENT-DETAIL, responsibility: Inspect one ComponentDeployment and its Resource realization.}
   - {id: BUSINESS-CONNECTIVITY, responsibility: Manage Business Processes and Connectivity Needs independently from permission.}
-  - {id: ACCESS-REQUESTS, responsibility: Submit connectivity requests and inspect/record permission outcomes allowed by authority.}
-  - {id: POLICY-RULES, responsibility: Inspect authoritative desired-access rules and change supported operational state.}
-  - {id: POLICY-EXPORT, responsibility: Select effective policy scope, execute normalized export and inspect completeness diagnostics.}
+  - {id: APPROVAL-POLICY, responsibility: Inspect current Organization approval policy and publish a new immutable revision for future requests.}
+  - {id: ACCESS-REQUESTS, responsibility: Submit connectivity requests, inspect immutable ApprovalBasis and approval progress, take currently authorized side decisions, cancel pending requests and inspect terminal outcomes.}
+  - {id: POLICY-RULES, responsibility: Inspect current and historical authorization episodes and revoke a current episode when authorized for either participating administrative side.}
+  - {id: POLICY-EXPORT, responsibility: Select current effective policy scope, execute normalized export and inspect row-level completeness diagnostics.}
 
 routes:
+  - {path: /organization, workspace: ORGANIZATION-STRUCTURE}
+  - {path: /organization/units/:organizationalUnitRef, workspace: ORGANIZATION-STRUCTURE, identity: OrganizationalUnitId}
   - {path: /resources, workspace: RESOURCE-CATALOGUE}
   - {path: /resources/new, workspace: RESOURCE-CATALOGUE, mode: create}
   - {path: /resources/:resourceRef, workspace: RESOURCE-DETAIL, identity: ResourceId}
@@ -33,15 +37,18 @@ routes:
   - {path: /business-processes, workspace: BUSINESS-CONNECTIVITY}
   - {path: /business-processes/new, workspace: BUSINESS-CONNECTIVITY, mode: create-process}
   - {path: /business-processes/:processRef, workspace: BUSINESS-CONNECTIVITY, identity: BusinessProcessId}
+  - {path: /approval-policy, workspace: APPROVAL-POLICY}
   - {path: /access-requests, workspace: ACCESS-REQUESTS}
   - {path: /access-requests/new, workspace: ACCESS-REQUESTS, mode: create}
-  - {path: /access-requests/:requestRef/decision, workspace: ACCESS-REQUESTS, identity: AccessRequestId, mode: decision}
+  - {path: /access-requests/:requestRef, workspace: ACCESS-REQUESTS, identity: AccessRequestId, mode: detail}
   - {path: /policy-rules, workspace: POLICY-RULES}
   - {path: /policy-rules/:policyRuleRef, workspace: POLICY-RULES, identity: PolicyRuleId}
   - {path: /policy-materializations/new, workspace: POLICY-EXPORT}
 
 transitions:
+  - {from: ORGANIZATION-STRUCTURE, action: select-unit, to: ORGANIZATION-STRUCTURE, identity: OrganizationalUnitId}
   - {from: RESOURCE-CATALOGUE, action: select-resource, to: RESOURCE-DETAIL, identity: ResourceId}
+  - {from: RESOURCE-DETAIL, action: manage-organization, to: ORGANIZATION-STRUCTURE}
   - {from: APPLICATION-CATALOGUE, action: select-application, to: APPLICATION-DETAIL, identity: ApplicationId}
   - {from: APPLICATION-DETAIL, action: manage-components, to: APPLICATION-DETAIL, local_state: components}
   - {from: APPLICATION-DETAIL, action: manage-interactions, to: APPLICATION-DETAIL, local_state: interactions}
@@ -49,7 +56,9 @@ transitions:
   - {from: DEPLOYMENTS, action: create-deployment, to: DEPLOYMENT-DETAIL, identity: ComponentDeploymentId}
   - {from: DEPLOYMENT-DETAIL, action: return-to-catalogue, to: DEPLOYMENTS}
   - {from: BUSINESS-CONNECTIVITY, action: create-or-select-need, to: BUSINESS-CONNECTIVITY, identity: ConnectivityNeedId}
+  - {from: APPROVAL-POLICY, action: publish-revision, to: APPROVAL-POLICY}
   - {from: ACCESS-REQUESTS, action: submit-request, to: ACCESS-REQUESTS, identity: AccessRequestId}
+  - {from: ACCESS-REQUESTS, action: open-request, to: ACCESS-REQUESTS, identity: AccessRequestId}
   - {from: ACCESS-REQUESTS, action: inspect-resulting-rule, to: POLICY-RULES, identity: PolicyRuleId}
   - {from: POLICY-RULES, action: export-effective-policy, to: POLICY-EXPORT}
   - {from: RESOURCE-DETAIL, action: open-history, to: RESOURCE-DETAIL, local_state: history-open}
@@ -58,9 +67,11 @@ journeys:
   - id: RESOURCE-MANAGEMENT
     subject: Resource management
     steps:
-      - Locate/select a Resource and inspect current facts.
-      - Create or change accepted Resource facts through admitted actions.
-      - Inspect ended/replaced facts with validity and provenance.
+      - Inspect the Organization/OrganizationalUnit hierarchy needed for administrative ownership.
+      - Create/reparent/retire Units through supported administration while preserving identity/history.
+      - Locate/select a Resource and inspect its current OrganizationalUnit owner plus current facts.
+      - Create a Resource with one current owner or move ownership to another ACTIVE Unit in the same Organization without changing Resource identity.
+      - Inspect prior ownership and ended/replaced technical/descriptive facts with validity and provenance.
   - id: APPLICATION-MANAGEMENT
     subject: Application management
     steps:
@@ -91,23 +102,28 @@ journeys:
   - id: ACCESS-REQUEST
     subject: Access request
     steps:
-      - Select an eligible Connectivity Need/deployment subject.
-      - Submit only when effective request authority is confirmed by the backend.
-      - Inspect immutable request subject and permission outcome without treating UI state as authority.
+      - Inspect/publish Organization ApprovalPolicy revision when administrative policy changes; existing requests retain their submitted ApprovalBasis.
+      - Select an eligible exact connectivity subject and submit only when current source-side request authority is confirmed by the backend.
+      - Inspect immutable ApprovalBasis, required sides and approval progress without treating UI state as authority.
+      - If currently authorized for a required side, approve or deny that obligation; each action is server-authorized at action time.
+      - As requester, cancel while PENDING when appropriate.
+      - Inspect terminal ALLOWED/DENIED/CANCELLED/EXPIRED/INVALIDATED outcome; terminal requests never reopen.
   - id: POLICY-RULE
     subject: Policy rule
     steps:
-      - Inspect authoritative desired-access identity created only from Allowed permission.
-      - Change supported Active/Inactive state while preserving history and decision provenance.
+      - Inspect one authorization episode created by an ALLOWED request and distinguish CURRENT from REVOKED history.
+      - Revoke a CURRENT episode when the backend confirms policy.revoke authority for either participating administrative side.
+      - Never reactivate a revoked episode; regrant begins a new Access Request.
   - id: POLICY-EXPORT
     subject: Policy export
     steps:
-      - Select all current desired policy or an explicit domain-policy subset.
-      - Execute export only when effective export authority is confirmed by the backend.
-      - Distinguish complete success from unresolved/degraded output and expose provenance/evaluation time.
+      - Select all current effective policy or an explicit current authorization-episode subset.
+      - Execute export only when current export authority is confirmed by the backend for every selected applicable scope.
+      - Inspect one COMPLETE result in which missing addresses appear as row-level INCOMPLETE diagnostics rather than global unresolved policy.
 
 rules:
   - Browser navigation is route-driven and canonical route paths carry stable product identifiers, never database-row identities.
   - Loading, empty, not-found, rejected, conflict and technical-error states remain distinct.
   - Frontend navigation/actions never establish domain truth or security authority.
+  - Historical authorization/request/organizational facts remain inspectable and are never presented as editable current state.
   - HTTP representation remains owned by canonical HTTP/OpenAPI contracts.

@@ -1,4 +1,4 @@
-version: 1
+version: 2
 kind: human-interface-design
 id: NAPMS-MVP-HUMAN-INTERFACE
 status: CURRENT
@@ -47,7 +47,7 @@ development_authentication:
 subjects:
   - subject: Resource management
     journeys: [RESOURCE-MANAGEMENT]
-    primary_workspaces: [RESOURCE-CATALOGUE, RESOURCE-DETAIL]
+    primary_workspaces: [ORGANIZATION-STRUCTURE, RESOURCE-CATALOGUE, RESOURCE-DETAIL]
   - subject: Application management
     journeys: [APPLICATION-MANAGEMENT]
     primary_workspaces: [APPLICATION-CATALOGUE, APPLICATION-DETAIL]
@@ -65,11 +65,12 @@ subjects:
     primary_workspaces: [BUSINESS-CONNECTIVITY]
   - subject: Access request
     journeys: [ACCESS-REQUEST]
-    primary_workspaces: [ACCESS-REQUESTS]
-    authority_rule: Backend-confirmed effective request authority controls admission; hidden/disabled controls are presentation only.
+    primary_workspaces: [APPROVAL-POLICY, ACCESS-REQUESTS]
+    authority_rule: Backend-confirmed current request/approval authority controls protected actions; hidden/disabled controls are presentation only.
   - subject: Policy rule
     journeys: [POLICY-RULE]
     primary_workspaces: [POLICY-RULES]
+    authority_rule: Backend-confirmed current policy.revoke authority on either participating administrative side controls revocation; the UI never infers authority from ownership or visibility.
   - subject: Policy export
     journeys: [POLICY-EXPORT]
     primary_workspaces: [POLICY-EXPORT]

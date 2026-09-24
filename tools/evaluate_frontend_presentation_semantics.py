@@ -208,7 +208,7 @@ def evaluate_screens(
     accepted_query = set((catalogue_read.get("query") or {}).keys())
     required_query = {
         "search",
-        "authorityScopeRef",
+        "organizationalUnitRef",
         "siteRef",
         "sortBy",
         "sortDirection",
