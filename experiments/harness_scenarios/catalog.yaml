@@ -1,0 +1,44 @@
+version: 1
+kind: harness-scenario-coverage-catalog
+id: napms-harness-scenario-coverage-v1
+
+dimensions:
+  project_archetype: [real-project]
+  stage: [design, diagnosis]
+  behavior_class: [structural, integration, diagnosis]
+  execution_type: [real-project]
+
+required_scenario_dimensions:
+  - project_archetype
+  - stage
+  - behavior_class
+  - execution_type
+
+required_dimension_values:
+  stage: [design, diagnosis]
+  behavior_class: [structural, integration, diagnosis]
+  execution_type: [real-project]
+
+required_drivers:
+  - canonical.project
+  - canonical.alignment
+  - engineering.target
+  - data.patch
+  - graph.doctor
+
+requirements:
+  - id: napms-canonical-alignment
+    description: Current NAPMS canonical graph and Harness projection remain aligned.
+    min_scenarios: 1
+
+  - id: napms-consumer-frontiers
+    description: Current backend/frontend Consumer frontiers are reproduced by generic Harness evaluation.
+    min_scenarios: 1
+
+  - id: napms-hidden-dependency-detection
+    description: A project-graph dependency not represented by capability prerequisites is rejected.
+    min_scenarios: 1
+
+  - id: napms-owner-drift-detection
+    description: A provider rebound to the wrong Authority is diagnosed.
+    min_scenarios: 1

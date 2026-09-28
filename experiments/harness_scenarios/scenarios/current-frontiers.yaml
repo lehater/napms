@@ -1,0 +1,84 @@
+version: 1
+kind: harness-scenario
+id: napms-current-consumer-frontiers
+title: NAPMS canonical projection reproduces current Consumer frontiers
+dimensions:
+  project_archetype: real-project
+  stage: design
+  behavior_class: structural
+  execution_type: real-project
+covers:
+  - napms-canonical-alignment
+  - napms-consumer-frontiers
+
+fixtures:
+  graph:
+    yaml: ../../../docs/harness-engineering-graph.yaml
+  source:
+    yaml: ../../../docs/canonical-graph.yaml
+  projection:
+    yaml: ../../../docs/harness-projection.yaml
+
+steps:
+  - id: project
+    driver: canonical.project
+    with:
+      source_graph: {ref: fixture.source}
+      projection: {ref: fixture.projection}
+    expect:
+      - {path: /questions, op: length, value: 0}
+      - {path: /artifacts, op: truthy}
+
+  - id: backend-alignment
+    driver: canonical.alignment
+    with:
+      source_graph: {ref: fixture.source}
+      projection: {ref: fixture.projection}
+      engineering_graph: {ref: fixture.graph}
+      target_consumer: BACKEND-IMPLEMENTATION
+    expect:
+      - {path: /target_consumer, op: equals, value: BACKEND-IMPLEMENTATION}
+      - {path: /alignment_groups, op: truthy}
+
+  - id: frontend-alignment
+    driver: canonical.alignment
+    with:
+      source_graph: {ref: fixture.source}
+      projection: {ref: fixture.projection}
+      engineering_graph: {ref: fixture.graph}
+      target_consumer: FRONTEND-IMPLEMENTATION
+    expect:
+      - {path: /target_consumer, op: equals, value: FRONTEND-IMPLEMENTATION}
+      - {path: /alignment_groups, op: truthy}
+
+  - id: backend
+    driver: engineering.target
+    with:
+      graph: {ref: fixture.graph}
+      target: BACKEND-IMPLEMENTATION
+      model: {ref: step.project}
+    expect:
+      - {path: /status, op: equals, value: COMPLETE}
+      - {path: /create, op: length, value: 0}
+      - {path: /wait, op: length, value: 0}
+
+  - id: frontend
+    driver: engineering.target
+    with:
+      graph: {ref: fixture.graph}
+      target: FRONTEND-IMPLEMENTATION
+      model: {ref: step.project}
+    expect:
+      - {path: /status, op: equals, value: READY}
+      - {path: /wait, op: length, value: 0}
+      - {path: /create, op: length, value: 2}
+      - path: /create
+        op: contains_match
+        value:
+          capability: engineering.hcd.access-request.human-interface
+          authority: INTERFACE-DESIGN
+      - path: /create
+        op: contains_match
+        value:
+          capability: engineering.hcd.policy-export.human-interface
+          authority: INTERFACE-DESIGN

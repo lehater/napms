@@ -1,0 +1,38 @@
+version: 1
+kind: harness-scenario
+id: napms-hidden-project-dependency
+title: NAPMS alignment rejects an undeclared cross-Authority dependency
+dimensions:
+  project_archetype: real-project
+  stage: diagnosis
+  behavior_class: integration
+  execution_type: real-project
+covers:
+  - napms-hidden-dependency-detection
+
+fixtures:
+  graph:
+    yaml: ../../../docs/harness-engineering-graph.yaml
+  source:
+    yaml: ../../../docs/canonical-graph.yaml
+  projection:
+    yaml: ../../../docs/harness-projection.yaml
+
+steps:
+  - id: mutate
+    driver: data.patch
+    with:
+      value: {ref: fixture.source}
+      operations:
+        - {op: add, path: /nodes/2/depends_on/-, value: RC-DOMAIN}
+
+  - id: reject
+    driver: canonical.alignment
+    with:
+      source_graph: {ref: step.mutate}
+      projection: {ref: fixture.projection}
+      engineering_graph: {ref: fixture.graph}
+      target_consumer: BACKEND-IMPLEMENTATION
+    expect_error:
+      type: CoreError
+      contains: hidden project-graph upstream Authorities

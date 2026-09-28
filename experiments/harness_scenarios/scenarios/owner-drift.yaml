@@ -1,0 +1,39 @@
+version: 1
+kind: harness-scenario
+id: napms-provider-owner-drift
+title: NAPMS Graph Doctor detects provider Authority drift
+dimensions:
+  project_archetype: real-project
+  stage: diagnosis
+  behavior_class: diagnosis
+  execution_type: real-project
+covers:
+  - napms-owner-drift-detection
+
+fixtures:
+  graph:
+    yaml: ../../../docs/harness-engineering-graph.yaml
+  source:
+    yaml: ../../../docs/canonical-graph.yaml
+  projection:
+    yaml: ../../../docs/harness-projection.yaml
+
+steps:
+  - id: mutate
+    driver: data.patch
+    with:
+      value: {ref: fixture.projection}
+      operations:
+        - {op: replace, path: /bindings/0/authority, value: PRODUCT-REQUIREMENTS}
+
+  - id: diagnose
+    driver: graph.doctor
+    with:
+      engineering_graph: {ref: fixture.graph}
+      source_graph: {ref: fixture.source}
+      projection: {ref: step.mutate}
+      target: BACKEND-IMPLEMENTATION
+    expect:
+      - {path: /healthy, op: equals, value: false}
+      - {path: /summary/ERROR, op: gte, value: 1}
+      - {path: /findings, op: contains_match, value: {code: ALIGNMENT_OWNER_MISMATCH, severity: ERROR}}
