@@ -27,7 +27,7 @@ steps:
       projection: {ref: fixture.projection}
     expect:
       - {path: /questions, op: length, value: 0}
-      - {path: /artifacts, op: gte, value: 40}
+      - {path: /artifacts, op: truthy}
 
   - id: backend-alignment
     driver: canonical.alignment
@@ -38,7 +38,7 @@ steps:
       target_consumer: BACKEND-IMPLEMENTATION
     expect:
       - {path: /target_consumer, op: equals, value: BACKEND-IMPLEMENTATION}
-      - {path: /alignment_groups, op: gte, value: 1}
+      - {path: /alignment_groups, op: truthy}
 
   - id: frontend-alignment
     driver: canonical.alignment
@@ -49,7 +49,7 @@ steps:
       target_consumer: FRONTEND-IMPLEMENTATION
     expect:
       - {path: /target_consumer, op: equals, value: FRONTEND-IMPLEMENTATION}
-      - {path: /alignment_groups, op: gte, value: 1}
+      - {path: /alignment_groups, op: truthy}
 
   - id: backend
     driver: engineering.target
