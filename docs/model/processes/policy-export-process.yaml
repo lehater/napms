@@ -35,7 +35,7 @@ participants:
     responsibility: Evaluate admission, effectiveness and materialization coherently.
 
 preconditions:
-  - Accepted Policy Rule truth exists or an empty selected policy set is valid for the requested scope.
+  - Policy Rules exist from accepted ALLOWED access decisions.
   - Required owner truth referenced by selected Policy Rules is durable and resolvable.
   - Export authority is not assumed as a precondition; it is evaluated inside the process and may produce the rejected completion.
 
