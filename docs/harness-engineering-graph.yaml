@@ -94,11 +94,11 @@ authorities:
           - engineering.domain.strategic-model
 
   - id: APPLICATION-JOURNEY-DESIGN
-    responsibility: Own cross-context/application journey composition and policy-materialization behavior for the selected MVP flow.
+    responsibility: Own cross-context application composition, including bounded process, journey and policy-materialization semantics for the selected MVP flow.
     boundary:
       semantic_cohesion: Decisions describe application-level orchestration of accepted domain semantics.
-      independent_change: Journey composition can evolve without re-owning tactical domain truth or technical architecture.
-      public_contract: Provides cross-context journey and materialization semantics.
+      independent_change: Application composition can evolve without re-owning tactical domain truth or technical architecture.
+      public_contract: Provides cross-context process, journey and materialization semantics.
     produces:
       - capability: engineering.application.journey
         knowledge_kind: application-design
@@ -112,6 +112,14 @@ authorities:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
           - engineering.domain.tactical-model
+      - capability: engineering.application.process.policy-export
+        knowledge_kind: application-design
+        requires:
+          - engineering.requirements.product-intent
+          - engineering.application.journey
+          - engineering.application.materialization-semantics
+          - engineering.hcd.policy-export.task-model
+          - engineering.hcd.policy-export.user-journey
       - capability: engineering.hcd.application-components.task-model
         knowledge_kind: task-model
         requires:
@@ -167,7 +175,7 @@ authorities:
         requires:
           - engineering.requirements.product-intent
           - engineering.domain.strategic-model
-          - engineering.application.journey
+          - engineering.application.process.policy-export
       - capability: engineering.architecture.module-contracts
         knowledge_kind: system-architecture
         requires:

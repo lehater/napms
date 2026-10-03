@@ -1,0 +1,145 @@
+version: 1
+kind: application-process
+id: NAPMS-POLICY-EXPORT-PROCESS
+status: CURRENT
+
+knowledge_coverage:
+  subject: policy-export
+  knowledge: application-process
+
+purpose: >-
+  Define one policy-export invocation as canonical application-level causal flow,
+  consuming accepted product, domain, task, journey and materialization semantics
+  without turning prerequisite history or technical realization into control flow.
+
+instance_boundary:
+  trigger: >-
+    The policy/network user initiates export work in order to inspect or hand off
+    current desired policy and chooses all current effective policy or an explicit
+    Policy Rule subset.
+  starts_with: SELECT-SCOPE
+  success_completion: EXPORT-EXPOSED
+  rejected_completion: EXPORT-AUTHORITY-DENIED
+  excluded_prior_work:
+    - Resource, Application, Component, Interaction and Deployment creation.
+    - Connectivity Need creation and Access Request permission decisions.
+    - Policy Rule creation and prior operational-state history.
+  rationale: >-
+    Those facts may be required inputs or provenance, but their earlier creation
+    is not execution work inside one policy-export invocation.
+
+participants:
+  - id: USER
+    responsibility: Select export scope, request export and inspect the result.
+  - id: SYSTEM
+    responsibility: Evaluate admission, effectiveness and materialization coherently.
+
+preconditions:
+  - Policy Rules exist from accepted ALLOWED access decisions.
+  - Required owner truth referenced by selected Policy Rules is durable and resolvable.
+  - Export authority is not assumed as a precondition; it is evaluated inside the process and may produce the rejected completion.
+
+activities:
+  - id: SELECT-SCOPE
+    participant: USER
+    responsibility: Select all current effective policy or an explicit Policy Rule subset.
+    outcome: Selected policy scope.
+  - id: EXECUTE-EXPORT
+    participant: USER
+    responsibility: Request vendor-neutral policy export for the selected scope.
+    outcome: Export evaluation is initiated.
+  - id: ESTABLISH-EVALUATION-CONTEXT
+    participant: SYSTEM
+    responsibility: Establish one logical evaluation time and one coherent read context.
+    outcome: evaluationAt and coherent source view for this invocation.
+  - id: CHECK-EXPORT-AUTHORITY
+    participant: SYSTEM
+    responsibility: Evaluate effective policy.export authority for every distinct selected Resource scope at evaluationAt.
+    outcomes: [AUTHORIZED, DENIED]
+  - id: EVALUATE-EFFECTIVE-POLICY
+    participant: SYSTEM
+    responsibility: Determine which selected Policy Rules contribute desired effect at evaluationAt.
+    outcome: Effective selected Policy Rules with explainable non-effective dispositions.
+  - id: MATERIALIZE-ENRICHED-ROWS
+    participant: SYSTEM
+    responsibility: Materialize effective Rules with Resource identity, traffic semantics, provenance and current address realization when known.
+    outcome: Complete enriched row set containing READY and/or INCOMPLETE rows.
+  - id: EXPORT-EXPOSED
+    participant: SYSTEM
+    responsibility: Expose one complete enriched vendor-neutral representation to the user.
+    outcome: Successful process completion.
+  - id: EXPORT-AUTHORITY-DENIED
+    participant: SYSTEM
+    responsibility: Reject export when required effective authority is absent.
+    outcome: Rejected process completion with no selected policy result exposed.
+
+causal_relations:
+  - {from: SELECT-SCOPE, to: EXECUTE-EXPORT, type: control-precedence}
+  - {from: EXECUTE-EXPORT, to: ESTABLISH-EVALUATION-CONTEXT, type: control-precedence}
+  - {from: ESTABLISH-EVALUATION-CONTEXT, to: CHECK-EXPORT-AUTHORITY, type: control-precedence}
+  - {from: CHECK-EXPORT-AUTHORITY, to: EVALUATE-EFFECTIVE-POLICY, type: guarded-alternative, guard: AUTHORIZED}
+  - {from: CHECK-EXPORT-AUTHORITY, to: EXPORT-AUTHORITY-DENIED, type: guarded-alternative, guard: DENIED}
+  - {from: EVALUATE-EFFECTIVE-POLICY, to: MATERIALIZE-ENRICHED-ROWS, type: control-precedence}
+  - {from: MATERIALIZE-ENRICHED-ROWS, to: EXPORT-EXPOSED, type: control-precedence}
+
+data_dependencies:
+  - activity: CHECK-EXPORT-AUTHORITY
+    requires:
+      - selected Resource AuthorityScopeRefs
+      - evaluationAt
+      - accepted Authority Management semantics
+  - activity: EVALUATE-EFFECTIVE-POLICY
+    requires:
+      - selected Policy Rule identity/state
+      - EffectiveWindow
+      - permission/business provenance
+      - evaluationAt
+  - activity: MATERIALIZE-ENRICHED-ROWS
+    requires:
+      - effective Policy Rules
+      - immutable InteractionRevision traffic semantics
+      - ComponentDeployment to Resource references
+      - Resource identity/name and current endpoint address realization
+
+evaluation_semantics:
+  - condition: A selected Rule is inactive or otherwise non-effective at evaluationAt.
+    meaning: It contributes no effective technical row and remains separately explainable; this is not a process failure.
+  - condition: An effective Rule has no current source or destination address realization.
+    meaning: The row remains present as INCOMPLETE with Resource identity/name and null address; the process may still complete successfully.
+  - condition: Required export authority is absent.
+    meaning: The process completes through EXPORT-AUTHORITY-DENIED and exposes no selected policy result.
+
+recovery:
+  - condition: Missing current Resource address.
+    semantics: No mandatory in-instance recovery; address data may be completed and a later export invocation started.
+  - condition: Export authority denied.
+    semantics: No in-instance recovery is defined; a later invocation may succeed only after accepted authority truth changes.
+
+applicability:
+  waits: NOT_APPLICABLE
+  timers: NOT_APPLICABLE
+  parallel_branches: NOT_APPLICABLE
+  convergence: NOT_APPLICABLE
+  compensation: NOT_APPLICABLE
+  independent_process_state:
+    status: NOT_APPLICABLE
+    rationale: >-
+      This first-MVP export is a bounded read-only invocation. Valid continuation is
+      determined by the accepted activity outcome and existing canonical facts; no
+      independently meaningful long-lived process-progress state is required.
+
+completion:
+  success:
+    activity: EXPORT-EXPOSED
+    condition: The user receives one complete enriched representation of selected effective policy at one evaluationAt.
+  rejected:
+    activity: EXPORT-AUTHORITY-DENIED
+    condition: Required policy.export authority is absent and no selected policy result is exposed.
+
+upstream_refs:
+  - docs/requirements/first-mvp-product-requirements.yaml
+  - docs/model/use-cases/first-mvp-policy-export.yaml
+  - docs/model/tasks/policy-export-task-model.yaml
+  - docs/model/use-cases/policy-export-human-journey.yaml
+
+unresolved_questions: []
