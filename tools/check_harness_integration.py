@@ -27,6 +27,121 @@ def load(path: str):
         raise SystemExit(f"{path} must be a mapping")
     return value
 
+def require(condition: bool, message: str) -> None:
+    if not condition:
+        raise SystemExit(message)
+
+
+def process_capability_check(graph, model) -> None:
+    application = next(
+        authority
+        for authority in graph["authorities"]
+        if authority["id"] == "APPLICATION-JOURNEY-DESIGN"
+    )
+    process = next(
+        production
+        for production in application["produces"]
+        if production["capability"] == "engineering.application.process.policy-export"
+    )
+    require(
+        process["knowledge_kind"] == "application-design",
+        "policy-export process must reuse the application-design knowledge kind",
+    )
+    require(
+        set(process["requires"])
+        == {
+            "engineering.requirements.product-intent",
+            "engineering.application.journey",
+            "engineering.application.materialization-semantics",
+            "engineering.hcd.policy-export.task-model",
+            "engineering.hcd.policy-export.user-journey",
+        },
+        "policy-export process capability prerequisite closure drifted",
+    )
+
+    system = next(
+        authority
+        for authority in graph["authorities"]
+        if authority["id"] == "SYSTEM-ARCHITECTURE"
+    )
+    rules = next(
+        production
+        for production in system["produces"]
+        if production["capability"] == "engineering.architecture.rules"
+    )
+    require(
+        "engineering.application.process.policy-export" in rules["requires"],
+        "system architecture rules must consume the process capability directly",
+    )
+    require(
+        "engineering.application.journey" not in rules["requires"],
+        "system architecture rules must not reconstruct process flow from the broad journey capability",
+    )
+
+    process_doc = load("docs/model/processes/policy-export-process.yaml")
+    require(process_doc.get("kind") == "application-process", "invalid process artifact kind")
+    require(process_doc.get("status") == "CURRENT", "policy-export process must be CURRENT")
+    boundary = process_doc.get("instance_boundary", {})
+    require(boundary.get("starts_with") == "SELECT-SCOPE", "process start boundary drifted")
+    require(boundary.get("success_completion") == "EXPORT-EXPOSED", "process success boundary drifted")
+    require(
+        boundary.get("rejected_completion") == "EXPORT-AUTHORITY-DENIED",
+        "process rejection boundary drifted",
+    )
+
+    activity_ids = {item["id"] for item in process_doc.get("activities", [])}
+    required_activities = {
+        "SELECT-SCOPE",
+        "EXECUTE-EXPORT",
+        "ESTABLISH-EVALUATION-CONTEXT",
+        "CHECK-EXPORT-AUTHORITY",
+        "EVALUATE-EFFECTIVE-POLICY",
+        "MATERIALIZE-ENRICHED-ROWS",
+        "EXPORT-EXPOSED",
+        "EXPORT-AUTHORITY-DENIED",
+    }
+    require(
+        activity_ids == required_activities,
+        f"process activity contract drifted: {sorted(activity_ids)}",
+    )
+
+    relation_types = {
+        item.get("type")
+        for item in process_doc.get("causal_relations", [])
+    }
+    require(
+        relation_types == {"control-precedence", "guarded-alternative"},
+        f"process causal relation types drifted: {sorted(relation_types)}",
+    )
+    applicability = process_doc.get("applicability", {})
+    for key in ("waits", "timers", "parallel_branches", "convergence", "compensation"):
+        require(
+            applicability.get(key) == "NOT_APPLICABLE",
+            f"process {key} applicability must remain explicit",
+        )
+    require(
+        applicability.get("independent_process_state", {}).get("status")
+        == "NOT_APPLICABLE",
+        "independent process state must remain explicitly NOT_APPLICABLE",
+    )
+
+    artifacts = {item["id"]: item for item in model.get("artifacts", [])}
+    provider = artifacts.get("POLICY-EXPORT-PROCESS", {})
+    require(
+        "engineering.application.process.policy-export" in provider.get("provides", []),
+        "aligned project model must expose POLICY-EXPORT-PROCESS as the process provider",
+    )
+    system_rules = artifacts.get("SYSTEM-RULES", {})
+    require(
+        "POLICY-EXPORT-PROCESS" in system_rules.get("depends_on", []),
+        "SYSTEM-RULES must depend directly on POLICY-EXPORT-PROCESS",
+    )
+    require(
+        "FIRST-MVP-JOURNEY" not in system_rules.get("depends_on", []),
+        "SYSTEM-RULES must not retain a direct journey dependency for process reconstruction",
+    )
+
+
 
 def main() -> int:
     source = load("docs/canonical-graph.yaml")
@@ -46,6 +161,7 @@ def main() -> int:
         target_consumer="FRONTEND-IMPLEMENTATION",
     )
     model = frontend_alignment["model"]
+    process_capability_check(graph, model)
 
     backend = evaluate_engineering_target(
         graph, "BACKEND-IMPLEMENTATION", model
@@ -82,6 +198,7 @@ def main() -> int:
         )
 
     print("NAPMS pinned Harness integration PASS")
+    print("POLICY-EXPORT process capability: direct SYSTEM-RULES dependency PASS")
     print("BACKEND-IMPLEMENTATION: COMPLETE")
     print("FRONTEND-IMPLEMENTATION: READY")
     print("HCD frontier: human-interface[access-request, policy-export]")
