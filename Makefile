@@ -90,6 +90,7 @@ design-sync: harness-pin-check
 	python tools/generate_bc_view.py
 	python tools/generate_ap_view.py
 	python tools/generate_mvp_journey_view.py
+	python tools/generate_policy_export_bpmn.py
 	python tools/generate_persistence_erd.py
 
 design-check: harness-pin-check
@@ -113,6 +114,7 @@ design-check: harness-pin-check
 	python tools/generate_bc_view.py --check
 	python tools/generate_ap_view.py --check
 	python tools/generate_mvp_journey_view.py --check
+	python tools/generate_policy_export_bpmn.py --check
 	python tools/generate_persistence_erd.py --check
 
 authority-context: harness-pin-check
