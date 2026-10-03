@@ -53,6 +53,7 @@ bindings:
   - {artifact: HCD-POLICY-EXPORT-TASK-MODEL, authority: APPLICATION-JOURNEY-DESIGN, provides: [engineering.hcd.policy-export.task-model]}
   - {artifact: HCD-POLICY-EXPORT-JOURNEY, authority: APPLICATION-JOURNEY-DESIGN, provides: [engineering.hcd.policy-export.user-journey]}
   - {artifact: FIRST-MVP-JOURNEY, authority: APPLICATION-JOURNEY-DESIGN, provides: [engineering.application.journey, engineering.application.materialization-semantics]}
+  - {artifact: POLICY-EXPORT-PROCESS, authority: APPLICATION-JOURNEY-DESIGN, provides: [engineering.application.process.policy-export]}
 
   - {artifact: C4-STRUCTURE, authority: SYSTEM-ARCHITECTURE, provides: [engineering.architecture.c4-model]}
   - {artifact: SYSTEM-RULES, authority: SYSTEM-ARCHITECTURE, provides: [engineering.architecture.rules, engineering.architecture.async-messaging-not-applicable]}
