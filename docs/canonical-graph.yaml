@@ -65,4 +65,5 @@ projections:
   - {id: BC-VIEW, source_ids: [BC-DOMAIN], command: python tools/generate_bc_view.py, outputs: [docs-generated/architecture/business-connectivity-domain.puml]}
   - {id: AP-VIEW, source_ids: [AP-DOMAIN], command: python tools/generate_ap_view.py, outputs: [docs-generated/architecture/access-policy-domain.puml]}
   - {id: MVP-JOURNEY-VIEW, source_ids: [FIRST-MVP-REQUIREMENTS, FIRST-MVP-JOURNEY], command: python tools/generate_mvp_journey_view.py, outputs: [docs-generated/architecture/first-mvp-policy-export.puml]}
+  - {id: POLICY-EXPORT-BPMN, source_ids: [POLICY-EXPORT-PROCESS], command: python tools/generate_policy_export_bpmn.py, outputs: [docs-generated/process/policy-export.bpmn]}
   - {id: ERD, source_ids: [PERSISTENCE], command: python tools/generate_persistence_erd.py, outputs: [docs-generated/architecture/mvp-persistence-erd.puml]}
